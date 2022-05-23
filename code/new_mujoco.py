@@ -41,7 +41,7 @@ def get_vert_coords(sim, obj_id, xyz_local):
 
 def generate_data(string, n_steps, data_type="pos", dim=3):
     """
-    Create the dataset of data_type 
+    Create the dataset of data_type
     """
     geom_name = 'object_geom'
 
@@ -55,13 +55,23 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
     # print("quat", get_vert_coords_quat(sim, object_id-1, xyz_local))
     # print("old ", get_vert_coords(sim, object_id-1, xyz_local)[:,VERT_NUM])
 
-    dataset = np.empty((n_steps*8, dim if data_type=="pos" else 4))
+# -----------
+    # dataset = np.empty((n_steps*8, dim if data_type=="pos" else 4))
+    # for i in range(n_steps):
+    #     sim.step()
+    #     if data_type == "pos":
+    #         dataset[i*8:((i+1)*8)] = get_vert_coords(sim, object_id-1, xyz_local).T
+    #     elif data_type == "quat": #fix
+    #         dataset[i] = get_vert_coords_quat(sim, object_id-1, xyz_local)
+
+
+    dataset = np.empty((n_steps, 8, dim if data_type=="pos" else 4))
+
     for i in range(n_steps):
         sim.step()
+        print(get_vert_coords(sim, object_id-1, xyz_local).T.shape)
         if data_type == "pos":
-            dataset[i*8:((i+1)*8)] = get_vert_coords(sim, object_id-1, xyz_local).T
-        elif data_type == "quat": #fix
-            dataset[i] = get_vert_coords_quat(sim, object_id-1, xyz_local)
+            dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
 
         # viewer.render()
 
@@ -95,9 +105,9 @@ if __name__ == "__main__":
     obj_type = "box"
     n_steps = 400
 
-    num_sims = 10
+    num_sims = 100
     write_data_nsim(num_sims)
-    
+
     # with open(f'data/sim_0.pickle', 'rb') as f:
     #     print(np.shape(pickle.load(f)["data"].flatten()))
 

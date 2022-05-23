@@ -4,6 +4,8 @@ import torch.nn.functional as F
 import numpy as np
 import pickle
 import torch.utils.data as data
+import random
+
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -11,16 +13,16 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 
 WHY = 20
 
-class SimpleClassifier(nn.Module):
+class Network(nn.Module):
 
     def __init__(self, n_steps, n_data, n_hidden1, n_hidden2, n_out):
         super().__init__()
         # Initialize the modules we need to build the network
         self.layers = nn.Sequential(
             nn.Linear(n_steps * n_data, n_hidden1),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(n_hidden1, n_hidden2),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(n_hidden2, n_out),
             )
 
@@ -32,38 +34,43 @@ class SimpleClassifier(nn.Module):
 
 class MyDataset(data.Dataset):
 
-    def __init__(self, n_sims, n_frames, n_data):
+    def __init__(self, sims, n_frames, n_data):
         """
         Inputs:
+            n_sims - 
             size - Number of data points we want to generate
             std - Standard deviation of the noise (see generate_continuous_xor function)
         """
         super().__init__()
-        self.n_frames = n_frames
-        self.n_data = n_data
-        self.n_sims = n_sims
+        self.n_frames_perentry = n_frames
+        self.n_datap_perframe = n_data
+        self.sims = sims
         self.collect_data()
-        print(self.n_sims)
 
 
     def collect_data(self):
-        self.data = torch.empty((self.n_sims, self.n_frames*self.n_data))
-        self.target = torch.empty((1, self.n_data))
+        # self.data = torch.empty((self.n_sims * , self.n_frames_perentry * self.n_datap_perframe))
+        # self.target = torch.empty((1, self.n_datap_perframe))
 
-        for i in range(self.n_sims):
-            print("i",i)
+        self.data = []
+        self.target = []
+
+        for i in self.sims:
             with open(f'data/sim_{i}.pickle', 'rb') as f:
                 data = pickle.load(f)["data"]
-                print(len(data))
-                for j in range(0, len(data)-8, self.n_frames*8):
-                    print(j, j+self.n_frames*8)
-                    print(data[j:j+self.n_frames*8].shape)
-                    self.data[i] = torch.from_numpy(data[j:j+self.n_frames*8].flatten())
-                    # self.target[i] = torch.from_numpy(data[(self.n_frames+1)*8:self.n_frames+9].flatten())
+
+                for frame in range(len(data) - (self.n_frames_perentry + 1)):
+                    train_end = frame + self.n_frames_perentry
+                    self.data.append(data[frame:train_end].flatten())
+                    self.target.append(data[train_end+1].flatten())
+
+        self.data = torch.FloatTensor(np.asarray(self.data))
+        self.target = torch.FloatTensor(np.asarray(self.target))
+        # print((self.data).shape, self.target.shape)
 
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
-        return self.n_sims
+        return self.data.shape[0]
 
     def __getitem__(self, idx):
         # Return the idx-th data point of the dataset
@@ -74,12 +81,13 @@ class MyDataset(data.Dataset):
 
 
 
-def train_model(model, optimizer, data_loader, loss_module, num_epochs=100):
+def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs=100):
     # Set model to train mode
     model.train()
 
     # Training loop
-    for epoch in tqdm(range(num_epochs)):
+    for epoch in range(num_epochs):
+        loss_epoch = 0
         for data_inputs, data_labels in data_loader:
 
             ## Step 1: Move input data to device (only strictly necessary if we use GPU)
@@ -90,11 +98,13 @@ def train_model(model, optimizer, data_loader, loss_module, num_epochs=100):
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
 
+
             ## Step 3: Calculate the loss
-            loss = loss_module(preds, data_labels.float())
+            loss = loss_module(preds, data_labels)
+            loss_epoch += loss
 
             ## Step 4: Perform backpropagation
-            # Before calculating the gradients, we need to ensure that they are all zero. 
+            # Before calculating the gradients, we need to ensure that they are all zero.
             # The gradients would not be overwritten, but actually added to the existing ones.
             optimizer.zero_grad()
             # Perform backpropagation
@@ -102,44 +112,59 @@ def train_model(model, optimizer, data_loader, loss_module, num_epochs=100):
 
             ## Step 5: Update the parameters
             optimizer.step()
+        print(epoch, loss_epoch.item()/len(data_loader), "\t", eval_model(model, test_loader, loss_module))
 
-def eval_model(model, data_loader):
+
+def eval_model(model, data_loader, loss_module):
     model.eval() # Set model to eval mode
-    true_preds, num_preds = 0., 0.
 
     with torch.no_grad(): # Deactivate gradients for the following code
+        total_loss = 0
         for data_inputs, data_labels in data_loader:
 
             # Determine prediction of model on dev set
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
-            preds = torch.sigmoid(preds) # Sigmoid to map predictions between 0 and 1
-            pred_labels = (preds >= 0.5).long() # Binarize predictions to 0 and 1
+            total_loss += loss_module(preds, data_labels)
 
-            # Keep records of predictions for the accuracy metric (true_preds=TP+TN, num_preds=TP+TN+FP+FN)
-            true_preds += (pred_labels == data_labels).sum()
-            num_preds += data_labels.shape[0]
+    return total_loss.item()/len(data_loader)
 
-    acc = true_preds / num_preds
-    print(f"Accuracy of the model: {100.0*acc:4.2f}%")
+    # print(f"test loss : {total_loss}")
 
 n_data = 24 # xyz * 8
-n_framess = 20
+n_frames = 20
+n_sims = 100
 
-model = SimpleClassifier(n_framess, n_data, n_hidden1=100, n_hidden2=60, n_out=24)
+sims = {i for i in range(n_sims)}
+train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+test_sims = sims - train_sims
 
-
-train_dataset = MyDataset(n_sims=10, n_frames=n_framess, n_data=n_data)
-train_data_loader = data.DataLoader(train_dataset, batch_size=128, shuffle=True)
-
-# model.to(device)
-
-# loss_module = nn.BCEWithLogitsLoss()
-# optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
-# train_model(model, optimizer, train_data_loader, loss_module)
+model = Network(n_frames, n_data, n_hidden1=100, n_hidden2=60, n_out=24)
 
 
-# test_dataset = MyDataset(size=500)
-# test_data_loader = data.DataLoader(test_dataset, batch_size=128, shuffle=False, drop_last=False) 
-# eval_model(model, test_data_loader)
+data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data)
+# data_set_train.data = data_set_train.data[:2500]
+# data_set_train.target = data_set_train.target[:2500]
+data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data)
+# data_set_test.data = data_set_test.data[2500:]
+# data_set_test.target = data_set_test.target[2500:]
+
+# print(data_set.data.shape)
+# train_data_set = data_set[]
+train_data_loader = data.DataLoader(data_set_train, batch_size=128, shuffle=True)
+
+test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
+
+
+
+model.to(device)
+
+loss_module = nn.L1Loss()
+optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
+train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=500)
+
+
+
+test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False) 
+eval_model(model, test_data_loader, loss_module)
