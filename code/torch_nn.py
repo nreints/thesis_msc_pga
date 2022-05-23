@@ -130,10 +130,9 @@ def eval_model(model, data_loader, loss_module):
 
     return total_loss.item()/len(data_loader)
 
-    # print(f"test loss : {total_loss}")
 
 n_data = 24 # xyz * 8
-n_frames = 20
+n_frames = 2
 n_sims = 100
 
 sims = {i for i in range(n_sims)}
@@ -144,11 +143,8 @@ model = Network(n_frames, n_data, n_hidden1=100, n_hidden2=60, n_out=24)
 
 
 data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data)
-# data_set_train.data = data_set_train.data[:2500]
-# data_set_train.target = data_set_train.target[:2500]
+
 data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data)
-# data_set_test.data = data_set_test.data[2500:]
-# data_set_test.target = data_set_test.target[2500:]
 
 # print(data_set.data.shape)
 # train_data_set = data_set[]
@@ -157,14 +153,12 @@ train_data_loader = data.DataLoader(data_set_train, batch_size=128, shuffle=True
 test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
 
 
-
 model.to(device)
 
 loss_module = nn.L1Loss()
+
 optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
 train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=500)
-
-
 
 test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False) 
 eval_model(model, test_data_loader, loss_module)

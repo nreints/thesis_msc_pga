@@ -20,8 +20,11 @@ def get_vert_coords_quat(sim, obj_id, xyz_local):
         using quaternion
     """
     obj_xquat = sim.data.body_xquat[obj_id]
-    # Geeft nu alleen de geroteerde eerste vertice terug [:,??]
+    # FIX Geeft nu alleen de geroteerde eerste vertice terug [:,??]
     return rotVecQuat(xyz_local[:,VERT_NUM], obj_xquat) + sim.data.body_xpos[obj_id]
+
+def get_quat(sim, obj_id):
+    return sim.data.body_xquat[obj_id]
 
 def get_vert_local(sim, obj_id):
     """
@@ -52,66 +55,45 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
     xyz_local = get_vert_local(sim, object_id)
     # viewer = mujoco_py.MjViewer(sim)
 
-    # print("quat", get_vert_coords_quat(sim, object_id-1, xyz_local))
-    # print("old ", get_vert_coords(sim, object_id-1, xyz_local)[:,VERT_NUM])
-
-# -----------
-    # dataset = np.empty((n_steps*8, dim if data_type=="pos" else 4))
-    # for i in range(n_steps):
-    #     sim.step()
-    #     if data_type == "pos":
-    #         dataset[i*8:((i+1)*8)] = get_vert_coords(sim, object_id-1, xyz_local).T
-    #     elif data_type == "quat": #fix
-    #         dataset[i] = get_vert_coords_quat(sim, object_id-1, xyz_local)
-
-
     dataset = np.empty((n_steps, 8, dim if data_type=="pos" else 4))
 
     for i in range(n_steps):
         sim.step()
-        print(get_vert_coords(sim, object_id-1, xyz_local).T.shape)
         if data_type == "pos":
             dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
+        elif data_type == "quat":
+            dataset[i] = get_quat(sim, object_id-1)
 
         # viewer.render()
-
-    # print("quat", get_vert_coords_quat(sim, object_id-1, xyz_local))
-    # print("old ", get_vert_coords(sim, object_id-1, xyz_local)[:,VERT_NUM])
 
     return dataset
 
 
-def write_data_nsim(num_sims):
+def write_data_nsim(num_sims, data_type="pos"):
     for sim_id in range(num_sims):
         euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
         pos = f"{np.random.uniform(-100, 100)} {np.random.uniform(-100, 100)} {np.random.uniform(40, 300)}"
         size = f"{np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)}"
 
         string = create_string(euler, pos, obj_type, size)
-        dataset = generate_data(string, n_steps)
+        dataset = generate_data(string, n_steps, data_type)
 
 
         sim_data = {"vars" : [euler, pos, obj_type, size], "data" : dataset}
-        with open(f'data/sim_{sim_id}.pickle', 'wb') as f:
+        with open(f'data/sim_{sim_id}_{data_type}.pickle', 'wb') as f:
             pickle.dump(sim_data, f)
         f.close()
 
 if __name__ == "__main__":
-    # string = xml_strings.model_xml_swinging_body
-    # euler = "0 0 -80"
-    # pos = "0 0 100"
-    # size = "0.2 0.2 0.2"
 
     obj_type = "box"
     n_steps = 400
 
     num_sims = 100
-    write_data_nsim(num_sims)
+    write_data_nsim(num_sims, data_type="pos")
 
     # with open(f'data/sim_0.pickle', 'rb') as f:
     #     print(np.shape(pickle.load(f)["data"].flatten()))
-
-
 
 
     """
