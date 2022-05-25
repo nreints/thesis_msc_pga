@@ -1,7 +1,6 @@
 import mujoco_py
 import numpy as np
 import itertools
-import xml_strings
 from create_strings import create_string
 import pickle
 
@@ -62,6 +61,8 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
         if data_type == "pos":
             dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
         elif data_type == "quat":
+
+            print(get_quat(sim, object_id-1).shape)
             dataset[i] = get_quat(sim, object_id-1)
 
         # viewer.render()
@@ -90,7 +91,7 @@ if __name__ == "__main__":
     n_steps = 400
 
     num_sims = 100
-    write_data_nsim(num_sims, data_type="pos")
+    write_data_nsim(num_sims, data_type="quat")
 
     # with open(f'data/sim_0.pickle', 'rb') as f:
     #     print(np.shape(pickle.load(f)["data"].flatten()))

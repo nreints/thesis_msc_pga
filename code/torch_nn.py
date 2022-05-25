@@ -34,10 +34,10 @@ class Network(nn.Module):
 
 class MyDataset(data.Dataset):
 
-    def __init__(self, sims, n_frames, n_data):
+    def __init__(self, sims, n_frames, n_data, data_type):
         """
         Inputs:
-            n_sims - 
+            n_sims -
             size - Number of data points we want to generate
             std - Standard deviation of the noise (see generate_continuous_xor function)
         """
@@ -45,6 +45,7 @@ class MyDataset(data.Dataset):
         self.n_frames_perentry = n_frames
         self.n_datap_perframe = n_data
         self.sims = sims
+        self.data_type = data_type
         self.collect_data()
 
 
@@ -56,9 +57,8 @@ class MyDataset(data.Dataset):
         self.target = []
 
         for i in self.sims:
-            with open(f'data/sim_{i}.pickle', 'rb') as f:
+            with open(f'data/sim_{i}_{self.data_type}.pickle', 'rb') as f:
                 data = pickle.load(f)["data"]
-
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].flatten())
@@ -112,7 +112,13 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             ## Step 5: Update the parameters
             optimizer.step()
-        print(epoch, loss_epoch.item()/len(data_loader), "\t", eval_model(model, test_loader, loss_module))
+        if epoch % 5 == 0:
+            print(epoch, loss_epoch.item()/len(data_loader), "\t", eval_model(model, test_loader, loss_module))
+
+            f = open("results.txt", "a")
+            f.write(f"Epoch: {epoch}, train loss: {loss_epoch.item()/len(data_loader)}, \t test loss: {eval_model(model, test_loader, loss_module)} \n")
+            f.write("\n")
+            f.close()
 
 
 def eval_model(model, data_loader, loss_module):
@@ -131,34 +137,44 @@ def eval_model(model, data_loader, loss_module):
     return total_loss.item()/len(data_loader)
 
 
-n_data = 24 # xyz * 8
-n_frames = 2
+
+n_frames = 5
 n_sims = 100
+
+data_type = "pos"
+n_data = 24 # xyz * 8
+
+# data_type = "quat"
+# n_data = 32 # 4 * 8
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
 test_sims = sims - train_sims
 
-model = Network(n_frames, n_data, n_hidden1=100, n_hidden2=60, n_out=24)
+
+model = Network(n_frames, n_data, n_hidden1=100, n_hidden2=60, n_out=n_data)
 
 
-data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data)
+data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
+data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
 
-data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data)
-
-# print(data_set.data.shape)
-# train_data_set = data_set[]
 train_data_loader = data.DataLoader(data_set_train, batch_size=128, shuffle=True)
-
 test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
 
 
 model.to(device)
 
+num_epochs = 500
+lr = 0.01
+
+f = open("results.txt", "w")
+f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr}")
+
+
 loss_module = nn.L1Loss()
 
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
-train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=500)
+optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs)
 
-test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False) 
+test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
 eval_model(model, test_data_loader, loss_module)

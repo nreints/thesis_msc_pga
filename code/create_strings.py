@@ -12,5 +12,3 @@ def create_string(euler_obj, pos_obj, type_obj, size_obj):
     </worldbody>
     </mujoco>
     """
-
-# print(create_string("a", "b", "c", "d"))
