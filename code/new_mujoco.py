@@ -19,8 +19,9 @@ def get_vert_coords_quat(sim, obj_id, xyz_local):
         using quaternion
     """
     obj_xquat = sim.data.body_xquat[obj_id]
+    trans = sim.data.body_xpos[obj_id]
     # FIX Geeft nu alleen de geroteerde eerste vertice terug [:,??]
-    return rotVecQuat(xyz_local[:,VERT_NUM], obj_xquat) + sim.data.body_xpos[obj_id]
+    return rotVecQuat(xyz_local[:,VERT_NUM], obj_xquat) + trans
 
 def get_quat(sim, obj_id):
     return sim.data.body_xquat[obj_id]
@@ -54,17 +55,15 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
     xyz_local = get_vert_local(sim, object_id)
     # viewer = mujoco_py.MjViewer(sim)
 
-    dataset = np.empty((n_steps, 8, dim if data_type=="pos" else 4))
+    dataset = np.empty((n_steps, 8 if data_type=="pos" else 1, dim if data_type=="pos" else 7))
 
     for i in range(n_steps):
         sim.step()
         if data_type == "pos":
             dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
         elif data_type == "quat":
-
-            print(get_quat(sim, object_id-1).shape)
-            dataset[i] = get_quat(sim, object_id-1)
-
+            # print(np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1]))
+            dataset[i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
         # viewer.render()
 
     return dataset

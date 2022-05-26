@@ -112,11 +112,11 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             ## Step 5: Update the parameters
             optimizer.step()
-        if epoch % 5 == 0:
-            print(epoch, loss_epoch.item()/len(data_loader), "\t", eval_model(model, test_loader, loss_module))
+        if epoch % 10 == 0:
+            print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(eval_model(model, test_loader, loss_module), 10))
 
             f = open("results.txt", "a")
-            f.write(f"Epoch: {epoch}, train loss: {loss_epoch.item()/len(data_loader)}, \t test loss: {eval_model(model, test_loader, loss_module)} \n")
+            f.write(f"Epoch: {epoch}, \t train loss: {round(loss_epoch.item()/len(data_loader), 10)}, \t test loss: {round(eval_model(model, test_loader, loss_module), 10)} \n")
             f.write("\n")
             f.close()
 
@@ -144,8 +144,9 @@ n_sims = 100
 data_type = "pos"
 n_data = 24 # xyz * 8
 
-# data_type = "quat"
-# n_data = 32 # 4 * 8
+data_type = "quat"
+n_data = 56  # 7 * 8
+n_data = 7
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
@@ -165,10 +166,10 @@ test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False,
 model.to(device)
 
 num_epochs = 500
-lr = 0.01
+lr = 0.001
 
 f = open("results.txt", "w")
-f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr}")
+f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
 
 
 loss_module = nn.L1Loss()
