@@ -54,7 +54,7 @@ class MyDataset(data.Dataset):
         self.target = []
 
         for i in self.sims:
-            with open(f'data/sim_{i}_{self.data_type}.pickle', 'rb') as f:
+            with open(f'data/{self.data_type}/sim_{i}.pickle', 'rb') as f:
                 data = pickle.load(f)["data"]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     train_end = frame + self.n_frames_perentry
@@ -113,7 +113,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
         if epoch % 10 == 0:
             print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(eval_model(model, test_loader, loss_module), 10))
 
-            f = open(f"results_{data_type}_{num_epochs}_{lr}.txt", "a")
+            f = open(f"results/{data_type}/{num_epochs}_{lr}.txt", "a")
             f.write(f"Epoch: {epoch}, \t train loss: {round(loss_epoch.item()/len(data_loader), 10)}, \t test loss: {round(eval_model(model, test_loader, loss_module), 10)} \n")
             f.write("\n")
             f.close()
@@ -143,8 +143,10 @@ data_type = "pos"
 n_data = 24 # xyz * 8
 
 data_type = "quat"
-
 n_data = 7
+
+# data_type = "log_quat"
+# n_data = 4
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
@@ -166,7 +168,7 @@ model.to(device)
 num_epochs = 500
 lr = 0.001
 
-f = open(f"results_{data_type}_{num_epochs}_{lr}.txt", "w")
+f = open(f"results/{data_type}/{num_epochs}_{lr}.txt", "w")
 f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
 
 
@@ -174,8 +176,8 @@ loss_module = nn.L1Loss()
 # print(model.lr)
 
 optimizer = torch.optim.SGD(model.parameters(), lr=lr)
-print(optimizer.lr)
-exit()
+
+
 train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs)
 
 test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
