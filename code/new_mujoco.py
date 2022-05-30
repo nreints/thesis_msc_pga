@@ -98,7 +98,7 @@ def write_data_nsim(num_sims, data_type="pos"):
 
 
         sim_data = {"vars" : [euler, pos, obj_type, size], "data" : dataset}
-        with open(f'data/sim_{sim_id}_{data_type}.pickle', 'wb') as f:
+        with open(f'data/{data_type}/sim_{sim_id}.pickle', 'wb') as f:
             pickle.dump(sim_data, f)
         f.close()
 
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     n_steps = 400
 
     num_sims = 100
-    write_data_nsim(num_sims, data_type="log_quat")
+    write_data_nsim(num_sims, data_type="quat")
 
     # with open(f'data/sim_0.pickle', 'rb') as f:
     #     print(np.shape(pickle.load(f)["data"].flatten()))
