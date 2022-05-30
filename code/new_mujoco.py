@@ -4,7 +4,6 @@ import itertools
 from create_strings import create_string
 import pickle
 
-
 VERT_NUM = 1
 
 def rotVecQuat(v, q):
@@ -42,6 +41,14 @@ def get_vert_coords(sim, obj_id, xyz_local):
     obj_mat = sim.data.geom_xmat[obj_id].reshape(3, 3)
     return obj_pos[:, None] + obj_mat @ xyz_local
 
+def calculate_log_quat(quat):
+    rot_vec = quat[1:] / np.linalg.norm(quat[1:])
+    sin_vec = quat[1:] / rot_vec
+    sin = sin_vec[0]
+    cos = quat[0]
+    angle = 2 * np.arctan(cos/sin)
+    return np.append(rot_vec, angle)
+
 def generate_data(string, n_steps, data_type="pos", dim=3):
     """
     Create the dataset of data_type
@@ -61,9 +68,20 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
         sim.step()
         if data_type == "pos":
             dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
+        elif data_type == "eucl_motion":
+            # todo
+            print("Not implemented yet")
         elif data_type == "quat":
-            # print(np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1]))
             dataset[i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+        elif data_type == "log_quat":
+            log_quat = calculate_log_quat(get_quat(sim, object_id-1))
+            dataset[i] = np.append(log_quat, sim.data.body_xpos[object_id-1])
+        elif data_type == "pga_motor":
+            # todo
+            print("Not implemented yet")
+        elif data_type == "pga_bivec":
+            # todo
+            print("Not implemented yet")
         # viewer.render()
 
     return dataset
@@ -90,7 +108,7 @@ if __name__ == "__main__":
     n_steps = 400
 
     num_sims = 100
-    write_data_nsim(num_sims, data_type="quat")
+    write_data_nsim(num_sims, data_type="log_quat")
 
     # with open(f'data/sim_0.pickle', 'rb') as f:
     #     print(np.shape(pickle.load(f)["data"].flatten()))
