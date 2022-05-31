@@ -63,7 +63,8 @@ class MyDataset(data.Dataset):
 
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
-        # print((self.data).shape, self.target.shape)
+
+        print((self.data).shape, self.target.shape)
 
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
@@ -145,8 +146,8 @@ n_data = 24 # xyz * 8
 data_type = "quat"
 n_data = 7
 
-# data_type = "log_quat"
-# n_data = 4
+data_type = "log_quat"
+n_data = 7
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
@@ -154,31 +155,30 @@ test_sims = sims - train_sims
 
 
 model = Network(n_frames, n_data, n_hidden1=100, n_hidden2=60, n_out=n_data)
-
+model.to(device)
 
 data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
+print("2")
 data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
 
 train_data_loader = data.DataLoader(data_set_train, batch_size=128, shuffle=True)
 test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
 
+# exit()
+lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
+for i in lrs:
+    num_epochs = 1000
+    lr = i
 
-model.to(device)
+    loss = "L1"
+    loss_module = nn.L1Loss()
 
-num_epochs = 500
-lr = 0.001
+    f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
+    f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
 
-f = open(f"results/{data_type}/{num_epochs}_{lr}.txt", "w")
-f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
+    train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs)
 
-loss_module = nn.L1Loss()
-# print(model.lr)
-
-optimizer = torch.optim.SGD(model.parameters(), lr=lr)
-
-
-train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs)
-
-test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
-eval_model(model, test_data_loader, loss_module)
+    test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
+    eval_model(model, test_data_loader, loss_module)

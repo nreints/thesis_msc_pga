@@ -73,9 +73,11 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
             print("Not implemented yet")
         elif data_type == "quat":
             dataset[i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+            # print(dataset[i].shape)
         elif data_type == "log_quat":
             log_quat = calculate_log_quat(get_quat(sim, object_id-1))
             dataset[i] = np.append(log_quat, sim.data.body_xpos[object_id-1])
+            # print(dataset[i].shape)
         elif data_type == "pga_motor":
             # todo
             print("Not implemented yet")
@@ -87,7 +89,7 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
     return dataset
 
 
-def write_data_nsim(num_sims, data_type="pos"):
+def write_data_nsim(num_sims, n_steps, data_type="pos"):
     for sim_id in range(num_sims):
         euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
         pos = f"{np.random.uniform(-100, 100)} {np.random.uniform(-100, 100)} {np.random.uniform(40, 300)}"
@@ -108,7 +110,7 @@ if __name__ == "__main__":
     n_steps = 400
 
     num_sims = 100
-    write_data_nsim(num_sims, data_type="quat")
+    write_data_nsim(num_sims, n_steps, data_type="log_quat")
 
     # with open(f'data/sim_0.pickle', 'rb') as f:
     #     print(np.shape(pickle.load(f)["data"].flatten()))
