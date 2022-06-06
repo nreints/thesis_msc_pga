@@ -144,8 +144,8 @@ n_data = 24 # xyz * 8
 data_type = "quat"
 n_data = 7
 
-data_type = "log_quat"
-n_data = 7
+# data_type = "log_quat"
+# n_data = 7
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))

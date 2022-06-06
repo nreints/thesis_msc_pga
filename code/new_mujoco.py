@@ -25,6 +25,9 @@ def get_vert_coords_quat(sim, obj_id, xyz_local):
 def get_quat(sim, obj_id):
     return sim.data.body_xquat[obj_id]
 
+def get_mat(sim, obj_id):
+    return sim.data.body_xmat[obj_id]
+
 def get_vert_local(sim, obj_id):
     """
     Returns the initial locations of the vertices
@@ -62,7 +65,14 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
     xyz_local = get_vert_local(sim, object_id)
     # viewer = mujoco_py.MjViewer(sim)
 
-    dataset = np.empty((n_steps, 8 if data_type=="pos" else 1, dim if data_type=="pos" else 7))
+    if data_type == "pos":
+        dim = 3
+    elif data_type == "eucl_motion":
+        dim = 12
+    elif data_type == "quat" or data_type == "log_quat":
+        dim = 7
+
+    dataset = np.empty((n_steps, 8 if data_type=="pos" else 1, dim))
 
     for i in range(n_steps):
         sim.step()
@@ -70,6 +80,9 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
             dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
         elif data_type == "eucl_motion":
             # todo
+            print(get_mat(sim, object_id-1).shape)
+            print(sim.data.body_xpos[object_id-1].shape)
+            dataset[i] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
             print("Not implemented yet")
         elif data_type == "quat":
             dataset[i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
@@ -98,7 +111,6 @@ def write_data_nsim(num_sims, n_steps, data_type="pos"):
         string = create_string(euler, pos, obj_type, size)
         dataset = generate_data(string, n_steps, data_type)
 
-
         sim_data = {"vars" : [euler, pos, obj_type, size], "data" : dataset}
         with open(f'data/{data_type}/sim_{sim_id}.pickle', 'wb') as f:
             pickle.dump(sim_data, f)
@@ -110,10 +122,10 @@ if __name__ == "__main__":
     n_steps = 400
 
     num_sims = 100
-    write_data_nsim(num_sims, n_steps, data_type="log_quat")
+    write_data_nsim(num_sims, n_steps, data_type="eucl_motion")
 
-    # with open(f'data/sim_0.pickle', 'rb') as f:
-    #     print(np.shape(pickle.load(f)["data"].flatten()))
+    with open(f'data/eucl_motion/sim_0.pickle', 'rb') as f:
+        print(np.shape(pickle.load(f)["data"].flatten()))
 
 
     """
