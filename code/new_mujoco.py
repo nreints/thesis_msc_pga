@@ -52,7 +52,7 @@ def calculate_log_quat(quat):
     angle = 2 * np.arctan(cos/sin)
     return np.append(rot_vec, angle)
 
-def generate_data(string, n_steps, data_type="pos", dim=3):
+def generate_data(string, n_steps):
     """
     Create the dataset of data_type
     """
@@ -65,54 +65,69 @@ def generate_data(string, n_steps, data_type="pos", dim=3):
     xyz_local = get_vert_local(sim, object_id)
     # viewer = mujoco_py.MjViewer(sim)
 
-    if data_type == "pos":
-        dim = 3
-    elif data_type == "eucl_motion":
-        dim = 12
-    elif data_type == "quat" or data_type == "log_quat":
-        dim = 7
 
-    dataset = np.empty((n_steps, 8 if data_type=="pos" else 1, dim))
+    dataset = {"pos": np.empty((n_steps, 8, 3)),
+                "eucl_motion" : np.empty((n_steps, 1, 12)),
+                "quat": np.empty((n_steps, 1, 7)),
+                "log_quat": np.empty((n_steps, 1, 7))}
 
     for i in range(n_steps):
         sim.step()
-        if data_type == "pos":
-            dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
-        elif data_type == "eucl_motion":
-            # todo
-            print(get_mat(sim, object_id-1).shape)
-            print(sim.data.body_xpos[object_id-1].shape)
-            dataset[i] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-            print("Not implemented yet")
-        elif data_type == "quat":
-            dataset[i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-            # print(dataset[i].shape)
-        elif data_type == "log_quat":
-            log_quat = calculate_log_quat(get_quat(sim, object_id-1))
-            dataset[i] = np.append(log_quat, sim.data.body_xpos[object_id-1])
-            # print(dataset[i].shape)
-        elif data_type == "pga_motor":
-            # todo
-            print("Not implemented yet")
-        elif data_type == "pga_bivec":
-            # todo
-            print("Not implemented yet")
-        # viewer.render()
+        dataset["pos"][i] = get_vert_coords(sim, object_id-1, xyz_local).T
+        dataset["eucl_motion"][i] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+        dataset["quat"][i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+        log_quat = calculate_log_quat(get_quat(sim, object_id-1))
+        dataset["log_quat"][i] = np.append(log_quat, sim.data.body_xpos[object_id-1])
+
+    # if data_type == "pos":
+    #     dim = 3
+    # elif data_type == "eucl_motion":
+    #     dim = 12
+    # elif data_type == "quat" or data_type == "log_quat":
+    #     dim = 7
+
+
+
+    # dataset = np.empty((n_steps, 8 if data_type=="pos" else 1, dim))
+
+    # for i in range(n_steps):
+    #     sim.step()
+    #     if data_type == "pos":
+    #         dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
+    #     elif data_type == "eucl_motion":
+    #         # todo
+    #         dataset[i] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+    #     elif data_type == "quat":
+    #         dataset[i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+    #         # print(dataset[i].shape)
+    #     elif data_type == "log_quat":
+    #         log_quat = calculate_log_quat(get_quat(sim, object_id-1))
+    #         dataset[i] = np.append(log_quat, sim.data.body_xpos[object_id-1])
+    #         # print(dataset[i].shape)
+
+
+        # elif data_type == "pga_motor":
+        #     # todo
+        #     print("Not implemented yet")
+        # elif data_type == "pga_bivec":
+        #     # todo
+        #     print("Not implemented yet")
+        # # viewer.render()
 
     return dataset
 
 
-def write_data_nsim(num_sims, n_steps, data_type="pos"):
+def write_data_nsim(num_sims, n_steps):
     for sim_id in range(num_sims):
         euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
         pos = f"{np.random.uniform(-100, 100)} {np.random.uniform(-100, 100)} {np.random.uniform(40, 300)}"
         size = f"{np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)}"
 
         string = create_string(euler, pos, obj_type, size)
-        dataset = generate_data(string, n_steps, data_type)
+        dataset = generate_data(string, n_steps)
 
         sim_data = {"vars" : [euler, pos, obj_type, size], "data" : dataset}
-        with open(f'data/{data_type}/sim_{sim_id}.pickle', 'wb') as f:
+        with open(f'data/sim_{sim_id}.pickle', 'wb') as f:
             pickle.dump(sim_data, f)
         f.close()
 
@@ -122,10 +137,10 @@ if __name__ == "__main__":
     n_steps = 400
 
     num_sims = 100
-    write_data_nsim(num_sims, n_steps, data_type="eucl_motion")
+    write_data_nsim(num_sims, n_steps)
 
-    with open(f'data/eucl_motion/sim_0.pickle', 'rb') as f:
-        print(np.shape(pickle.load(f)["data"].flatten()))
+    # with open(f'data/eucl_motion/sim_0.pickle', 'rb') as f:
+    #     print(np.shape(pickle.load(f)["data"].flatten()))
 
 
     """

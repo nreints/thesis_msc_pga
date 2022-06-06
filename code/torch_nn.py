@@ -44,7 +44,16 @@ class MyDataset(data.Dataset):
         self.sims = sims
         self.data_type = data_type
         self.collect_data()
+    #     self.collect_begin_pos_data()
 
+    # def collect_begin_pos_data(self):
+    #     self.begin_pos_data = []
+    #     for i in range(self.sims):
+    #         with open(f'data/pos/sim_{i}.pickle', 'rb') as f:
+    #             data = pickle.load(f)["data"][0]
+    #             self.begin_pos_data.append(data)
+
+    #     self.begin_pos_data = torch.FloatTensor(np.asarray(self.begin_pos_data))
 
     def collect_data(self):
         # self.data = torch.empty((self.n_sims * , self.n_frames_perentry * self.n_datap_perframe))
@@ -52,17 +61,21 @@ class MyDataset(data.Dataset):
 
         self.data = []
         self.target = []
+        self.start_pos = []
 
         for i in self.sims:
-            with open(f'data/{self.data_type}/sim_{i}.pickle', 'rb') as f:
-                data = pickle.load(f)["data"]
+            with open(f'data/sim_{i}.pickle', 'rb') as f:
+                data_all = pickle.load(f)["data"]
+                data = data_all[self.data_type]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
+                    self.start_pos.append(data_all["pos"][0])
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end+1].flatten())
 
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
+        self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
 
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
@@ -73,18 +86,18 @@ class MyDataset(data.Dataset):
         # If we have multiple things to return (data point and label), we can return them as tuple
         data_point = self.data[idx]
         data_target = self.target[idx]
-        return data_point, data_target
-
+        data_start = self.start_pos[idx]
+        return data_point, data_target, data_start
 
 
 def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
     # Set model to train mode
     model.train()
-
+    print(data_loader.data_type)
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
-        for data_inputs, data_labels in data_loader:
+        for data_inputs, data_labels, start_pos in data_loader:
 
             ## Step 1: Move input data to device (only strictly necessary if we use GPU)
             data_inputs = data_inputs.to(device)
@@ -123,7 +136,7 @@ def eval_model(model, data_loader, loss_module):
 
     with torch.no_grad(): # Deactivate gradients for the following code
         total_loss = 0
-        for data_inputs, data_labels in data_loader:
+        for data_inputs, data_labels, start_pos in data_loader:
 
             # Determine prediction of model on dev set
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
@@ -138,14 +151,17 @@ def eval_model(model, data_loader, loss_module):
 n_frames = 5
 n_sims = 100
 
-data_type = "pos"
-n_data = 24 # xyz * 8
+# data_type = "pos"
+# n_data = 24 # xyz * 8
 
-data_type = "quat"
-n_data = 7
+# data_type = "quat"
+# n_data = 7
 
 # data_type = "log_quat"
 # n_data = 7
+
+data_type = "eucl_motion"
+n_data = 12
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
@@ -156,7 +172,6 @@ model = Network(n_frames, n_data, n_hidden1=100, n_hidden2=60, n_out=n_data)
 model.to(device)
 
 data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
-print("2")
 data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
 
 train_data_loader = data.DataLoader(data_set_train, batch_size=128, shuffle=True)
@@ -168,7 +183,7 @@ for lr in lrs:
     print("Testing lr ", lr)
     num_epochs = 1000
 
-    loss = "L1"
+    loss = "MSE"
     loss_module = nn.L1Loss()
 
     f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
