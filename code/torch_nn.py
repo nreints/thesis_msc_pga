@@ -64,8 +64,6 @@ class MyDataset(data.Dataset):
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
 
-        print((self.data).shape, self.target.shape)
-
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
         return self.data.shape[0]
@@ -79,7 +77,7 @@ class MyDataset(data.Dataset):
 
 
 
-def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs=100):
+def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
     # Set model to train mode
     model.train()
 
@@ -114,8 +112,8 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
         if epoch % 10 == 0:
             print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(eval_model(model, test_loader, loss_module), 10))
 
-            f = open(f"results/{data_type}/{num_epochs}_{lr}.txt", "a")
-            f.write(f"Epoch: {epoch}, \t train loss: {round(loss_epoch.item()/len(data_loader), 10)}, \t test loss: {round(eval_model(model, test_loader, loss_module), 10)} \n")
+            f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
+            f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(eval_model(model, test_loader, loss_module), 10)]} \n")
             f.write("\n")
             f.close()
 
@@ -166,9 +164,9 @@ test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False,
 
 # exit()
 lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
-for i in lrs:
+for lr in lrs:
+    print("Testing lr ", lr)
     num_epochs = 1000
-    lr = i
 
     loss = "L1"
     loss_module = nn.L1Loss()
@@ -178,7 +176,8 @@ for i in lrs:
 
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
-    train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs)
+    train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs, loss_type=loss)
 
     test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
     eval_model(model, test_data_loader, loss_module)
+    print("-------------------------")
