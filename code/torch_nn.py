@@ -93,7 +93,8 @@ class MyDataset(data.Dataset):
 def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
     # Set model to train mode
     model.train()
-    print(data_loader.data_type)
+    # print(data_loader.dataset.data_type)
+
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
@@ -106,7 +107,6 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             ## Step 2: Run the model on the input data
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
-
 
             ## Step 3: Calculate the loss
             loss = loss_module(preds, data_labels)
@@ -130,6 +130,29 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             f.write("\n")
             f.close()
 
+def eucl2pos(eucl_motion, start_pos):
+    return True
+
+def quat2pos(quat, start_pos):
+    return True
+
+def log_quat2pos(log_quat, start_pos):
+    return True
+
+def convert(true_preds, start_pos, data_type):
+    if data_type == "pos":
+        return true_preds
+    elif data_type == "eucl_motion":
+        eucl2pos(true_preds, start_pos)
+        return True
+    elif data_type == "quat":
+        quat2pos(true_preds, start_pos)
+        return True
+    elif data_type == "log_quat":
+        log_quat2pos(true_preds, start_pos)
+        return True
+    return True
+
 
 def eval_model(model, data_loader, loss_module):
     model.eval() # Set model to eval mode
@@ -142,6 +165,9 @@ def eval_model(model, data_loader, loss_module):
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
+            
+            alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
+
             total_loss += loss_module(preds, data_labels)
 
     return total_loss.item()/len(data_loader)

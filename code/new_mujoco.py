@@ -79,41 +79,6 @@ def generate_data(string, n_steps):
         log_quat = calculate_log_quat(get_quat(sim, object_id-1))
         dataset["log_quat"][i] = np.append(log_quat, sim.data.body_xpos[object_id-1])
 
-    # if data_type == "pos":
-    #     dim = 3
-    # elif data_type == "eucl_motion":
-    #     dim = 12
-    # elif data_type == "quat" or data_type == "log_quat":
-    #     dim = 7
-
-
-
-    # dataset = np.empty((n_steps, 8 if data_type=="pos" else 1, dim))
-
-    # for i in range(n_steps):
-    #     sim.step()
-    #     if data_type == "pos":
-    #         dataset[i] = get_vert_coords(sim, object_id-1, xyz_local).T
-    #     elif data_type == "eucl_motion":
-    #         # todo
-    #         dataset[i] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-    #     elif data_type == "quat":
-    #         dataset[i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-    #         # print(dataset[i].shape)
-    #     elif data_type == "log_quat":
-    #         log_quat = calculate_log_quat(get_quat(sim, object_id-1))
-    #         dataset[i] = np.append(log_quat, sim.data.body_xpos[object_id-1])
-    #         # print(dataset[i].shape)
-
-
-        # elif data_type == "pga_motor":
-        #     # todo
-        #     print("Not implemented yet")
-        # elif data_type == "pga_bivec":
-        #     # todo
-        #     print("Not implemented yet")
-        # # viewer.render()
-
     return dataset
 
 
