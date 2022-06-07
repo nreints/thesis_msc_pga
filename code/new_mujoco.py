@@ -66,18 +66,18 @@ def generate_data(string, n_steps):
     # viewer = mujoco_py.MjViewer(sim)
 
 
-    dataset = {"pos": np.empty((n_steps, 8, 3)),
-                "eucl_motion" : np.empty((n_steps, 1, 12)),
-                "quat": np.empty((n_steps, 1, 7)),
-                "log_quat": np.empty((n_steps, 1, 7))}
+    dataset = {"pos": np.empty((n_steps//10, 8, 3)),
+                "eucl_motion" : np.empty((n_steps//10, 1, 12)),
+                "quat": np.empty((n_steps//10, 1, 7)),
+                "log_quat": np.empty((n_steps//10, 1, 7))}
 
     for i in range(n_steps):
         sim.step()
-        dataset["pos"][i] = get_vert_coords(sim, object_id-1, xyz_local).T
-        dataset["eucl_motion"][i] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-        dataset["quat"][i] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-        log_quat = calculate_log_quat(get_quat(sim, object_id-1))
-        dataset["log_quat"][i] = np.append(log_quat, sim.data.body_xpos[object_id-1])
+        if i% 10 == 0:
+            dataset["pos"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T
+            dataset["eucl_motion"][i//10] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+            dataset["quat"][i//10] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+            dataset["log_quat"][i//10] = np.append(calculate_log_quat(get_quat(sim, object_id-1)), sim.data.body_xpos[object_id-1])
 
     return dataset
 
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     obj_type = "box"
     n_steps = 400
 
-    num_sims = 100
+    num_sims = 500
     write_data_nsim(num_sims, n_steps)
 
     # with open(f'data/eucl_motion/sim_0.pickle', 'rb') as f:

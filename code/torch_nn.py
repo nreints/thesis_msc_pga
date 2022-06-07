@@ -5,6 +5,7 @@ import numpy as np
 import pickle
 import torch.utils.data as data
 import random
+from new_mujoco import rotVecQuat
 
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -16,11 +17,15 @@ class Network(nn.Module):
         super().__init__()
         # Initialize the modules we need to build the network
         self.layers = nn.Sequential(
-            nn.Linear(n_steps * n_data, n_hidden1),
+            nn.Linear(n_steps * n_data, 64),
+            nn.BatchNorm1d(64),
             nn.Tanh(),
-            nn.Linear(n_hidden1, n_hidden2),
-            nn.Tanh(),
-            nn.Linear(n_hidden2, n_out),
+            # nn.Dropout(p=0.3),
+            nn.Linear(64, n_out),
+            # nn.BatchNorm1d(n_hidden2),
+            # nn.Tanh(),
+            # nn.Dropout(p=0.3),
+            # nn.Linear(n_hidden2, n_out)
             )
 
     def forward(self, x):
@@ -108,6 +113,10 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
 
+            print(data_inputs[0].reshape(-1, 24))
+            print(data_labels[0])
+            print(preds[0])
+
             ## Step 3: Calculate the loss
             loss = loss_module(preds, data_labels)
             loss_epoch += loss
@@ -123,18 +132,28 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             optimizer.step()
 
         if epoch % 10 == 0:
-            print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(eval_model(model, test_loader, loss_module), 10))
+            true_loss, convert_loss = eval_model(model, test_loader, loss_module)
+            model.train()
+            print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
 
             f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
-            f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(eval_model(model, test_loader, loss_module), 10)]} \n")
+            f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
             f.write("\n")
             f.close()
 
 def eucl2pos(eucl_motion, start_pos):
     return True
 
+
 def quat2pos(quat, start_pos):
-    return True
+    out = np.empty_like(start_pos)
+    quat = quat.numpy().astype('float64')
+    start_pos = start_pos.numpy().astype('float64')
+    for batch in range(out.shape[0]):
+        for vert in range(out.shape[1]):
+            out[batch, vert] = rotVecQuat(start_pos[batch,vert,:], quat[batch, :4]) + quat[batch, 4:]
+
+    return torch.from_numpy(out.reshape((out.shape[0], -1)))
 
 def log_quat2pos(log_quat, start_pos):
     return True
@@ -146,8 +165,7 @@ def convert(true_preds, start_pos, data_type):
         eucl2pos(true_preds, start_pos)
         return True
     elif data_type == "quat":
-        quat2pos(true_preds, start_pos)
-        return True
+        return quat2pos(true_preds, start_pos)
     elif data_type == "log_quat":
         log_quat2pos(true_preds, start_pos)
         return True
@@ -159,26 +177,32 @@ def eval_model(model, data_loader, loss_module):
 
     with torch.no_grad(): # Deactivate gradients for the following code
         total_loss = 0
+        total_convert_loss = 0
         for data_inputs, data_labels, start_pos in data_loader:
 
             # Determine prediction of model on dev set
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
-            
+
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
+            # print(data_inputs[0].reshape(-1, 24))
+            # print(data_labels[0])
+            # print(preds[0])
+            alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
             total_loss += loss_module(preds, data_labels)
+            total_convert_loss += loss_module(alt_preds, alt_labels)
 
-    return total_loss.item()/len(data_loader)
+    return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
 
 
 
 n_frames = 5
 n_sims = 100
 
-# data_type = "pos"
-# n_data = 24 # xyz * 8
+data_type = "pos"
+n_data = 24 # xyz * 8
 
 # data_type = "quat"
 # n_data = 7
@@ -186,31 +210,31 @@ n_sims = 100
 # data_type = "log_quat"
 # n_data = 7
 
-data_type = "eucl_motion"
-n_data = 12
+# data_type = "eucl_motion"
+# n_data = 12
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
 test_sims = sims - train_sims
 
 
-model = Network(n_frames, n_data, n_hidden1=100, n_hidden2=60, n_out=n_data)
+model = Network(n_frames, n_data, n_hidden1=96, n_hidden2=48, n_out=n_data)
 model.to(device)
 
 data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
 data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
 
 train_data_loader = data.DataLoader(data_set_train, batch_size=128, shuffle=True)
-test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
+test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=True, drop_last=False)
 
 # exit()
 lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
-for lr in lrs:
+for lr in lrs[:1]:
     print("Testing lr ", lr)
-    num_epochs = 1000
+    num_epochs = 500
 
-    loss = "MSE"
-    loss_module = nn.L1Loss()
+    loss = "L1"
+    loss_module = nn.L1Loss(reduction='sum')
 
     f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
     f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
