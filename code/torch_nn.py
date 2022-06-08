@@ -113,9 +113,9 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
 
-            print(data_inputs[0].reshape(-1, 24))
-            print(data_labels[0])
-            print(preds[0])
+            # print(data_inputs[0].reshape(-1, 24))
+            # print(data_labels[0])
+            # print(preds[0])
 
             ## Step 3: Calculate the loss
             loss = loss_module(preds, data_labels)
@@ -142,7 +142,12 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             f.close()
 
 def eucl2pos(eucl_motion, start_pos):
-    return True
+    out = np.empty_like(start_pos)
+    eucl_motion = eucl_motion.numpy().astype('float64')
+    start_pos = start_pos.numpy().astype('float64')
+    for batch in range(out.shape[0]):
+        out[batch] =  (eucl_motion[batch][:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[0][9:]]*8).T).T
+    return torch.from_numpy(out.reshape((out.shape[0], -1)))
 
 
 def quat2pos(quat, start_pos):
@@ -163,7 +168,7 @@ def convert(true_preds, start_pos, data_type):
         return true_preds
     elif data_type == "eucl_motion":
         eucl2pos(true_preds, start_pos)
-        return True
+        return eucl2pos(true_preds, start_pos)
     elif data_type == "quat":
         return quat2pos(true_preds, start_pos)
     elif data_type == "log_quat":
@@ -199,10 +204,13 @@ def eval_model(model, data_loader, loss_module):
 
 
 n_frames = 5
-n_sims = 100
+n_sims = 500
 
 data_type = "pos"
 n_data = 24 # xyz * 8
+
+data_type = "eucl_motion"
+n_data = 12
 
 # data_type = "quat"
 # n_data = 7
@@ -210,8 +218,6 @@ n_data = 24 # xyz * 8
 # data_type = "log_quat"
 # n_data = 7
 
-# data_type = "eucl_motion"
-# n_data = 12
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))

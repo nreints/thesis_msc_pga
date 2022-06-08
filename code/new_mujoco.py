@@ -99,9 +99,9 @@ def write_data_nsim(num_sims, n_steps):
 if __name__ == "__main__":
 
     obj_type = "box"
-    n_steps = 400
+    n_steps = 500
 
-    num_sims = 500
+    num_sims = 1000
     write_data_nsim(num_sims, n_steps)
 
     # with open(f'data/eucl_motion/sim_0.pickle', 'rb') as f:
