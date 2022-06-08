@@ -146,14 +146,17 @@ def eucl2pos(eucl_motion, start_pos):
     eucl_motion = eucl_motion.numpy().astype('float64')
     start_pos = start_pos.numpy().astype('float64')
     for batch in range(out.shape[0]):
-        out[batch] =  (eucl_motion[batch][:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[0][9:]]*8).T).T
+        out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
     return torch.from_numpy(out.reshape((out.shape[0], -1)))
 
 
 def quat2pos(quat, start_pos):
     out = np.empty_like(start_pos)
-    quat = quat.numpy().astype('float64')
-    start_pos = start_pos.numpy().astype('float64')
+
+    if not isinstance(quat, np.ndarray):
+        quat = quat.numpy().astype('float64')
+    if not isinstance(start_pos, np.ndarray):
+        start_pos = start_pos.numpy().astype('float64')
     for batch in range(out.shape[0]):
         for vert in range(out.shape[1]):
             out[batch, vert] = rotVecQuat(start_pos[batch,vert,:], quat[batch, :4]) + quat[batch, 4:]
@@ -161,7 +164,17 @@ def quat2pos(quat, start_pos):
     return torch.from_numpy(out.reshape((out.shape[0], -1)))
 
 def log_quat2pos(log_quat, start_pos):
-    return True
+    log_quat = log_quat.numpy().astype('float64')
+    start_pos = start_pos.numpy().astype('float64')
+    rot_vec = log_quat[:, :3]
+    angle = log_quat[:,3]
+    trans = log_quat[:,4:]
+    cos = np.cos(angle/2).reshape(-1, 1)
+    sin = np.sin(angle/2)
+    part1_1 = rot_vec * np.vstack([sin]*3).T
+    part1 = np.append(cos, part1_1, axis=1)
+    quat = np.append(part1, trans, axis=1)
+    return quat2pos(quat, start_pos)
 
 def convert(true_preds, start_pos, data_type):
     if data_type == "pos":
@@ -172,8 +185,7 @@ def convert(true_preds, start_pos, data_type):
     elif data_type == "quat":
         return quat2pos(true_preds, start_pos)
     elif data_type == "log_quat":
-        log_quat2pos(true_preds, start_pos)
-        return True
+        return log_quat2pos(true_preds, start_pos)
     return True
 
 
@@ -215,8 +227,8 @@ n_data = 12
 # data_type = "quat"
 # n_data = 7
 
-# data_type = "log_quat"
-# n_data = 7
+data_type = "log_quat"
+n_data = 7
 
 
 sims = {i for i in range(n_sims)}
