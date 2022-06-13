@@ -154,7 +154,6 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
 def eucl2pos(eucl_motion, start_pos):
     out = np.empty_like(start_pos)
-
     eucl_motion = eucl_motion.numpy().astype('float64')
     start_pos = start_pos.numpy().astype('float64')
     for batch in range(out.shape[0]):
@@ -191,16 +190,23 @@ def log_quat2pos(log_quat, start_pos):
 
     return quat2pos(quat, start_pos)
 
+def diff_pos_start2pos(true_preds, start_pos):
+    start_pos = start_pos.numpy().astype('float64').reshape(-1, 24)
+    return torch.from_numpy(start_pos + true_preds.numpy().astype('float64'))
+
 def convert(true_preds, start_pos, data_type):
     if data_type == "pos":
         return true_preds
     elif data_type == "eucl_motion":
-        eucl2pos(true_preds, start_pos)
         return eucl2pos(true_preds, start_pos)
     elif data_type == "quat":
         return quat2pos(true_preds, start_pos)
     elif data_type == "log_quat":
         return log_quat2pos(true_preds, start_pos)
+    # elif data_type == "pos_diff":
+    #     return diff_pos2pos(true_preds, start_pos)
+    elif data_type == "pos_diff_start":
+        return diff_pos_start2pos(true_preds, start_pos)
     return True
 
 
@@ -217,21 +223,19 @@ def eval_model(model, data_loader, loss_module):
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
 
-            # alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
-            # print(data_inputs[0].reshape(-1, 24))
-            # print(data_labels[0])
-            # print(preds[0])
-            # alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
+            alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
+            alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
+            # print(alt_preds.shape, alt_labels.shape)
             total_loss += loss_module(preds, data_labels)
-            # total_convert_loss += loss_module(alt_preds, alt_labels)
+            total_convert_loss += loss_module(alt_preds, alt_labels)
 
-    return total_loss.item()/len(data_loader), 0#total_convert_loss.item()/len(data_loader)
+    return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
 
 
 
 n_frames = 20
-n_sims = 500
+n_sims = 750
 
 data_type = "pos"
 n_data = 24 # xyz * 8
@@ -239,14 +243,14 @@ n_data = 24 # xyz * 8
 # data_type = "eucl_motion"
 # n_data = 12
 
-data_type = "quat"
-n_data = 7
+# data_type = "quat"
+# n_data = 7
 
 # data_type = "log_quat"
 # n_data = 7
 
-data_type = "pos_diff"
-n_data = 24
+# data_type = "pos_diff"
+# n_data = 24
 
 data_type = "pos_diff_start"
 n_data = 24
