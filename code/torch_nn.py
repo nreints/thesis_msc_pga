@@ -20,10 +20,10 @@ class Network(nn.Module):
             nn.Linear(n_steps * n_data, 256),
             nn.BatchNorm1d(256),
             nn.Tanh(),
-            nn.Dropout(p=0.3),
+            nn.Dropout(p=0.7),
             nn.Linear(256, n_out),
             # nn.BatchNorm1d(n_hidden2),
-            # nn.Tanh(),
+            # nn.ReLU(),
             # nn.Dropout(p=0.3),
             # nn.Linear(n_hidden2, n_out)
             )
@@ -112,22 +112,21 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             ## Step 2: Run the model on the input data
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
-            
 
-            print(data_inputs[0].reshape(-1, 7))
+            # print(data_inputs[0].reshape(-1, 24))
 
-            # for i in range(data_inputs.shape[0]):
-            #     tmp = data_inputs[i].reshape(-1, 24)
-            #     for j in range(24):
-            #         if (j+1)%3!=0:
-            #             check = torch.all(torch.eq(tmp[:, 3], tmp[0,3]))
-            #             if not check:
-            #                 print('BAD')
-            #                 print(check)
-            #                 exit()
+            # # for i in range(data_inputs.shape[0]):
+            # #     tmp = data_inputs[i].reshape(-1, 24)
+            # #     for j in range(24):
+            # #         if (j+1)%3!=0:
+            # #             check = torch.all(torch.eq(tmp[:, 3], tmp[0,3]))
+            # #             if not check:
+            # #                 print('BAD')
+            # #                 print(check)
+            # #                 exit()
 
             # print(data_labels[0])
-            print(preds[0])
+            # print(preds[0])
 
             ## Step 3: Calculate the loss
             loss = loss_module(preds, data_labels)
@@ -218,16 +217,16 @@ def eval_model(model, data_loader, loss_module):
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
 
-            alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
+            # alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
             # print(data_inputs[0].reshape(-1, 24))
             # print(data_labels[0])
             # print(preds[0])
-            alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
+            # alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
             total_loss += loss_module(preds, data_labels)
-            total_convert_loss += loss_module(alt_preds, alt_labels)
+            # total_convert_loss += loss_module(alt_preds, alt_labels)
 
-    return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
+    return total_loss.item()/len(data_loader), 0#total_convert_loss.item()/len(data_loader)
 
 
 
@@ -246,6 +245,12 @@ n_data = 7
 # data_type = "log_quat"
 # n_data = 7
 
+data_type = "pos_diff"
+n_data = 24
+
+data_type = "pos_diff_start"
+n_data = 24
+
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
 test_sims = sims - train_sims
@@ -262,17 +267,17 @@ test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=True, 
 
 # exit()
 lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
-for lr in lrs[:2]:
+for lr in lrs:
     print("Testing lr ", lr, "Datatype ", data_type)
     num_epochs = 1000
 
     loss = "L1"
-    loss_module = nn.L1Loss(reduction='sum')
+    loss_module = nn.L1Loss(reduction="sum")
 
     f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
     f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs, loss_type=loss)
 

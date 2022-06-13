@@ -69,16 +69,27 @@ def generate_data(string, n_steps):
     dataset = {"pos": np.empty((n_steps//10, 8, 3)),
                 "eucl_motion" : np.empty((n_steps//10, 1, 12)),
                 "quat": np.empty((n_steps//10, 1, 7)),
-                "log_quat": np.empty((n_steps//10, 1, 7))}
+                "log_quat": np.empty((n_steps//10, 1, 7)),
+                "pos_diff": np.empty((n_steps//10, 8, 3)),
+                "pos_diff_start": np.empty((n_steps//10, 8, 3))
+              }
 
     for i in range(n_steps):
         sim.step()
+        if i == 0:
+            prev = get_vert_coords(sim, object_id-1, xyz_local).T
+            start = prev
+            dataset["pos_diff"][i] = np.zeros((8,3))
+            dataset["pos_diff_start"][i] = np.zeros((8,3))
         if i% 10 == 0:
             dataset["pos"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T
             dataset["eucl_motion"][i//10] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
             dataset["quat"][i//10] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
             dataset["log_quat"][i//10] = np.append(calculate_log_quat(get_quat(sim, object_id-1)), sim.data.body_xpos[object_id-1])
-
+            if i != 0:
+                dataset["pos_diff"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - prev
+                prev = get_vert_coords(sim, object_id-1, xyz_local).T
+                dataset["pos_diff_start"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - start
     return dataset
 
 
@@ -104,8 +115,8 @@ if __name__ == "__main__":
     num_sims = 1000
     write_data_nsim(num_sims, n_steps)
 
-    # with open(f'data/eucl_motion/sim_0.pickle', 'rb') as f:
-    #     print(np.shape(pickle.load(f)["data"].flatten()))
+    with open(f'data/sim_0.pickle', 'rb') as f:
+        print(pickle.load(f)["data"]["pos_diff_start"])
 
 
     """
