@@ -112,10 +112,22 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             ## Step 2: Run the model on the input data
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
+            
 
-            # print(data_inputs[0].reshape(-1, 24))
+            print(data_inputs[0].reshape(-1, 7))
+
+            # for i in range(data_inputs.shape[0]):
+            #     tmp = data_inputs[i].reshape(-1, 24)
+            #     for j in range(24):
+            #         if (j+1)%3!=0:
+            #             check = torch.all(torch.eq(tmp[:, 3], tmp[0,3]))
+            #             if not check:
+            #                 print('BAD')
+            #                 print(check)
+            #                 exit()
+
             # print(data_labels[0])
-            # print(preds[0])
+            print(preds[0])
 
             ## Step 3: Calculate the loss
             loss = loss_module(preds, data_labels)
@@ -225,14 +237,14 @@ n_sims = 500
 data_type = "pos"
 n_data = 24 # xyz * 8
 
-data_type = "eucl_motion"
-n_data = 12
+# data_type = "eucl_motion"
+# n_data = 12
 
 data_type = "quat"
 n_data = 7
 
-data_type = "log_quat"
-n_data = 7
+# data_type = "log_quat"
+# n_data = 7
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
