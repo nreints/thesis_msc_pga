@@ -17,11 +17,11 @@ class Network(nn.Module):
         super().__init__()
         # Initialize the modules we need to build the network
         self.layers = nn.Sequential(
-            nn.Linear(n_steps * n_data, 64),
-            nn.BatchNorm1d(64),
+            nn.Linear(n_steps * n_data, 256),
+            nn.BatchNorm1d(256),
             nn.Tanh(),
-            # nn.Dropout(p=0.3),
-            nn.Linear(64, n_out),
+            nn.Dropout(p=0.3),
+            nn.Linear(256, n_out),
             # nn.BatchNorm1d(n_hidden2),
             # nn.Tanh(),
             # nn.Dropout(p=0.3),
@@ -143,10 +143,12 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
 def eucl2pos(eucl_motion, start_pos):
     out = np.empty_like(start_pos)
+
     eucl_motion = eucl_motion.numpy().astype('float64')
     start_pos = start_pos.numpy().astype('float64')
     for batch in range(out.shape[0]):
         out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
+
     return torch.from_numpy(out.reshape((out.shape[0], -1)))
 
 
@@ -164,6 +166,7 @@ def quat2pos(quat, start_pos):
     return torch.from_numpy(out.reshape((out.shape[0], -1)))
 
 def log_quat2pos(log_quat, start_pos):
+
     log_quat = log_quat.numpy().astype('float64')
     start_pos = start_pos.numpy().astype('float64')
     rot_vec = log_quat[:, :3]
@@ -174,6 +177,7 @@ def log_quat2pos(log_quat, start_pos):
     part1_1 = rot_vec * np.vstack([sin]*3).T
     part1 = np.append(cos, part1_1, axis=1)
     quat = np.append(part1, trans, axis=1)
+
     return quat2pos(quat, start_pos)
 
 def convert(true_preds, start_pos, data_type):
@@ -215,7 +219,7 @@ def eval_model(model, data_loader, loss_module):
 
 
 
-n_frames = 5
+n_frames = 20
 n_sims = 500
 
 data_type = "pos"
@@ -224,12 +228,11 @@ n_data = 24 # xyz * 8
 data_type = "eucl_motion"
 n_data = 12
 
-# data_type = "quat"
-# n_data = 7
+data_type = "quat"
+n_data = 7
 
 data_type = "log_quat"
 n_data = 7
-
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
@@ -247,9 +250,9 @@ test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=True, 
 
 # exit()
 lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
-for lr in lrs[:1]:
-    print("Testing lr ", lr)
-    num_epochs = 500
+for lr in lrs[:2]:
+    print("Testing lr ", lr, "Datatype ", data_type)
+    num_epochs = 1000
 
     loss = "L1"
     loss_module = nn.L1Loss(reduction='sum')
