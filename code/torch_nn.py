@@ -5,7 +5,7 @@ import numpy as np
 import pickle
 import torch.utils.data as data
 import random
-from new_mujoco import rotVecQuat
+from convert import *
 
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -49,16 +49,6 @@ class MyDataset(data.Dataset):
         self.sims = sims
         self.data_type = data_type
         self.collect_data()
-    #     self.collect_begin_pos_data()
-
-    # def collect_begin_pos_data(self):
-    #     self.begin_pos_data = []
-    #     for i in range(self.sims):
-    #         with open(f'data/pos/sim_{i}.pickle', 'rb') as f:
-    #             data = pickle.load(f)["data"][0]
-    #             self.begin_pos_data.append(data)
-
-    #     self.begin_pos_data = torch.FloatTensor(np.asarray(self.begin_pos_data))
 
     def collect_data(self):
         # self.data = torch.empty((self.n_sims * , self.n_frames_perentry * self.n_datap_perframe))
@@ -98,7 +88,6 @@ class MyDataset(data.Dataset):
 def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
     # Set model to train mode
     model.train()
-    # print(data_loader.dataset.data_type)
 
     # Training loop
     for epoch in range(num_epochs):
@@ -114,16 +103,6 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
 
             # print(data_inputs[0].reshape(-1, 24))
-
-            # # for i in range(data_inputs.shape[0]):
-            # #     tmp = data_inputs[i].reshape(-1, 24)
-            # #     for j in range(24):
-            # #         if (j+1)%3!=0:
-            # #             check = torch.all(torch.eq(tmp[:, 3], tmp[0,3]))
-            # #             if not check:
-            # #                 print('BAD')
-            # #                 print(check)
-            # #                 exit()
 
             # print(data_labels[0])
             # print(preds[0])
@@ -152,63 +131,6 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             f.write("\n")
             f.close()
 
-def eucl2pos(eucl_motion, start_pos):
-    out = np.empty_like(start_pos)
-    eucl_motion = eucl_motion.numpy().astype('float64')
-    start_pos = start_pos.numpy().astype('float64')
-    for batch in range(out.shape[0]):
-        out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
-
-    return torch.from_numpy(out.reshape((out.shape[0], -1)))
-
-
-def quat2pos(quat, start_pos):
-    out = np.empty_like(start_pos)
-
-    if not isinstance(quat, np.ndarray):
-        quat = quat.numpy().astype('float64')
-    if not isinstance(start_pos, np.ndarray):
-        start_pos = start_pos.numpy().astype('float64')
-    for batch in range(out.shape[0]):
-        for vert in range(out.shape[1]):
-            out[batch, vert] = rotVecQuat(start_pos[batch,vert,:], quat[batch, :4]) + quat[batch, 4:]
-
-    return torch.from_numpy(out.reshape((out.shape[0], -1)))
-
-def log_quat2pos(log_quat, start_pos):
-
-    log_quat = log_quat.numpy().astype('float64')
-    start_pos = start_pos.numpy().astype('float64')
-    rot_vec = log_quat[:, :3]
-    angle = log_quat[:,3]
-    trans = log_quat[:,4:]
-    cos = np.cos(angle/2).reshape(-1, 1)
-    sin = np.sin(angle/2)
-    part1_1 = rot_vec * np.vstack([sin]*3).T
-    part1 = np.append(cos, part1_1, axis=1)
-    quat = np.append(part1, trans, axis=1)
-
-    return quat2pos(quat, start_pos)
-
-def diff_pos_start2pos(true_preds, start_pos):
-    start_pos = start_pos.numpy().astype('float64').reshape(-1, 24)
-    return torch.from_numpy(start_pos + true_preds.numpy().astype('float64'))
-
-def convert(true_preds, start_pos, data_type):
-    if data_type == "pos":
-        return true_preds
-    elif data_type == "eucl_motion":
-        return eucl2pos(true_preds, start_pos)
-    elif data_type == "quat":
-        return quat2pos(true_preds, start_pos)
-    elif data_type == "log_quat":
-        return log_quat2pos(true_preds, start_pos)
-    # elif data_type == "pos_diff":
-    #     return diff_pos2pos(true_preds, start_pos)
-    elif data_type == "pos_diff_start":
-        return diff_pos_start2pos(true_preds, start_pos)
-    return True
-
 
 def eval_model(model, data_loader, loss_module):
     model.eval() # Set model to eval mode
@@ -231,7 +153,6 @@ def eval_model(model, data_loader, loss_module):
             total_convert_loss += loss_module(alt_preds, alt_labels)
 
     return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
-
 
 
 n_frames = 20
@@ -273,7 +194,7 @@ test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=True, 
 lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
 for lr in lrs:
     print("Testing lr ", lr, "Datatype ", data_type)
-    num_epochs = 1000
+    num_epochs = 400
 
     loss = "L1"
     loss_module = nn.L1Loss(reduction="sum")
