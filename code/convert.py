@@ -69,16 +69,27 @@ def log_quat2pos(log_quat, start_pos):
 def diff_pos_start2pos(true_preds, start_pos):
     """
 
+
     Input:
         true_preds: Original predictions (difference compared to start)
+            Shape [batch_size, frames, datapoints]
         start_pos: Start position of simulation
+            Shape [batch_size, datapoints]
 
     Output:
         Converted difference to current position
+
     """
-    start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(-1, true_preds.shape[1], -1)
-    start_pos = start_pos.numpy().astype('float64')
-    return torch.from_numpy(start_pos + true_preds.numpy().astype('float64'))
+    if len(true_preds.shape) == 2:
+        true_preds = true_preds[:, None, :]
+        start_pos = start_pos[:, None, :]
+
+    if len(true_preds.shape) == 3:
+        start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(-1, true_preds.shape[1], -1)
+        start_pos = start_pos.numpy().astype('float64')
+        return torch.from_numpy(start_pos + true_preds.numpy().astype('float64'))
+
+
 
 def convert(true_preds, start_pos, data_type):
     """

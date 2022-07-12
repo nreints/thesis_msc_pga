@@ -24,6 +24,7 @@ class LSTM(nn.Module):
     def forward(self, x, hidden_state=None):
         # Perform the calculation of the model to determine the prediction
         # print(x.shape)
+
         batch_size, _, _ = x.shape
         if hidden_state == None:
             hidden_state = torch.zeros(self.n_layers, batch_size, self.hidden_size)
@@ -65,11 +66,11 @@ class MyDataset(data.Dataset):
                 data_all = pickle.load(f)["data"]
                 data = data_all[self.data_type]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    self.start_pos.append(data_all["pos"][0])
+
+                    self.start_pos.append(data_all["pos"][0].reshape(-1, 24).squeeze())
                     train_end = frame + self.n_frames_perentry
-                    # print(data[frame:train_end].squeeze().shape)
-                    self.data.append(data[frame:train_end].squeeze())
-                    self.target.append(data[frame+1:train_end+1].squeeze())
+                    self.data.append(data[frame:train_end].reshape(-1, self.n_datap_perframe))
+                    self.target.append(data[frame+1:train_end+1].reshape(-1, self.n_datap_perframe))
 
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
@@ -97,6 +98,8 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     for epoch in range(num_epochs):
         loss_epoch = 0
         for data_inputs, data_labels, _ in data_loader:
+            print(data_inputs.shape)
+            print(data_labels.shape)
             # print(data_inputs[0].shape)
             # print(data_labels[0].reshape(-1, 20, 24))
             # print(epoch)
@@ -128,7 +131,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # exit()
 
 
-    #  embedding 24
+
             # ## Step 1: Move input data to device (only strictly necessary if we use GPU)
             # data_inputs = data_inputs.to(device)
             # data_labels = data_labels.to(device)
@@ -175,11 +178,11 @@ def eval_model(model, data_loader, loss_module):
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
 
             preds, _ = model(data_inputs)
-            print(preds.shape)
-            
+            # print(preds.shape)
+
             preds = preds.squeeze(dim=1)
 
-            print(preds.shape)
+            # print(preds.shape)
 
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
@@ -197,8 +200,8 @@ n_sims = 750
 data_type = "pos"
 n_data = 24 # xyz * 8
 
-# data_type = "eucl_motion"
-# n_data = 12
+data_type = "eucl_motion"
+n_data = 12
 
 data_type = "quat"
 n_data = 7
