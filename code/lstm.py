@@ -10,16 +10,29 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 
 
 class LSTM(nn.Module):
-    def __init__(self, in_size, out_size):
+    def __init__(self, in_size, hidden_size, n_layers=2):
         super().__init__()
         # Initialize the modules we need to build the network
+        self.n_layers = n_layers
+        self.hidden_size = hidden_size
+        self.in_size = in_size
+        self.lstm = nn.LSTM(in_size, hidden_size, batch_first=True)
         self.layers = nn.Sequential(
-            nn.LSTM(in_size, out_size)
-            )
+            nn.Linear(hidden_size, in_size)
+        )
 
-    def forward(self, x):
+    def forward(self, x, hidden_state=None):
         # Perform the calculation of the model to determine the prediction
-        return self.layers(x)
+        # print(x.shape)
+        batch_size, _, _ = x.shape
+        if hidden_state == None:
+            hidden_state = torch.zeros(self.n_layers, batch_size, self.hidden_size)
+            cell_state = torch.zeros(self.n_layers, batch_size, self.hidden_size)
+        else:
+            hidden_state, cell_state = hidden_state
+        # print(self.lstm(x, (hidden_state, cell_state))[0].shape)
+        out, h = self.lstm(x)
+        return self.layers(out), h
 
 
 
@@ -54,8 +67,9 @@ class MyDataset(data.Dataset):
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     self.start_pos.append(data_all["pos"][0])
                     train_end = frame + self.n_frames_perentry
-                    self.data.append(data[frame:train_end].flatten())
-                    self.target.append(data[frame+1:train_end+1].flatten())
+                    # print(data[frame:train_end].squeeze().shape)
+                    self.data.append(data[frame:train_end].squeeze())
+                    self.target.append(data[frame+1:train_end+1].squeeze())
 
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
@@ -82,14 +96,36 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
-        for data_inputs, data_labels, start_pos in data_loader:
-            print(data_inputs[0].reshape(-1, 20, 24))
-            print(data_labels[0].reshape(-1, 20, 24))
+        for data_inputs, data_labels, _ in data_loader:
+            # print(data_inputs[0].shape)
+            # print(data_labels[0].reshape(-1, 20, 24))
             # print(epoch)
+            # print(data_inputs.shape)
+            # data_inputs = data_inputs.reshape(-1,20, 24) #????
+            # data_labels = data_labels.reshape(-1, 20, 24)
+
+            output, _ = model(data_inputs)
+
+            # print(data_inputs[0])
+            # print(data_labels.shape)
+            # print(output[0, -1])
+            # print(data_labels[0, -1])
+
+
+            # print(output.squeeze().shape)
+            # print(data_labels.shape)
+            loss = loss_module(output.squeeze(), data_labels.float())
+            # The gradients would not be overwritten, but actually added to the existing ones.
+            optimizer.zero_grad()
+            # Perform backpropagation
+            loss.backward()
+
+            ## Step 5: Update the parameters
+            optimizer.step()
+
+
+        # print(epoch) /
             # exit()
-
-
-            preds = model(data_inputs)
 
 
     #  embedding 24
@@ -103,7 +139,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             # ## Step 3: Calculate the loss
             # loss = loss_module(preds, data_labels)
-            # loss_epoch += loss
+            loss_epoch += loss
 
             # ## Step 4: Perform backpropagation
             # # Before calculating the gradients, we need to ensure that they are all zero.
@@ -114,19 +150,20 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             # ## Step 5: Update the parameters
             # optimizer.step()
-            pass
-        # if epoch % 10 == 0:
-        #     true_loss, convert_loss = eval_model(model, test_loader, loss_module)
-        #     model.train()
-        #     print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
 
-        #     f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
-        #     f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
-        #     f.write("\n")
-        #     f.close()
+        if epoch % 10 == 0:
+            true_loss, convert_loss = eval_model(model, test_loader, loss_module)
+            model.train()
+            print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
+
+            # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
+            # f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
+            # f.write("\n")
+            # f.close()
 
 
 def eval_model(model, data_loader, loss_module):
+    # return 0, 0
     model.eval() # Set model to eval mode
 
     with torch.no_grad(): # Deactivate gradients for the following code
@@ -136,13 +173,17 @@ def eval_model(model, data_loader, loss_module):
 
             # Determine prediction of model on dev set
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
-            preds = model(data_inputs)
+
+            preds, _ = model(data_inputs)
+            print(preds.shape)
+            
             preds = preds.squeeze(dim=1)
+
+            print(preds.shape)
 
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
-            # print(alt_preds.shape, alt_labels.shape)
             total_loss += loss_module(preds, data_labels)
             total_convert_loss += loss_module(alt_preds, alt_labels)
 
@@ -159,8 +200,8 @@ n_data = 24 # xyz * 8
 # data_type = "eucl_motion"
 # n_data = 12
 
-# data_type = "quat"
-# n_data = 7
+data_type = "quat"
+n_data = 7
 
 # data_type = "log_quat"
 # n_data = 7
@@ -176,7 +217,7 @@ train_sims = set(random.sample(sims, int(0.8 * n_sims)))
 test_sims = sims - train_sims
 
 
-model = LSTM(n_data, n_data)
+model = LSTM(n_data, 96)
 model.to(device)
 
 data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
@@ -192,7 +233,7 @@ test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=True, 
 num_epochs = 400
 
 loss = "L1"
-loss_module = nn.L1Loss(reduction="sum")
+loss_module = nn.L1Loss()
 
 # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
 # f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
