@@ -98,8 +98,8 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     for epoch in range(num_epochs):
         loss_epoch = 0
         for data_inputs, data_labels, _ in data_loader:
-            print(data_inputs.shape)
-            print(data_labels.shape)
+            # print(data_inputs.shape)
+            # print(data_labels.shape)
             # print(data_inputs[0].shape)
             # print(data_labels[0].reshape(-1, 20, 24))
             # print(epoch)
@@ -200,11 +200,11 @@ n_sims = 750
 data_type = "pos"
 n_data = 24 # xyz * 8
 
-data_type = "eucl_motion"
-n_data = 12
+# data_type = "eucl_motion"
+# n_data = 12
 
-data_type = "quat"
-n_data = 7
+# data_type = "quat"
+# n_data = 7
 
 # data_type = "log_quat"
 # n_data = 7
@@ -212,8 +212,8 @@ n_data = 7
 # data_type = "pos_diff"
 # n_data = 24
 
-# data_type = "pos_diff_start"
-# n_data = 24
+data_type = "pos_diff_start"
+n_data = 24
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))

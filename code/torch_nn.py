@@ -161,8 +161,8 @@ n_sims = 750
 data_type = "pos"
 n_data = 24 # xyz * 8
 
-# data_type = "eucl_motion"
-# n_data = 12
+data_type = "eucl_motion"
+n_data = 12
 
 # data_type = "quat"
 # n_data = 7
