@@ -173,8 +173,8 @@ n_data = 12
 # data_type = "pos_diff"
 # n_data = 24
 
-data_type = "pos_diff_start"
-n_data = 24
+# data_type = "pos_diff_start"
+# n_data = 24
 
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))

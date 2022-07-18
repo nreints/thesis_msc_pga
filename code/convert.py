@@ -14,38 +14,44 @@ def eucl2pos(eucl_motion, start_pos):
     """
     # Convert to [batch, 1, ...]
     if len(eucl_motion.shape) == 2:
-        eucl_motion = eucl_motion[:, None, :]
-        start_pos = start_pos[:, None, :]
+        out = np.empty_like(start_pos)
+        eucl_motion = eucl_motion.numpy().astype('float64')
+        start_pos = start_pos.numpy().astype('float64')
+        for batch in range(out.shape[0]):
+            out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
 
-    # print(eucl_motion.shape, start_pos.shape)
-    out = np.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-1]))
-    eucl_motion = eucl_motion.numpy().astype('float64')
-    start_pos = start_pos.numpy().astype('float64')
-    frames = eucl_motion.shape[1]
-    # print(start_pos[0].shape)
-    
-    for batch in range(out.shape[0]):
-        # out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
+        # eucl_motion = eucl_motion[:, None, :]
+        # start_pos = start_pos[:, None, :]
+    else:
+        # print(eucl_motion.shape, start_pos.shape)
+        out = np.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-1]))
+        eucl_motion = eucl_motion.numpy().astype('float64')
+        start_pos = start_pos.numpy().astype('float64')
+        frames = eucl_motion.shape[1]
+        # print(start_pos[0].shape)
+        
+        for batch in range(out.shape[0]):
+            # out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
 
-        for frame in range(frames):
-            print(print(out[batch, frame].shape))
-            # print("reshaped_rot_mat", eucl_motion[batch, frame,:9].reshape(3,3).shape)
-            # print("reshaped start pos", start_pos[batch].reshape(8,3).T.shape)
-            # print("translation?", np.vstack([eucl_motion[batch, frame, 9:]]*8).T.shape)
-            # print((eucl_motion[batch, frame,:9].reshape(3,3) @ start_pos[batch].reshape(8,3).T + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).T.shape)
+            for frame in range(frames):
+                # print(print(out[batch, frame].shape))
+                # print("reshaped_rot_mat", eucl_motion[batch, frame,:9].reshape(3,3).shape)
+                # print("reshaped start pos", start_pos[batch].reshape(8,3).T.shape)
+                # print("translation?", np.vstack([eucl_motion[batch, frame, 9:]]*8).T.shape)
+                # print((eucl_motion[batch, frame,:9].reshape(3,3) @ start_pos[batch].reshape(8,3).T + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).T.shape)
 
-            rotated_start = eucl_motion[batch, frame, :9].reshape(3,3) @ start_pos[batch].reshape(8,3).T
-            # print("rot_start", rotated_start.shape)
-            # print((rotated_start + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).flatten().shape)
-            out[batch, frame] =  (rotated_start + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).flatten()
+                rotated_start = eucl_motion[batch, frame, :9].reshape(3,3) @ start_pos[batch].reshape(8,3).T
+                # print("rot_start", rotated_start.shape)
+                # print((rotated_start + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).flatten().shape)
+                out[batch, frame] =  (rotated_start + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).flatten()
 
-        # start_posc = start_pos[batch].reshape((8,3))
-        # reshaped_rot = eucl_motion[batch,:,:9].reshape(frames,3,3).reshape(60,-1)
-        # print("res_rot", reshaped_rot.reshape(60,-1).shape)
+            # start_posc = start_pos[batch].reshape((8,3))
+            # reshaped_rot = eucl_motion[batch,:,:9].reshape(frames,3,3).reshape(60,-1)
+            # print("res_rot", reshaped_rot.reshape(60,-1).shape)
 
-        # print((reshaped_rot.squeeze() @ start_posc.squeeze().T).shape)
+            # print((reshaped_rot.squeeze() @ start_posc.squeeze().T).shape)
 
-        # out[batch,:] =  (reshaped_rot.squeeze() @ start_posc.squeeze().T + np.vstack([eucl_motion[batch, :, 9:]]*8).T).T
+            # out[batch,:] =  (reshaped_rot.squeeze() @ start_posc.squeeze().T + np.vstack([eucl_motion[batch, :, 9:]]*8).T).T
 
 
     return torch.from_numpy(out.reshape((out.shape[0], -1)))
