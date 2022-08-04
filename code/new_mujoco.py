@@ -3,14 +3,51 @@ import numpy as np
 import itertools
 from create_strings import create_string
 import pickle
+import torch
 
 VERT_NUM = 1
+
+def rot_quaternions(q1, q2):
+    # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
+    w0, x0, y0, z0 = q1
+    w1, x1, y1, z1 = q2
+    return torch.tensor([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+                     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+                     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
+    
+# def own_rotVecQuat(v, q):
+# https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
+#     v_new = np.zeros(4)
+#     v_new[1:] = v
+#     part1 = rot_quaternions(v_new, q)
+#     print(part1)
+#     q_prime = q
+#     q_prime[1:] = -q_prime[1:]
+#     print(q_prime, "prime")
+#     return rot_quaternions(q_prime, part1)
+
+def own_rotVecQuat(v, q):
+    # According to mujoco? Ask Steven/Leo
+    v_new = torch.zeros(4)
+    v_new[1:] = v
+    part1 = rot_quaternions(q, v_new)
+    q_prime = q
+    q_prime[1:] = -q_prime[1:]
+    return rot_quaternions(part1, q_prime)[1:]
+
+v = torch.tensor([1, 0, 0])
+q = torch.tensor([0.707, 0.3,  0.87, 0.0])
+print(own_rotVecQuat(v, q))
 
 def rotVecQuat(v, q):
     # From internet
     res = np.zeros(3)
     mujoco_py.functions.mju_rotVecQuat(res, v, q)
     return res
+
+# print("ori", rotVecQuat(v.astype(np.float64), q.astype(np.float64)))
+
 
 def get_vert_coords_quat(sim, obj_id, xyz_local):
     """
@@ -107,19 +144,19 @@ def write_data_nsim(num_sims, n_steps):
             pickle.dump(sim_data, f)
         f.close()
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    obj_type = "box"
-    n_steps = 500
+#     obj_type = "box"
+#     n_steps = 500
 
-    num_sims = 1000
-    write_data_nsim(num_sims, n_steps)
+#     num_sims = 1000
+#     write_data_nsim(num_sims, n_steps)
 
-    with open(f'data/sim_0.pickle', 'rb') as f:
-        print(pickle.load(f)["data"]["pos_diff_start"])
+#     with open(f'data/sim_0.pickle', 'rb') as f:
+#         print(pickle.load(f)["data"]["pos_diff_start"])
 
 
-    """
-    Vragen:
+#     """
+#     Vragen:
 
-    """
+#     """

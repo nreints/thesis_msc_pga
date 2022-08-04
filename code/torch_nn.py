@@ -171,11 +171,11 @@ n_data = 24 # xyz * 8
 data_type = "eucl_motion"
 n_data = 12
 
-# data_type = "quat"
-# n_data = 7
+data_type = "quat"
+n_data = 7
 
-# data_type = "log_quat"
-# n_data = 7
+data_type = "log_quat"
+n_data = 7
 
 # data_type = "pos_diff"
 # n_data = 24

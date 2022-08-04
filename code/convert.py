@@ -1,10 +1,9 @@
 import torch
 import numpy as np
-from new_mujoco import rotVecQuat
+from new_mujoco import own_rotVecQuat
 
 def eucl2pos(eucl_motion, start_pos):
     """
-
     Input:
         eucl_motion: Original predictions (euclidean motion)
         start_pos: Start position of simulation
@@ -14,19 +13,20 @@ def eucl2pos(eucl_motion, start_pos):
     """
     # Convert to [batch, 1, ...]
     if len(eucl_motion.shape) == 2:
-        out = np.empty_like(start_pos)
-        eucl_motion = eucl_motion.numpy().astype('float64')
-        start_pos = start_pos.numpy().astype('float64')
+        out = torch.empty_like(start_pos)
+        # print(eucl_motion.dtype)
+        # eucl_motion = eucl_motion.astype('float64')
+        # start_pos = start_pos.astype('float64')
         for batch in range(out.shape[0]):
-            out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
+            out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
 
         # eucl_motion = eucl_motion[:, None, :]
         # start_pos = start_pos[:, None, :]
     else:
         # print(eucl_motion.shape, start_pos.shape)
-        out = np.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-1]))
-        eucl_motion = eucl_motion.numpy().astype('float64')
-        start_pos = start_pos.numpy().astype('float64')
+        out = torch.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-1]))
+        eucl_motion = eucl_motion.astype('float64')
+        start_pos = start_pos.astype('float64')
         frames = eucl_motion.shape[1]
         # print(start_pos[0].shape)
         
@@ -54,7 +54,7 @@ def eucl2pos(eucl_motion, start_pos):
             # out[batch,:] =  (reshaped_rot.squeeze() @ start_posc.squeeze().T + np.vstack([eucl_motion[batch, :, 9:]]*8).T).T
 
 
-    return torch.from_numpy(out.reshape((out.shape[0], -1)))
+    return out.reshape((out.shape[0], -1))
 
 
 def quat2pos(quat, start_pos):
@@ -67,17 +67,17 @@ def quat2pos(quat, start_pos):
     Output:
         Converted quaternion to current position
     """
-    out = np.empty_like(start_pos)
+    out = torch.empty_like(start_pos)
 
-    if not isinstance(quat, np.ndarray):
-        quat = quat.numpy().astype('float64')
-    if not isinstance(start_pos, np.ndarray):
-        start_pos = start_pos.numpy().astype('float64')
+    # if not isinstance(quat, np.ndarray):
+    #     quat = quat.astype('float64')
+    # if not isinstance(start_pos, np.ndarray):
+    #     start_pos = start_pos.astype('float64')
     for batch in range(out.shape[0]):
         for vert in range(out.shape[1]):
-            out[batch, vert] = rotVecQuat(start_pos[batch,vert,:], quat[batch, :4]) + quat[batch, 4:]
+            out[batch, vert] = own_rotVecQuat(start_pos[batch,vert,:], quat[batch, :4]) + quat[batch, 4:]
 
-    return torch.from_numpy(out.reshape((out.shape[0], -1)))
+    return out.reshape((out.shape[0], -1))
 
 def log_quat2pos(log_quat, start_pos):
     """
@@ -89,16 +89,19 @@ def log_quat2pos(log_quat, start_pos):
     Output:
         Converted log quaternion to current position
     """
-    log_quat = log_quat.numpy().astype('float64')
-    start_pos = start_pos.numpy().astype('float64')
+    # log_quat = log_quat.astype('float64')
+    # start_pos = start_pos.astype('float64')
     rot_vec = log_quat[:, :3]
     angle = log_quat[:,3]
     trans = log_quat[:,4:]
-    cos = np.cos(angle/2).reshape(-1, 1)
-    sin = np.sin(angle/2)
-    part1_1 = rot_vec * np.vstack([sin]*3).T
-    part1 = np.append(cos, part1_1, axis=1)
-    quat = np.append(part1, trans, axis=1)
+    cos = torch.cos(angle/2).reshape(-1, 1)
+    sin = torch.sin(angle/2)
+
+
+    quat = torch.empty(log_quat.shape)
+    quat[:, 0] = cos.squeeze()
+    part1_1 = rot_vec * torch.vstack([sin]*3).T
+    quat[:, 1:4] = part1_1
 
     return quat2pos(quat, start_pos)
 
@@ -121,8 +124,8 @@ def diff_pos_start2pos(true_preds, start_pos):
         start_pos = start_pos[:, None, :]
 
     start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(-1, true_preds.shape[1], -1)
-    start_pos = start_pos.numpy().astype('float64')
-    return torch.from_numpy(start_pos + true_preds.numpy().astype('float64'))
+    start_pos = start_pos.astype('float64')
+    return torch.from_numpy(start_pos + true_preds.astype('float64'))
 
 
 
