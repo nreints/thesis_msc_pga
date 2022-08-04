@@ -45,12 +45,12 @@ def get_vert_coords(sim, obj_id, xyz_local):
     return obj_pos[:, None] + obj_mat @ xyz_local
 
 def calculate_log_quat(quat):
-    rot_vec = quat[1:] / np.linalg.norm(quat[1:])
-    sin_vec = quat[1:] / rot_vec
+    rot_vec_unit = quat[1:] / np.linalg.norm(quat[1:])
+    sin_vec = quat[1:] / rot_vec_unit
     sin = sin_vec[0]
     cos = quat[0]
     angle = 2 * np.arctan(cos/sin)
-    return np.append(rot_vec, angle)
+    return np.append(rot_vec_unit, angle)
 
 def generate_data(string, n_steps):
     """

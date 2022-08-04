@@ -22,6 +22,11 @@ class Network(nn.Module):
             nn.Tanh(),
             nn.Dropout(p=0.7),
             nn.Linear(256, n_out),
+            # nn.Linear(n_out, 256),
+            # nn.BatchNorm1d(256),
+            # nn.Tanh(),
+            # nn.Dropout(p=0.7),
+            # nn.Linear(256, n_out),
             # nn.BatchNorm1d(n_hidden2),
             # nn.ReLU(),
             # nn.Dropout(p=0.3),
@@ -108,7 +113,9 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # print(preds[0])
 
             ## Step 3: Calculate the loss
-            loss = loss_module(preds, data_labels)
+            alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+            alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
+            loss = loss_module(alt_preds, alt_labels)
             loss_epoch += loss
 
             ## Step 4: Perform backpropagation
