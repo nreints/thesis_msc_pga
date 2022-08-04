@@ -68,14 +68,14 @@ def quat2pos(quat, start_pos):
         Converted quaternion to current position
     """
     out = torch.empty_like(start_pos)
-
+    print(quat.shape)
     # if not isinstance(quat, np.ndarray):
     #     quat = quat.astype('float64')
     # if not isinstance(start_pos, np.ndarray):
     #     start_pos = start_pos.astype('float64')
     for batch in range(out.shape[0]):
         for vert in range(out.shape[1]):
-            out[batch, vert] = own_rotVecQuat(start_pos[batch,vert,:], quat[batch, :4]) + quat[batch, 4:]
+            out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
 
     return out.reshape((out.shape[0], -1))
 

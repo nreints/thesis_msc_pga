@@ -4,6 +4,15 @@ import itertools
 from create_strings import create_string
 import pickle
 import torch
+import roma
+
+
+# q = torch.randn(4) # Random unnormalized quaternion
+# qconv = roma.quat_conjugation(q) # Quaternion conjugation
+# print(q,
+# qconv)
+# qinv = roma.quat_inverse(q) # Quaternion inverse
+# print(roma.quat_product(q, qinv)) # -> [0,0,0,1] identity quaternion
 
 VERT_NUM = 1
 
@@ -17,7 +26,7 @@ def rot_quaternions(q1, q2):
                      x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
     
 # def own_rotVecQuat(v, q):
-# https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
+# original from https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
 #     v_new = np.zeros(4)
 #     v_new[1:] = v
 #     part1 = rot_quaternions(v_new, q)
@@ -26,6 +35,21 @@ def rot_quaternions(q1, q2):
 #     q_prime[1:] = -q_prime[1:]
 #     print(q_prime, "prime")
 #     return rot_quaternions(q_prime, part1)
+
+def fast_rotVecQuat(v, q):
+    # Batch of v batchx8x3
+    # Batch of q batchx4
+    q_new = torch.empty_like(q)
+    q_new[:, 0:3] = q[:, 1:4]
+    q_new[:, 3] = q[:, 0]
+    v_new = torch.hstack((v, torch.zeros(v.shape[0],1)))
+
+    mult = roma.quat_product(v_new, q_new)
+    q_conj = roma.quat_conjugation(q_new)
+    mult2 = roma.quat_product(q_conj, mult)
+
+    return mult2
+
 
 def own_rotVecQuat(v, q):
     # According to mujoco? Ask Steven/Leo
@@ -36,9 +60,6 @@ def own_rotVecQuat(v, q):
     q_prime[1:] = -q_prime[1:]
     return rot_quaternions(part1, q_prime)[1:]
 
-v = torch.tensor([1, 0, 0])
-q = torch.tensor([0.707, 0.3,  0.87, 0.0])
-print(own_rotVecQuat(v, q))
 
 def rotVecQuat(v, q):
     # From internet
@@ -46,8 +67,14 @@ def rotVecQuat(v, q):
     mujoco_py.functions.mju_rotVecQuat(res, v, q)
     return res
 
+# testing rotVecQuat vs own_rotVecQuat
+v_big = torch.tensor([[1, 0, 0], [1, 0, 0]])
+q_big = torch.tensor([[0.3,  0.87, 0.0, 0.707], [0.3,  0.87, 0.0, 0.707]])
+v = torch.tensor([1,0,0])
+q = torch.tensor([0.3,  0.87, 0.0, 0.707])
+print("fast",fast_rotVecQuat(v_big, q_big))
+print("own",own_rotVecQuat(v, q))
 # print("ori", rotVecQuat(v.astype(np.float64), q.astype(np.float64)))
-
 
 def get_vert_coords_quat(sim, obj_id, xyz_local):
     """
