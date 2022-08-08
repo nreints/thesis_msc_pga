@@ -5,6 +5,9 @@ import torch.utils.data as data
 from convert import *
 import pickle
 import random
+import wandb
+
+wandb.init(project="my-test-project")
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -121,6 +124,8 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # print(data_labels.shape)
             loss = loss_module(output.squeeze(), data_labels.float())
             # The gradients would not be overwritten, but actually added to the existing ones.
+            wandb.log({"loss": loss})
+
             optimizer.zero_grad()
             # Perform backpropagation
             loss.backward()
@@ -224,14 +229,16 @@ train_sims = set(random.sample(sims, int(0.8 * n_sims)))
 test_sims = sims - train_sims
 print("DATATYPE", data_type)
 
+batch_size = 128
+
 model = LSTM(n_data, 96)
 model.to(device)
 
 data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
 data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
 
-train_data_loader = data.DataLoader(data_set_train, batch_size=128, shuffle=True)
-test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=True, drop_last=False)
+train_data_loader = data.DataLoader(data_set_train, batch_size=batch_size, shuffle=True)
+test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=True, drop_last=False)
 
 # # exit()
 # lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
@@ -240,6 +247,12 @@ test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=True, 
 num_epochs = 400
 
 loss = "L1"
+wandb.config = {
+    "loss_module": loss,
+    # "learning_rate": lr,
+    "epochs": num_epochs,
+    "batch_size": batch_size
+    }
 loss_module = nn.L1Loss()
 
 # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
@@ -249,6 +262,6 @@ optimizer = torch.optim.Adam(model.parameters())
 
 train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs, loss_type=loss)
 
-test_data_loader = data.DataLoader(data_set_test, batch_size=128, shuffle=False, drop_last=False)
+test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=False, drop_last=False)
 eval_model(model, test_data_loader, loss_module)
 print("-------------------------")

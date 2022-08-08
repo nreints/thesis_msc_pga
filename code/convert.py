@@ -68,7 +68,7 @@ def quat2pos(quat, start_pos):
         Converted quaternion to current position
     """
     out = torch.empty_like(start_pos)
-    print(quat.shape)
+    # print(quat.shape)
     # if not isinstance(quat, np.ndarray):
     #     quat = quat.astype('float64')
     # if not isinstance(start_pos, np.ndarray):

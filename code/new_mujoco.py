@@ -24,7 +24,7 @@ def rot_quaternions(q1, q2):
                      x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
                      -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
                      x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
-    
+
 # def own_rotVecQuat(v, q):
 # original from https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
 #     v_new = np.zeros(4)
