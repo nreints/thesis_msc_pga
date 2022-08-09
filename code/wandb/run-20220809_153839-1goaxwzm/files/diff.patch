@@ -1,0 +1,297 @@
+diff --git a/code/torch_nn.py b/code/torch_nn.py
+index 3fb0dc7..22c3b19 100644
+--- a/code/torch_nn.py
++++ b/code/torch_nn.py
+@@ -8,7 +8,7 @@ import random
+ from convert import *
+ import wandb
+ 
+-wandb.init(project="thesis_linearNN")
++# wandb.init(project="thesis_linearNN")
+ 
+ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+ 
+@@ -23,23 +23,23 @@ class Network(nn.Module):
+         for i in range(len(config.hidden_sizes)):
+ 
+             if config.batch_norm[i]:
+-                self.layers += nn.BatchNorm1d(config.hidden_sizes[i])
++                self.layers += [nn.BatchNorm1d(config.hidden_sizes[i])]
+ 
+             if config.activation_func[i] == "Tanh":
+-                self.layers += nn.Tanh()
++                self.layers += [nn.Tanh()]
+             elif config.activation_func[i] == "ReLU":
+-                self.layers += nn.ReLU()
++                self.layers += [nn.ReLU()]
+             else:
+                 raise ValueError('Wrong activation func')
+ 
+-            self.layers += nn.Dropout(p=config.dropout[i])
++            self.layers += [nn.Dropout(p=config.dropout[i])]
+ 
+             if i < len(config.hidden_sizes) - 1:
+-                self.layers += nn.Linear(config.hidden_sizes[i], config.hidden_sizes[i+1])
++                self.layers += [nn.Linear(config.hidden_sizes[i], config.hidden_sizes[i+1])]
+ 
+-        self.layers += nn.Linear(config.hidden_sizes[-1], n_data)
++        self.layers += [nn.Linear(config.hidden_sizes[-1], n_data)]
+ 
+-        self.linears = nn.ModuleList(self.layers)
++        self.linears = nn.Sequential(*self.layers)
+ 
+         # self.layers = nn.Sequential(
+         #     nn.Linear(n_steps * n_data, 256),
+@@ -114,8 +114,13 @@ class MyDataset(data.Dataset):
+         return data_point, data_target, data_start
+ 
+ 
+-def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
++def train_log(loss, epoch):
++    wandb.log({"epoch": epoch, "loss": loss}, step=epoch)
++    print(f"Loss after " + f" examples: {loss:.3f}")
++
++def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs, config):
+     # Set model to train mode
++    loss_type = config.loss_type
+     model.train()
+     wandb.watch(model, loss_module, log="all", log_freq=10)
+ 
+@@ -142,14 +147,9 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
+             # alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+             # alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
+             # loss = loss_module(alt_preds, alt_labels)
+-            
+-            loss = loss_module(preds, data_labels)
+ 
++            loss = loss_module(preds, data_labels)
+             loss_epoch += loss
+-            wandb.log({"loss": loss})
+-
+-            # Optional
+-            wandb.watch(model)
+ 
+             ## Step 4: Perform backpropagation
+             # Before calculating the gradients, we need to ensure that they are all zero.
+@@ -161,17 +161,22 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
+             ## Step 5: Update the parameters
+             optimizer.step()
+ 
++        # train_log(loss_epoch/len(data_loader), epoch)
++
++
+         if epoch % 10 == 0:
++            train_log(loss_epoch/len(data_loader), epoch)
+             true_loss, convert_loss = eval_model(model, test_loader, loss_module)
+             model.train()
+             print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
+ 
+-            f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
++            f = open(f"results/{data_type}/{num_epochs}_{config.learning_rate}_{loss_type}.txt", "a")
+             f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
+             f.write("\n")
+             f.close()
+ 
+ 
++
+ def eval_model(model, data_loader, loss_module):
+     model.eval() # Set model to eval mode
+ 
+@@ -192,6 +197,8 @@ def eval_model(model, data_loader, loss_module):
+             total_loss += loss_module(preds, data_labels)
+             total_convert_loss += loss_module(alt_preds, alt_labels)
+ 
++        wandb.log({"total converted loss": total_convert_loss/len(data_loader)})
++
+     return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
+ 
+ 
+@@ -216,63 +223,63 @@ n_data = 24 # xyz * 8
+ # data_type = "pos_diff_start"
+ # n_data = 24
+ 
+-sims = {i for i in range(n_sims)}
+-train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+-test_sims = sims - train_sims
++# sims = {i for i in range(n_sims)}
++# train_sims = set(random.sample(sims, int(0.8 * n_sims)))
++# test_sims = sims - train_sims
+ 
+-batch_size = 128
+-
+-model = Network(n_frames, n_data, n_hidden1=96, n_hidden2=48, n_out=n_data)
+-model.to(device)
+-
+-data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
+-data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
+-
+-train_data_loader = data.DataLoader(data_set_train, batch_size=batch_size, shuffle=True)
+-test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=True, drop_last=False)
+-
+-
+-epochs = 400
+-reduction_type = "mean"
+-optimizer_type = "Adam"
+-# exit()
+-lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
+-for lr in lrs:
+-    loss = "L1"
+-    wandb.config = {
+-        "learning_rate": lr,
+-        "epochs": epochs,
+-        "batch_size": batch_size,
+-        "loss_type": loss,
+-        "loss_reduction_type": reduction_type,
+-        "optimizer": optimizer_type,
+-        "data_type": data_type,
+-        "architecture": "fcnn",
+-        }
+-    print("Testing lr ", lr, "Datatype ", data_type)
+-    num_epochs = epochs
+-
+-    loss_dict = {'L1': nn.L1Loss, 
+-                'L2': nn.MSELoss}
++# batch_size = 128
++
++# model = Network(n_frames, n_data, n_hidden1=96, n_hidden2=48, n_out=n_data)
++# model.to(device)
++
++# data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
++# data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
++
++# train_data_loader = data.DataLoader(data_set_train, batch_size=batch_size, shuffle=True)
++# test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=True, drop_last=False)
+ 
+-    loss_module = loss_dict[loss](reduction=reduction_type)
+ 
+-    # if loss=='L1':
+-    #     loss_module = nn.L1Loss(reduction=reduction_type)
++# epochs = 400
++# reduction_type = "mean"
++# optimizer_type = "Adam"
++# # exit()
++# lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
++# for lr in lrs:
++#     loss = "L1"
++#     wandb.config = {
++#         "learning_rate": lr,
++#         "epochs": epochs,
++#         "batch_size": batch_size,
++#         "loss_type": loss,
++#         "loss_reduction_type": reduction_type,
++#         "optimizer": optimizer_type,
++#         "data_type": data_type,
++#         "architecture": "fcnn",
++#         }
++#     print("Testing lr ", lr, "Datatype ", data_type)
++#     num_epochs = epochs
+ 
+-    f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
+-    f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
++#     loss_dict = {'L1': nn.L1Loss, 
++#                 'L2': nn.MSELoss}
+ 
+-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
++#     loss_module = loss_dict[loss](reduction=reduction_type)
+ 
+-    train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs, loss_type=loss)
++#     # if loss=='L1':
++#     #     loss_module = nn.L1Loss(reduction=reduction_type)
+ 
+-    test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=False, drop_last=False)
+-    eval_model(model, test_data_loader, loss_module)
+-    print("-------------------------")
++#     f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
++#     f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
+ 
++#     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
++
++#     train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs, loss_type=loss)
++
++#     test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=False, drop_last=False)
++#     eval_model(model, test_data_loader, loss_module)
++#     print("-------------------------")
+ 
+ 
++# ----------------------------
+ # ----------------------------
+ 
+ # n_frames = 20
+@@ -292,13 +299,13 @@ config = dict(
+     optimizer = "Adam",
+     data_type = "pos",
+     architecture = "fcnn",
+-    train_sims = train_sims,
+-    test_sims = test_sims,
++    train_sims = list(train_sims),
++    test_sims = list(test_sims),
+     n_frames = 20,
+     n_sims = n_sims,
+     hidden_sizes = [128, 256, 128],
+     activation_func = ["Tanh", "Tanh", "ReLU"],
+-    dropout = [0.7, 0.8, 0.2]
++    dropout = [0.7, 0.8, 0.2],
+     batch_norm = [True, True, True]
+     )
+ 
+@@ -316,40 +323,44 @@ ndata_dict = {"pos": 24,
+             }
+ 
+ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
+-
++    # print("hyperparams", hyperparameters)
+     # tell wandb to get started
+     with wandb.init(project="thesis", config=hyperparameters):
+       # access all HPs through wandb.config, so logging matches execution!
+       config = wandb.config
++    #   print("model_pipeline", config)
+ 
+       # make the model, data, and optimization problem
+       model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
+       print(model)
+ 
+       # and use them to train the model
+-      train_model(model, train_loader, criterion, optimizer, config)
++    #   model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
++      train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config)
+ 
+       # and test its final performance
+-      eval_model(model, test_loader)
++      eval_model(model, test_loader, criterion)
+ 
+     return model
+ 
+ def make(config, ndata_dict, loss_dict, optimizer_dict):
++    # print("make",config)
+     # Make the data
+     data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
+     data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
+ 
+-    train_data_loader = data.DataLoader(data_set_train, batch_size=batch_size, shuffle=True)
+-    test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=True, drop_last=False)
++    train_data_loader = data.DataLoader(data_set_train, batch_size=config.batch_size, shuffle=True)
++    test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
+ 
+ 
+     # Make the model
+     model = Network(ndata_dict[config.data_type], config).to(device)
+ 
+     # Make the loss and optimizer
+-    criterion = loss_dict[config.loss](reduction=config.reduction_type)
++    criterion = loss_dict[config.loss_type](reduction=config.loss_reduction_type)
+     optimizer = optimizer_dict[config.optimizer](
+         model.parameters(), lr=config.learning_rate)
+ 
+     return model, train_data_loader, test_data_loader, criterion, optimizer
+ 
++model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
+\ No newline at end of file
+diff --git a/code/wandb/latest-run b/code/wandb/latest-run
+index 186f2c5..48f01c2 120000
+--- a/code/wandb/latest-run
++++ b/code/wandb/latest-run
+@@ -1 +1 @@
+-run-20220808_142238-1qb5w2q2
+\ No newline at end of file
++run-20220809_153839-1goaxwzm
+\ No newline at end of file
