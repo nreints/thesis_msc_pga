@@ -115,7 +115,7 @@ class MyDataset(data.Dataset):
 
 
 def train_log(loss, epoch):
-    wandb.log({"epoch": epoch, "loss": loss}, step=epoch)
+    wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
     print(f"Loss after " + f" examples: {loss:.3f}")
 
 def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs, config):
@@ -170,7 +170,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             model.train()
             print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
 
-            f = open(f"results/{data_type}/{num_epochs}_{config.learning_rate}_{loss_type}.txt", "a")
+            f = open(f"results/{config.data_type}/{num_epochs}_{learning_rate}_{loss_type}.txt", "a")
             f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
             f.write("\n")
             f.close()
@@ -197,16 +197,16 @@ def eval_model(model, data_loader, loss_module):
             total_loss += loss_module(preds, data_labels)
             total_convert_loss += loss_module(alt_preds, alt_labels)
 
-        wandb.log({"total converted loss": total_convert_loss/len(data_loader)})
+        wandb.log({"Converted test loss": total_convert_loss/len(data_loader)})
 
     return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
 
 
-n_frames = 20
-n_sims = 750
+# n_frames = 20
+# n_sims = 750
 
-data_type = "pos"
-n_data = 24 # xyz * 8
+# data_type = "pos"
+# n_data = 24 # xyz * 8
 
 # data_type = "eucl_motion"
 # n_data = 12
@@ -291,7 +291,7 @@ test_sims = sims - train_sims
 
 
 config = dict(
-    learning_rate = 0.01,
+    learning_rate = 0.1,
     epochs = 400,
     batch_size = 128,
     loss_type = "L1",

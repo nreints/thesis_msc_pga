@@ -7,21 +7,21 @@ import pickle
 import random
 import wandb
 
-wandb.init(project="my-test-project")
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
 class LSTM(nn.Module):
-    def __init__(self, in_size, hidden_size, n_layers=2):
+    def __init__(self, in_size, config):
         super().__init__()
         # Initialize the modules we need to build the network
-        self.n_layers = n_layers
-        self.hidden_size = hidden_size
+        self.n_layers = config.n_layers
+        self.hidden_size = config.hidden_size
         self.in_size = in_size
-        self.lstm = nn.LSTM(in_size, hidden_size, batch_first=True)
+        self.lstm = nn.LSTM(in_size, self.hidden_size, batch_first=True)
         self.layers = nn.Sequential(
-            nn.Linear(hidden_size, in_size)
+            nn.Linear(self.
+            , in_size)
         )
 
     def forward(self, x, hidden_state=None):
@@ -91,11 +91,14 @@ class MyDataset(data.Dataset):
         data_start = self.start_pos[idx]
         return data_point, data_target, data_start
 
+def train_log(loss, epoch):
+    wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
+    print(f"Loss after " + f" examples: {loss:.3f}")
 
-
-def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
+def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs, config):
     # Set model to train mode
     model.train()
+    wandb.watch(model, loss_module, log="all", log_freq=10)
 
     # Training loop
     for epoch in range(num_epochs):
@@ -124,7 +127,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # print(data_labels.shape)
             loss = loss_module(output.squeeze(), data_labels.float())
             # The gradients would not be overwritten, but actually added to the existing ones.
-            wandb.log({"loss": loss})
+            # wandb.log({"loss": loss})
 
             optimizer.zero_grad()
             # Perform backpropagation
@@ -162,6 +165,8 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # optimizer.step()
 
         if epoch % 10 == 0:
+            train_log(loss_epoch/len(data_loader), epoch)
+
             true_loss, convert_loss = eval_model(model, test_loader, loss_module)
             model.train()
             print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
@@ -197,71 +202,158 @@ def eval_model(model, data_loader, loss_module):
             total_loss += loss_module(preds, data_labels)
             total_convert_loss += loss_module(alt_preds, alt_labels)
 
+        wandb.log({"Converted test loss": total_convert_loss/len(data_loader)})
+
     return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
 
 
 
-n_frames = 20
-n_sims = 750
+# n_frames = 20
+# n_sims = 750
 
-data_type = "pos"
-n_data = 24 # xyz * 8
+# data_type = "pos"
+# n_data = 24 # xyz * 8
 
-# data_type = "eucl_motion"
-# n_data = 12
+# # data_type = "eucl_motion"
+# # n_data = 12
 
-# # data_type = "quat"
-# # n_data = 7
+# # # data_type = "quat"
+# # # n_data = 7
 
-# # data_type = "log_quat"
-# # n_data = 7
+# # # data_type = "log_quat"
+# # # n_data = 7
 
-# # data_type = "pos_diff"
+# # # data_type = "pos_diff"
+# # # n_data = 24
+
+# # data_type = "pos_diff_start"
 # # n_data = 24
 
-# data_type = "pos_diff_start"
-# n_data = 24
 
 
+# sims = {i for i in range(n_sims)}
+# train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+# test_sims = sims - train_sims
+# print("DATATYPE", data_type)
 
+# batch_size = 128
+
+# model = LSTM(n_data, 96)
+# model.to(device)
+
+# data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
+# data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
+
+# train_data_loader = data.DataLoader(data_set_train, batch_size=batch_size, shuffle=True)
+# test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=True, drop_last=False)
+
+# # # exit()
+# # lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
+# # for lr in lrs:
+#     # print("Testing lr ", lr, "Datatype ", data_type)
+# num_epochs = 400
+
+# loss = "L1"
+# wandb.config = {
+#     "loss_module": loss,
+#     # "learning_rate": lr,
+#     "epochs": num_epochs,
+#     "batch_size": batch_size
+#     }
+# loss_module = nn.L1Loss()
+
+# # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
+# # f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
+
+# optimizer = torch.optim.Adam(model.parameters())
+
+# train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs, loss_type=loss)
+
+# test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=False, drop_last=False)
+# eval_model(model, test_data_loader, loss_module)
+# print("-------------------------")
+
+
+n_sims = 750
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
 test_sims = sims - train_sims
-print("DATATYPE", data_type)
 
-batch_size = 128
 
-model = LSTM(n_data, 96)
-model.to(device)
 
-data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
-data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
+config = dict(
+    learning_rate = 0.1,
+    epochs = 400,
+    batch_size = 128,
+    loss_type = "L1",
+    loss_reduction_type = "mean",
+    optimizer = "Adam",
+    data_type = "pos",
+    architecture = "lstm",
+    train_sims = list(train_sims),
+    test_sims = list(test_sims),
+    n_frames = 20,
+    n_sims = n_sims,
+    n_layers = 2,
+    hidden_size = 96,
+    # activation_func = ["Tanh", "Tanh", "ReLU"],
+    # dropout = [0, 0, 0],
+    # batch_norm = [True, True, True]
+    )
 
-train_data_loader = data.DataLoader(data_set_train, batch_size=batch_size, shuffle=True)
-test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=True, drop_last=False)
+loss_dict = {'L1': nn.L1Loss,
+                'L2': nn.MSELoss}
 
-# # exit()
-# lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
-# for lr in lrs:
-    # print("Testing lr ", lr, "Datatype ", data_type)
-num_epochs = 400
+optimizer_dict = {'Adam': torch.optim.Adam}
 
-loss = "L1"
-wandb.config = {
-    "loss_module": loss,
-    # "learning_rate": lr,
-    "epochs": num_epochs,
-    "batch_size": batch_size
-    }
-loss_module = nn.L1Loss()
+ndata_dict = {"pos": 24,
+                "eucl_motion": 12,
+                "quat": 7,
+                "log_quat": 7,
+                "pos_diff": 24,
+                "pos_diff_start": 24,
+            }
 
-# f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
-# f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
+def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
+    # print("hyperparams", hyperparameters)
+    # tell wandb to get started
+    with wandb.init(project="thesis", config=hyperparameters):
+      # access all HPs through wandb.config, so logging matches execution!
+      config = wandb.config
+    #   print("model_pipeline", config)
 
-optimizer = torch.optim.Adam(model.parameters())
+      # make the model, data, and optimization problem
+      model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
+      print(model)
 
-train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs, loss_type=loss)
+      # and use them to train the model
+    #   model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
+      train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config)
 
-test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=False, drop_last=False)
-eval_model(model, test_data_loader, loss_module)
-print("-------------------------")
+      # and test its final performance
+      eval_model(model, test_loader, criterion)
+
+    return model
+
+def make(config, ndata_dict, loss_dict, optimizer_dict):
+    # print("make",config)
+    # Make the data
+    data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
+    data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
+
+    train_data_loader = data.DataLoader(data_set_train, batch_size=config.batch_size, shuffle=True)
+    test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
+
+
+    # Make the model
+    model = LSTM(ndata_dict[config.data_type], config).to(device)
+
+
+    # Make the loss and optimizer
+    criterion = loss_dict[config.loss_type](reduction=config.loss_reduction_type)
+    optimizer = optimizer_dict[config.optimizer](
+        model.parameters(), lr=config.learning_rate)
+
+    return model, train_data_loader, test_data_loader, criterion, optimizer
+
+model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
