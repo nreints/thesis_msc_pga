@@ -1,0 +1,117 @@
+diff --git a/code/convert.py b/code/convert.py
+index 5b42665..67da4f0 100644
+--- a/code/convert.py
++++ b/code/convert.py
+@@ -1,6 +1,6 @@
+ import torch
+ import numpy as np
+-from new_mujoco import own_rotVecQuat
++from new_mujoco import fast_rotVecQuat, own_rotVecQuat
+ 
+ def eucl2pos(eucl_motion, start_pos):
+     """
+@@ -29,7 +29,6 @@ def eucl2pos(eucl_motion, start_pos):
+         start_pos = start_pos.astype('float64')
+         frames = eucl_motion.shape[1]
+         # print(start_pos[0].shape)
+-        
+         for batch in range(out.shape[0]):
+             # out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
+ 
+@@ -68,15 +67,18 @@ def quat2pos(quat, start_pos):
+         Converted quaternion to current position
+     """
+     out = torch.empty_like(start_pos)
+-    # print(quat.shape)
+-    # if not isinstance(quat, np.ndarray):
+-    #     quat = quat.astype('float64')
+-    # if not isinstance(start_pos, np.ndarray):
+-    #     start_pos = start_pos.astype('float64')
+-    for batch in range(out.shape[0]):
+-        for vert in range(out.shape[1]):
+-            out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
++#     # print(quat.shape)
++#     # if not isinstance(quat, np.ndarray):
++#     #     quat = quat.astype('float64')
++#     # if not isinstance(start_pos, np.ndarray):
++#     #     start_pos = start_pos.astype('float64')
+ 
++
++    # for batch in range(out.shape[0]):
++    #     for vert in range(out.shape[1]):
++    #         out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
++
++    return fast_rotVecQuat(start_pos, quat[:,:4])
+     return out.reshape((out.shape[0], -1))
+ 
+ def log_quat2pos(log_quat, start_pos):
+@@ -105,10 +107,9 @@ def log_quat2pos(log_quat, start_pos):
+ 
+     return quat2pos(quat, start_pos)
+ 
++
+ def diff_pos_start2pos(true_preds, start_pos):
+     """
+-
+-
+     Input:
+         true_preds: Original predictions (difference compared to start)
+             Shape [batch_size, frames, datapoints]
+diff --git a/code/new_mujoco.py b/code/new_mujoco.py
+index 52d690c..9380eef 100644
+--- a/code/new_mujoco.py
++++ b/code/new_mujoco.py
+@@ -37,6 +37,7 @@ def rot_quaternions(q1, q2):
+ #     return rot_quaternions(q_prime, part1)
+ 
+ def fast_rotVecQuat(v, q):
++    print(v.shape, q.shape)
+     # Batch of v batchx8x3
+     # Batch of q batchx4
+     q_new = torch.empty_like(q)
+diff --git a/code/torch_nn.py b/code/torch_nn.py
+index 34f4033..cce3ae4 100644
+--- a/code/torch_nn.py
++++ b/code/torch_nn.py
+@@ -8,7 +8,6 @@ import random
+ from convert import *
+ import wandb
+ 
+-# wandb.init(project="thesis_linearNN")
+ 
+ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+ 
+@@ -121,11 +120,11 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
+ 
+             ## Step 3: Calculate the loss
+ 
+-            # alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+-            # alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
+-            # loss = loss_module(alt_preds, alt_labels)
++            alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
++            alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
++            loss = loss_module(alt_preds, alt_labels)
+ 
+-            loss = loss_module(preds, data_labels)
++            # loss = loss_module(preds, data_labels)
+             loss_epoch += loss
+ 
+             ## Step 4: Perform backpropagation
+@@ -233,7 +232,7 @@ config = dict(
+     loss_type = "L1",
+     loss_reduction_type = "mean",
+     optimizer = "Adam",
+-    data_type = "pos",
++    data_type = "quat",
+     architecture = "fcnn",
+     train_sims = list(train_sims),
+     test_sims = list(test_sims),
+diff --git a/code/wandb/latest-run b/code/wandb/latest-run
+index ecfa6a2..586c050 120000
+--- a/code/wandb/latest-run
++++ b/code/wandb/latest-run
+@@ -1 +1 @@
+-run-20220815_115546-2m1jqldd
+\ No newline at end of file
++run-20220815_131117-350mb2uo
+\ No newline at end of file

@@ -37,18 +37,28 @@ def rot_quaternions(q1, q2):
 #     return rot_quaternions(q_prime, part1)
 
 def fast_rotVecQuat(v, q):
+    # print(v.shape, q.shape)
     # Batch of v batchx8x3
     # Batch of q batchx4
+
+    # print(v.reshape((v.shape[0]*v.shape[1], -1)))
+    v_reshaped = v.reshape((v.shape[0]*v.shape[1], -1))
+
     q_new = torch.empty_like(q)
+    # q_new = q
     q_new[:, 0:3] = q[:, 1:4]
     q_new[:, 3] = q[:, 0]
-    v_new = torch.hstack((v, torch.zeros(v.shape[0],1)))
 
+    q_new = torch.repeat_interleave(q_new, repeats=8, dim=0)
+    # print(torch.zeros(v_reshaped.shape[0],1).shape)
+    v_new = torch.hstack((v_reshaped, torch.zeros(v_reshaped.shape[0],1)))
+    # print(v_new.shape)
+    # print(q_new.shape)
     mult = roma.quat_product(v_new, q_new)
     q_conj = roma.quat_conjugation(q_new)
     mult2 = roma.quat_product(q_conj, mult)
 
-    return mult2
+    return mult2[:, :3]
 
 
 def own_rotVecQuat(v, q):
@@ -68,10 +78,18 @@ def rotVecQuat(v, q):
     return res
 
 # testing rotVecQuat vs own_rotVecQuat
-v_big = torch.tensor([[1, 0, 0], [1, 0, 0]])
-q_big = torch.tensor([[0.3,  0.87, 0.0, 0.707], [0.3,  0.87, 0.0, 0.707]])
-v = torch.tensor([1,0,0])
+v_big = torch.tensor([[[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0]],
+                        [[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0]]])
+
+q_big = torch.tensor([[0.3,  0.87, 0.0, 0.707], 
+                        [0.3,  0.87, 0.0, 0.707]])
+
+# q_big = torch.repeat_interleave(q_big, repeats=8, dim=0)
+
+
+v = torch.tensor([1, 0, 0])
 q = torch.tensor([0.3,  0.87, 0.0, 0.707])
+
 print("fast",fast_rotVecQuat(v_big, q_big))
 print("own",own_rotVecQuat(v, q))
 # print("ori", rotVecQuat(v.astype(np.float64), q.astype(np.float64)))

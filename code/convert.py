@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from new_mujoco import own_rotVecQuat
+from new_mujoco import fast_rotVecQuat, own_rotVecQuat
 
 def eucl2pos(eucl_motion, start_pos):
     """
@@ -29,7 +29,6 @@ def eucl2pos(eucl_motion, start_pos):
         start_pos = start_pos.astype('float64')
         frames = eucl_motion.shape[1]
         # print(start_pos[0].shape)
-        
         for batch in range(out.shape[0]):
             # out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
 
@@ -67,16 +66,30 @@ def quat2pos(quat, start_pos):
     Output:
         Converted quaternion to current position
     """
+    batch, vert_num, dim = start_pos.shape
     out = torch.empty_like(start_pos)
-    # print(quat.shape)
-    # if not isinstance(quat, np.ndarray):
-    #     quat = quat.astype('float64')
-    # if not isinstance(start_pos, np.ndarray):
-    #     start_pos = start_pos.astype('float64')
-    for batch in range(out.shape[0]):
-        for vert in range(out.shape[1]):
-            out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
+#     # print(quat.shape)
+#     # if not isinstance(quat, np.ndarray):
+#     #     quat = quat.astype('float64')
+#     # if not isinstance(start_pos, np.ndarray):
+#     #     start_pos = start_pos.astype('float64')
 
+
+    # for batch in range(out.shape[0]):
+    #     for vert in range(out.shape[1]):
+    #         out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
+
+    rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
+    # 1024x3
+
+    # rot_start = rotated_start.reshape((batch, vert_num, dim))
+    
+    repeated_trans = torch.repeat_interleave(quat[:, 4:], repeats=8, dim=0)
+    out = rotated_start + repeated_trans
+    # print("here", out.shape)
+
+
+    return out.reshape((batch, vert_num, dim))
     return out.reshape((out.shape[0], -1))
 
 def log_quat2pos(log_quat, start_pos):
@@ -105,10 +118,9 @@ def log_quat2pos(log_quat, start_pos):
 
     return quat2pos(quat, start_pos)
 
+
 def diff_pos_start2pos(true_preds, start_pos):
     """
-
-
     Input:
         true_preds: Original predictions (difference compared to start)
             Shape [batch_size, frames, datapoints]

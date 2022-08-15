@@ -8,7 +8,6 @@ import random
 from convert import *
 import wandb
 
-# wandb.init(project="thesis_linearNN")
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -121,11 +120,11 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             ## Step 3: Calculate the loss
 
-            # alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
-            # alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
-            # loss = loss_module(alt_preds, alt_labels)
+            alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+            alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
+            loss = loss_module(alt_preds, alt_labels)
 
-            loss = loss_module(preds, data_labels)
+            # loss = loss_module(preds, data_labels)
             loss_epoch += loss
 
             ## Step 4: Perform backpropagation
@@ -147,7 +146,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             model.train()
             print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
 
-            f = open(f"results/{config.data_type}/{num_epochs}_{learning_rate}_{loss_type}.txt", "a")
+            f = open(f"results/{config.data_type}/{num_epochs}_{config.learning_rate}_{loss_type}.txt", "a")
             f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
             f.write("\n")
             f.close()
@@ -233,7 +232,7 @@ config = dict(
     loss_type = "L1",
     loss_reduction_type = "mean",
     optimizer = "Adam",
-    data_type = "pos",
+    data_type = "quat",
     architecture = "fcnn",
     train_sims = list(train_sims),
     test_sims = list(test_sims),
