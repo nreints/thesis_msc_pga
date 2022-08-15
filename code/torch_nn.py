@@ -41,22 +41,6 @@ class Network(nn.Module):
 
         self.linears = nn.Sequential(*self.layers)
 
-        # self.layers = nn.Sequential(
-        #     nn.Linear(n_steps * n_data, 256),
-        #     nn.Tanh(),
-        #     nn.Dropout(p=0.7),
-        #     nn.Linear(256, n_out),
-        #     # nn.Linear(n_out, 256),
-        #     # nn.BatchNorm1d(256),
-        #     # nn.Tanh(),
-        #     # nn.Dropout(p=0.7),
-        #     # nn.Linear(256, n_out),
-        #     # nn.BatchNorm1d(n_hidden2),
-        #     # nn.ReLU(),
-        #     # nn.Dropout(p=0.3),
-        #     # nn.Linear(n_hidden2, n_out)
-        #     )
-
     def forward(self, x):
         # Perform the calculation of the model to determine the prediction
         return self.linears(x)
@@ -80,8 +64,6 @@ class MyDataset(data.Dataset):
         self.collect_data()
 
     def collect_data(self):
-        # self.data = torch.empty((self.n_sims * , self.n_frames_perentry * self.n_datap_perframe))
-        # self.target = torch.empty((1, self.n_datap_perframe))
 
         self.data = []
         self.target = []
@@ -137,11 +119,6 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
 
-            # print(data_inputs[0].reshape(-1, 24))
-
-            # print(data_labels[0])
-            # print(preds[0])
-
             ## Step 3: Calculate the loss
 
             # alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
@@ -161,11 +138,11 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             ## Step 5: Update the parameters
             optimizer.step()
 
-        # train_log(loss_epoch/len(data_loader), epoch)
 
 
         if epoch % 10 == 0:
             train_log(loss_epoch/len(data_loader), epoch)
+
             true_loss, convert_loss = eval_model(model, test_loader, loss_module)
             model.train()
             print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
@@ -193,7 +170,6 @@ def eval_model(model, data_loader, loss_module):
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
-            # print(alt_preds.shape, alt_labels.shape)
             total_loss += loss_module(preds, data_labels)
             total_convert_loss += loss_module(alt_preds, alt_labels)
 
@@ -202,125 +178,12 @@ def eval_model(model, data_loader, loss_module):
     return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
 
 
-# n_frames = 20
-# n_sims = 750
-
-# data_type = "pos"
-# n_data = 24 # xyz * 8
-
-# data_type = "eucl_motion"
-# n_data = 12
-
-# data_type = "quat"
-# n_data = 7
-
-# data_type = "log_quat"
-# n_data = 7
-
-# data_type = "pos_diff"
-# n_data = 24
-
-# data_type = "pos_diff_start"
-# n_data = 24
-
-# sims = {i for i in range(n_sims)}
-# train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-# test_sims = sims - train_sims
-
-# batch_size = 128
-
-# model = Network(n_frames, n_data, n_hidden1=96, n_hidden2=48, n_out=n_data)
-# model.to(device)
-
-# data_set_train = MyDataset(sims=train_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
-# data_set_test = MyDataset(sims=test_sims, n_frames=n_frames, n_data=n_data, data_type=data_type)
-
-# train_data_loader = data.DataLoader(data_set_train, batch_size=batch_size, shuffle=True)
-# test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=True, drop_last=False)
-
-
-# epochs = 400
-# reduction_type = "mean"
-# optimizer_type = "Adam"
-# # exit()
-# lrs = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
-# for lr in lrs:
-#     loss = "L1"
-#     wandb.config = {
-#         "learning_rate": lr,
-#         "epochs": epochs,
-#         "batch_size": batch_size,
-#         "loss_type": loss,
-#         "loss_reduction_type": reduction_type,
-#         "optimizer": optimizer_type,
-#         "data_type": data_type,
-#         "architecture": "fcnn",
-#         }
-#     print("Testing lr ", lr, "Datatype ", data_type)
-#     num_epochs = epochs
-
-#     loss_dict = {'L1': nn.L1Loss, 
-#                 'L2': nn.MSELoss}
-
-#     loss_module = loss_dict[loss](reduction=reduction_type)
-
-#     # if loss=='L1':
-#     #     loss_module = nn.L1Loss(reduction=reduction_type)
-
-#     f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss}.txt", "w")
-#     f.write(f"Data type: {data_type}, num_epochs: {num_epochs}, \t lr: {lr} \n")
-
-#     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
-#     train_model(model, optimizer, train_data_loader, test_data_loader, loss_module, num_epochs=num_epochs, loss_type=loss)
-
-#     test_data_loader = data.DataLoader(data_set_test, batch_size=batch_size, shuffle=False, drop_last=False)
-#     eval_model(model, test_data_loader, loss_module)
-#     print("-------------------------")
-
-
-# ----------------------------
-# ----------------------------
-
-# n_frames = 20
 n_sims = 750
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
 test_sims = sims - train_sims
 
 
-
-config = dict(
-    learning_rate = 0.1,
-    epochs = 400,
-    batch_size = 128,
-    loss_type = "L1",
-    loss_reduction_type = "mean",
-    optimizer = "Adam",
-    data_type = "pos",
-    architecture = "fcnn",
-    train_sims = list(train_sims),
-    test_sims = list(test_sims),
-    n_frames = 20,
-    n_sims = n_sims,
-    hidden_sizes = [128, 256, 128],
-    activation_func = ["Tanh", "Tanh", "ReLU"],
-    dropout = [0, 0, 0],
-    batch_norm = [True, True, True]
-    )
-
-loss_dict = {'L1': nn.L1Loss,
-                'L2': nn.MSELoss}
-
-optimizer_dict = {'Adam': torch.optim.Adam}
-
-ndata_dict = {"pos": 24,
-                "eucl_motion": 12,
-                "quat": 7,
-                "log_quat": 7,
-                "pos_diff": 24,
-                "pos_diff_start": 24,
-            }
 
 def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
     # print("hyperparams", hyperparameters)
@@ -362,5 +225,37 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         model.parameters(), lr=config.learning_rate)
 
     return model, train_data_loader, test_data_loader, criterion, optimizer
+
+config = dict(
+    learning_rate = 0.1,
+    epochs = 400,
+    batch_size = 128,
+    loss_type = "L1",
+    loss_reduction_type = "mean",
+    optimizer = "Adam",
+    data_type = "pos",
+    architecture = "fcnn",
+    train_sims = list(train_sims),
+    test_sims = list(test_sims),
+    n_frames = 20,
+    n_sims = n_sims,
+    hidden_sizes = [128, 256, 128],
+    activation_func = ["Tanh", "Tanh", "ReLU"],
+    dropout = [0, 0, 0],
+    batch_norm = [True, True, True]
+    )
+
+loss_dict = {'L1': nn.L1Loss,
+                'L2': nn.MSELoss}
+
+optimizer_dict = {'Adam': torch.optim.Adam}
+
+ndata_dict = {"pos": 24,
+                "eucl_motion": 12,
+                "quat": 7,
+                "log_quat": 7,
+                "pos_diff": 24,
+                "pos_diff_start": 24,
+            }
 
 model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)

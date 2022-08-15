@@ -20,7 +20,8 @@ class LSTM(nn.Module):
         self.in_size = in_size
         self.lstm = nn.LSTM(in_size, self.hidden_size, batch_first=True)
         self.layers = nn.Sequential(
-            nn.Linear(self.hidden_size, in_size)
+            nn.Linear(self.hidden_size
+            , in_size)
         )
 
     def forward(self, x, hidden_state=None):
@@ -116,10 +117,6 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             output, _ = model(data_inputs)
 
-            # alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
-            # alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
-            # loss = loss_module(alt_preds, alt_labels)
-
             loss = loss_module(output.squeeze(), data_labels.float())
 
             optimizer.zero_grad()
@@ -170,6 +167,42 @@ def eval_model(model, data_loader, loss_module):
     return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
 
 
+n_sims = 750
+sims = {i for i in range(n_sims)}
+train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+test_sims = sims - train_sims
+
+
+
+config = dict(
+    learning_rate = 0.01,
+    epochs = 400,
+    batch_size = 128,
+    loss_type = "L1",
+    loss_reduction_type = "mean",
+    optimizer = "Adam",
+    data_type = "pos",
+    architecture = "lstm",
+    train_sims = list(train_sims),
+    test_sims = list(test_sims),
+    n_frames = 20,
+    n_sims = n_sims,
+    n_layers = 2,
+    hidden_size = 96
+    )
+
+loss_dict = {'L1': nn.L1Loss,
+                'L2': nn.MSELoss}
+
+optimizer_dict = {'Adam': torch.optim.Adam}
+
+ndata_dict = {"pos": 24,
+                "eucl_motion": 12,
+                "quat": 7,
+                "log_quat": 7,
+                "pos_diff": 24,
+                "pos_diff_start": 24,
+            }
 
 def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
     # tell wandb to get started
@@ -208,43 +241,5 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         model.parameters(), lr=config.learning_rate)
 
     return model, train_data_loader, test_data_loader, criterion, optimizer
-
-
-n_sims = 750
-sims = {i for i in range(n_sims)}
-train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-test_sims = sims - train_sims
-
-
-
-config = dict(
-    learning_rate = 0.01,
-    epochs = 400,
-    batch_size = 128,
-    loss_type = "L1",
-    loss_reduction_type = "mean",
-    optimizer = "Adam",
-    data_type = "pos",
-    architecture = "lstm",
-    train_sims = list(train_sims),
-    test_sims = list(test_sims),
-    n_frames = 20,
-    n_sims = n_sims,
-    n_layers = 2,
-    hidden_size = 96
-    )
-
-loss_dict = {'L1': nn.L1Loss,
-                'L2': nn.MSELoss}
-
-optimizer_dict = {'Adam': torch.optim.Adam}
-
-ndata_dict = {"pos": 24,
-                "eucl_motion": 12,
-                "quat": 7,
-                "log_quat": 7,
-                "pos_diff": 24,
-                "pos_diff_start": 24,
-            }
 
 model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
