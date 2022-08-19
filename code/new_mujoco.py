@@ -77,22 +77,22 @@ def rotVecQuat(v, q):
     mujoco_py.functions.mju_rotVecQuat(res, v, q)
     return res
 
-# testing rotVecQuat vs own_rotVecQuat
-v_big = torch.tensor([[[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0]],
-                        [[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0]]])
+# # testing rotVecQuat vs own_rotVecQuat
+# v_big = torch.tensor([[[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0]],
+#                         [[1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0]]])
 
-q_big = torch.tensor([[0.3,  0.87, 0.0, 0.707], 
-                        [0.3,  0.87, 0.0, 0.707]])
+# q_big = torch.tensor([[0.3,  0.87, 0.0, 0.707], 
+#                         [0.3,  0.87, 0.0, 0.707]])
 
-# q_big = torch.repeat_interleave(q_big, repeats=8, dim=0)
+# # q_big = torch.repeat_interleave(q_big, repeats=8, dim=0)
 
 
-v = torch.tensor([1, 0, 0])
-q = torch.tensor([0.3,  0.87, 0.0, 0.707])
+# v = torch.tensor([1, 0, 0])
+# q = torch.tensor([0.3,  0.87, 0.0, 0.707])
 
-print("fast",fast_rotVecQuat(v_big, q_big))
-print("own",own_rotVecQuat(v, q))
-# print("ori", rotVecQuat(v.astype(np.float64), q.astype(np.float64)))
+# print("fast",fast_rotVecQuat(v_big, q_big))
+# print("own",own_rotVecQuat(v, q))
+# # print("ori", rotVecQuat(v.astype(np.float64), q.astype(np.float64)))
 
 def get_vert_coords_quat(sim, obj_id, xyz_local):
     """

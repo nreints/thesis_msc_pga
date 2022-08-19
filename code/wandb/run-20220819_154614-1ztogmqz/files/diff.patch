@@ -1,0 +1,97 @@
+diff --git a/code/convert.py b/code/convert.py
+index e33f20f..a4407ee 100644
+--- a/code/convert.py
++++ b/code/convert.py
+@@ -68,57 +68,32 @@ def quat2pos(quat, start_pos):
+     Output:
+         Converted quaternion to current position
+     """
+-    # print(start_pos.shape)
+-    # print(quat.shape)
+-    
++
++
+     if len(quat.shape) == 2:
+ 
+         batch, vert_num, dim = start_pos.shape
+         out = torch.empty_like(start_pos)
+-    #     # print(quat.shape)
+-    #     # if not isinstance(quat, np.ndarray):
+-    #     #     quat = quat.astype('float64')
+-    #     # if not isinstance(start_pos, np.ndarray):
+-    #     #     start_pos = start_pos.astype('float64')
+-
+-
+-        # for batch in range(out.shape[0]):
+-        #     for vert in range(out.shape[1]):
+-        #         out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
+ 
+         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
+         repeated_trans = torch.repeat_interleave(quat[:, 4:], repeats=8, dim=0)
+         out = rotated_start + repeated_trans
+         return out.reshape((batch, vert_num, dim))
+-    
++
+     else:
+         batch, vert_num, dim = start_pos.shape
+         out = torch.empty((quat.shape[1], batch, vert_num, dim))
+-    #     # print(quat.shape)
+-    #     # if not isinstance(quat, np.ndarray):
+-    #     #     quat = quat.astype('float64')
+-    #     # if not isinstance(start_pos, np.ndarray):
+-    #     #     start_pos = start_pos.astype('float64')
+-
+-
+-        # for batch in range(out.shape[0]):
+-        #     for vert in range(out.shape[1]):
+-        #         out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
+         for frame in range(quat.shape[1]):
+             rotated_start = fast_rotVecQuat(start_pos, quat[:,frame,:4])
+             repeated_trans = torch.repeat_interleave(quat[:,frame,4:], repeats=8, dim=0)
+             out[frame] = (rotated_start + repeated_trans).reshape((batch, vert_num, dim))
+ 
+-        # print(torch.swapaxes(out, 0, 1).shape)
+-        # exit()
+         return out
+ 
+-    # print("here", out.shape)
+-
+ 
+ 
+ def log_quat2pos(log_quat, start_pos):
+-    print(start_pos, log_quat)
++    print(start_pos.shape, log_quat.shape)
+     """
+ 
+     Input:
+@@ -146,13 +121,16 @@ def log_quat2pos(log_quat, start_pos):
+     return quat2pos(quat.append(trans), start_pos)
+ 
+ 
+-start = [[[1,0,0],[2,0,0],[0.5,0,0]],
+-            [[0,1,0],[0,2,0],[0,0.5,0]]]
++# start = [[[1,0,0],[2,0,0],[0.5,0,0]],
++#             [[0,1,0],[0,2,0],[0,0.5,0]]]
++
++# start_single = [[[1,0,0],[2,0,0],[0.5,0,0]]]
+ 
+-log_quat = [[[1,0,0.7,0.4,0,0,-0.2]],
+-            [[0.3,0,0.7,0.4,0,0,-0.3]]]
++# log_quat = [[[1,0,0.7,0.4,0,0,-0.2]],
++#             [[0.3,0,0.7,0.4,0,0,-0.3]]]
++# log_quat_single = [[[1,0,0.7,0.4,0,0,-0.2]]]
+ 
+-log_quat2pos(log_quat, start)
++# log_quat2pos(log_quat, start)
+ 
+ 
+ def diff_pos_start2pos(true_preds, start_pos):
+diff --git a/code/wandb/latest-run b/code/wandb/latest-run
+index 02383cc..fa633d8 120000
+--- a/code/wandb/latest-run
++++ b/code/wandb/latest-run
+@@ -1 +1 @@
+-run-20220819_150001-2659xw1x
+\ No newline at end of file
++run-20220819_154614-1ztogmqz
+\ No newline at end of file
