@@ -69,7 +69,7 @@ class MyDataset(data.Dataset):
                 data = data_all[self.data_type]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
 
-                    self.start_pos.append(data_all["pos"][0])
+                    self.start_pos.append(data_all["pos"][0].reshape(-1, 24).squeeze())
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].reshape(-1, self.n_datap_perframe))
                     self.target.append(data[frame+1:train_end+1].reshape(-1, self.n_datap_perframe))
@@ -224,7 +224,7 @@ config = dict(
     loss_type = "L1",
     loss_reduction_type = "mean",
     optimizer = "Adam",
-    data_type = "log_quat",
+    data_type = "quat",
     architecture = "lstm",
     train_sims = list(train_sims),
     test_sims = list(test_sims),

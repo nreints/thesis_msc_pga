@@ -61,38 +61,64 @@ def quat2pos(quat, start_pos):
 
     Input:
         quat: Original predictions (quaternion motion)
+            (batch, .., 7)
         start_pos: Start position of simulation
+            (batch, .., 8, 3)
 
     Output:
         Converted quaternion to current position
     """
-    batch, vert_num, dim = start_pos.shape
-    out = torch.empty_like(start_pos)
-#     # print(quat.shape)
-#     # if not isinstance(quat, np.ndarray):
-#     #     quat = quat.astype('float64')
-#     # if not isinstance(start_pos, np.ndarray):
-#     #     start_pos = start_pos.astype('float64')
-
-
-    # for batch in range(out.shape[0]):
-    #     for vert in range(out.shape[1]):
-    #         out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
-
-    rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
-    # 1024x3
-
-    # rot_start = rotated_start.reshape((batch, vert_num, dim))
+    # print(start_pos.shape)
+    # print(quat.shape)
     
-    repeated_trans = torch.repeat_interleave(quat[:, 4:], repeats=8, dim=0)
-    out = rotated_start + repeated_trans
+    if len(quat.shape) == 2:
+
+        batch, vert_num, dim = start_pos.shape
+        out = torch.empty_like(start_pos)
+    #     # print(quat.shape)
+    #     # if not isinstance(quat, np.ndarray):
+    #     #     quat = quat.astype('float64')
+    #     # if not isinstance(start_pos, np.ndarray):
+    #     #     start_pos = start_pos.astype('float64')
+
+
+        # for batch in range(out.shape[0]):
+        #     for vert in range(out.shape[1]):
+        #         out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
+
+        rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
+        repeated_trans = torch.repeat_interleave(quat[:, 4:], repeats=8, dim=0)
+        out = rotated_start + repeated_trans
+        return out.reshape((batch, vert_num, dim))
+    
+    else:
+        batch, vert_num, dim = start_pos.shape
+        out = torch.empty((quat.shape[1], batch, vert_num, dim))
+    #     # print(quat.shape)
+    #     # if not isinstance(quat, np.ndarray):
+    #     #     quat = quat.astype('float64')
+    #     # if not isinstance(start_pos, np.ndarray):
+    #     #     start_pos = start_pos.astype('float64')
+
+
+        # for batch in range(out.shape[0]):
+        #     for vert in range(out.shape[1]):
+        #         out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
+        for frame in range(quat.shape[1]):
+            rotated_start = fast_rotVecQuat(start_pos, quat[:,frame,:4])
+            repeated_trans = torch.repeat_interleave(quat[:,frame,4:], repeats=8, dim=0)
+            out[frame] = (rotated_start + repeated_trans).reshape((batch, vert_num, dim))
+
+        # print(torch.swapaxes(out, 0, 1).shape)
+        # exit()
+        return out
+
     # print("here", out.shape)
 
 
-    return out.reshape((batch, vert_num, dim))
-    return out.reshape((out.shape[0], -1))
 
 def log_quat2pos(log_quat, start_pos):
+    print(start_pos, log_quat)
     """
 
     Input:
@@ -105,8 +131,9 @@ def log_quat2pos(log_quat, start_pos):
     # log_quat = log_quat.astype('float64')
     # start_pos = start_pos.astype('float64')
     rot_vec = log_quat[:, :3]
-    angle = log_quat[:,3]
-    trans = log_quat[:,4:]
+    angle = log_quat[:, 3]
+    trans = log_quat[:, 4:]
+
     cos = torch.cos(angle/2).reshape(-1, 1)
     sin = torch.sin(angle/2)
 
@@ -116,7 +143,16 @@ def log_quat2pos(log_quat, start_pos):
     part1_1 = rot_vec * torch.vstack([sin]*3).T
     quat[:, 1:4] = part1_1
 
-    return quat2pos(quat, start_pos)
+    return quat2pos(quat.append(trans), start_pos)
+
+
+start = [[[1,0,0],[2,0,0],[0.5,0,0]],
+            [[0,1,0],[0,2,0],[0,0.5,0]]]
+
+log_quat = [[[1,0,0.7,0.4,0,0,-0.2]],
+            [[0.3,0,0.7,0.4,0,0,-0.3]]]
+
+log_quat2pos(log_quat, start)
 
 
 def diff_pos_start2pos(true_preds, start_pos):

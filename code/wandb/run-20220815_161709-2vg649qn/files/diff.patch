@@ -1,0 +1,54 @@
+diff --git a/code/convert.py b/code/convert.py
+index 770c5ab..6c77ac9 100644
+--- a/code/convert.py
++++ b/code/convert.py
+@@ -61,7 +61,9 @@ def quat2pos(quat, start_pos):
+ 
+     Input:
+         quat: Original predictions (quaternion motion)
++            (batch, .., 7)
+         start_pos: Start position of simulation
++            (batch, .., 8, 3)
+ 
+     Output:
+         Converted quaternion to current position
+@@ -80,17 +82,12 @@ def quat2pos(quat, start_pos):
+     #         out[batch, vert] = own_rotVecQuat(start_pos[batch, vert, :], quat[batch, :4]) + quat[batch, 4:]
+ 
+     rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
+-    # 1024x3
+-
+-    # rot_start = rotated_start.reshape((batch, vert_num, dim))
+-    
+     repeated_trans = torch.repeat_interleave(quat[:, 4:], repeats=8, dim=0)
+     out = rotated_start + repeated_trans
+     # print("here", out.shape)
+ 
+ 
+     return out.reshape((batch, vert_num, dim))
+-    return out.reshape((out.shape[0], -1))
+ 
+ def log_quat2pos(log_quat, start_pos):
+     """
+diff --git a/code/lstm.py b/code/lstm.py
+index 072538e..1a8838c 100644
+--- a/code/lstm.py
++++ b/code/lstm.py
+@@ -224,7 +224,7 @@ config = dict(
+     loss_type = "L1",
+     loss_reduction_type = "mean",
+     optimizer = "Adam",
+-    data_type = "pos",
++    data_type = "quat",
+     architecture = "lstm",
+     train_sims = list(train_sims),
+     test_sims = list(test_sims),
+diff --git a/code/wandb/latest-run b/code/wandb/latest-run
+index e8ce767..1c9066d 120000
+--- a/code/wandb/latest-run
++++ b/code/wandb/latest-run
+@@ -1 +1 @@
+-run-20220815_151207-2i29pl3z
+\ No newline at end of file
++run-20220815_161709-2vg649qn
+\ No newline at end of file
