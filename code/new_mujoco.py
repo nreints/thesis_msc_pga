@@ -16,15 +16,6 @@ import roma
 
 VERT_NUM = 1
 
-def rot_quaternions(q1, q2):
-    # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
-    w0, x0, y0, z0 = q1
-    w1, x1, y1, z1 = q2
-    return torch.tensor([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
-                     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
-                     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
-                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
-
 # def own_rotVecQuat(v, q):
 # original from https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
 #     v_new = np.zeros(4)
@@ -60,6 +51,14 @@ def fast_rotVecQuat(v, q):
 
     return mult2[:, :3]
 
+def rot_quaternions(q1, q2):
+    # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
+    w0, x0, y0, z0 = q1
+    w1, x1, y1, z1 = q2
+    return torch.tensor([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+                     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+                     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
 
 def own_rotVecQuat(v, q):
     # According to mujoco? Ask Steven/Leo
@@ -108,6 +107,7 @@ def get_quat(sim, obj_id):
     return sim.data.body_xquat[obj_id]
 
 def get_mat(sim, obj_id):
+    # TODO Check how the matrix is constructed
     return sim.data.body_xmat[obj_id]
 
 def get_vert_local(sim, obj_id):
@@ -146,7 +146,6 @@ def generate_data(string, n_steps):
     object_id = model.geom_names.index(geom_name)
     xyz_local = get_vert_local(sim, object_id)
     # viewer = mujoco_py.MjViewer(sim)
-
 
     dataset = {"pos": np.empty((n_steps//10, 8, 3)),
                 "eucl_motion" : np.empty((n_steps//10, 1, 12)),
@@ -189,19 +188,3 @@ def write_data_nsim(num_sims, n_steps):
             pickle.dump(sim_data, f)
         f.close()
 
-# if __name__ == "__main__":
-
-#     obj_type = "box"
-#     n_steps = 500
-
-#     num_sims = 1000
-#     write_data_nsim(num_sims, n_steps)
-
-#     with open(f'data/sim_0.pickle', 'rb') as f:
-#         print(pickle.load(f)["data"]["pos_diff_start"])
-
-
-#     """
-#     Vragen:
-
-#     """

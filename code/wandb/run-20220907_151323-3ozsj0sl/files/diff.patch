@@ -1,0 +1,868 @@
+diff --git a/code/Old/git-openai-mujoco-worldgen-master/mujoco_worldgen/util/rotation.py b/code/Old/git-openai-mujoco-worldgen-master/mujoco_worldgen/util/rotation.py
+deleted file mode 100644
+index 2545ba3..0000000
+--- a/code/Old/git-openai-mujoco-worldgen-master/mujoco_worldgen/util/rotation.py
++++ /dev/null
+@@ -1,429 +0,0 @@
+-# rotation.py - rotation methods for Worldgen
+-# Many methods borrow heavily or entirely from transforms3d
+-# eventually some of these may be upstreamed, but credit to transforms3d
+-# authors for implementing the many of the formulations we use here.
+-
+-import numpy as np
+-import itertools
+-
+-'''
+-Rotations
+-=========
+-
+-Note: these have caused many subtle bugs in the past.
+-Be careful while updating these methods and while using them in clever ways.
+-
+-See MuJoCo documentation here: http://mujoco.org/book/modeling.html#COrientation
+-
+-Conventions
+------------
+-    - All functions accept batches as well as individual rotations
+-    - All rotation conventions match respective MuJoCo defaults
+-    - All angles are in radians
+-    - Matricies follow LR convention
+-    - Euler Angles are all relative with 'xyz' axes ordering
+-    - See specific representation for more information
+-
+-Representations
+----------------
+-
+-Euler
+-    There are many euler angle frames -- here we will strive to use the default
+-        in MuJoCo, which is eulerseq='xyz'.
+-    This frame is a relative rotating frame, about x, y, and z axes in order.
+-        Relative rotating means that after we rotate about x, then we use the
+-        new (rotated) y, and the same for z.
+-
+-Quaternions
+-    These are defined in terms of rotation (angle) about a unit vector (x, y, z)
+-    We use the following <q0, q1, q2, q3> convention:
+-            q0 = cos(angle / 2)
+-            q1 = sin(angle / 2) * x
+-            q2 = sin(angle / 2) * y
+-            q3 = sin(angle / 2) * z
+-        This is also sometimes called qw, qx, qy, qz.
+-    Note that quaternions are ambiguous, because we can represent a rotation by
+-        angle about vector <x, y, z> and -angle about vector <-x, -y, -z>.
+-        To choose between these, we pick "first nonzero positive", where we
+-        make the first nonzero element of the quaternion positive.
+-    This can result in mismatches if you're converting an quaternion that is not
+-        "first nonzero positive" to a different representation and back.
+-
+-Axis Angle
+-    (Not currently implemented)
+-    These are very straightforward.  Rotation is angle about a unit vector.
+-
+-XY Axes
+-    (Not currently implemented)
+-    We are given x axis and y axis, and z axis is cross product of x and y.
+-
+-Z Axis
+-    This is NOT RECOMMENDED.  Defines a unit vector for the Z axis,
+-        but rotation about this axis is not well defined.
+-    Instead pick a fixed reference direction for another axis (e.g. X)
+-        and calculate the other (e.g. Y = Z cross-product X),
+-        then use XY Axes rotation instead.
+-
+-SO3
+-    (Not currently implemented)
+-    While not supported by MuJoCo, this representation has a lot of nice features.
+-    We expect to add support for these in the future.
+-
+-TODO / Missing
+---------------
+-    - Rotation integration or derivatives (e.g. velocity conversions)
+-    - More representations (SO3, etc)
+-    - Random sampling (e.g. sample uniform random rotation)
+-    - Performance benchmarks/measurements
+-    - (Maybe) define everything as to/from matricies, for simplicity
+-'''
+-
+-# For testing whether a number is close to zero
+-_FLOAT_EPS = np.finfo(np.float64).eps
+-_EPS4 = _FLOAT_EPS * 4.0
+-
+-
+-def euler2mat(euler):
+-    """ Convert Euler Angles to Rotation Matrix.  See rotation.py for notes """
+-    euler = np.asarray(euler, dtype=np.float64)
+-    assert euler.shape[-1] == 3, "Invalid shaped euler {}".format(euler)
+-
+-    ai, aj, ak = -euler[..., 2], -euler[..., 1], -euler[..., 0]
+-    si, sj, sk = np.sin(ai), np.sin(aj), np.sin(ak)
+-    ci, cj, ck = np.cos(ai), np.cos(aj), np.cos(ak)
+-    cc, cs = ci * ck, ci * sk
+-    sc, ss = si * ck, si * sk
+-
+-    mat = np.empty(euler.shape[:-1] + (3, 3), dtype=np.float64)
+-    mat[..., 2, 2] = cj * ck
+-    mat[..., 2, 1] = sj * sc - cs
+-    mat[..., 2, 0] = sj * cc + ss
+-    mat[..., 1, 2] = cj * sk
+-    mat[..., 1, 1] = sj * ss + cc
+-    mat[..., 1, 0] = sj * cs - sc
+-    mat[..., 0, 2] = -sj
+-    mat[..., 0, 1] = cj * si
+-    mat[..., 0, 0] = cj * ci
+-    return mat
+-
+-
+-def euler2quat(euler):
+-    """ Convert Euler Angles to Quaternions.  See rotation.py for notes """
+-    euler = np.asarray(euler, dtype=np.float64)
+-    assert euler.shape[-1] == 3, "Invalid shape euler {}".format(euler)
+-
+-    ai, aj, ak = euler[..., 2] / 2, -euler[..., 1] / 2, euler[..., 0] / 2
+-    si, sj, sk = np.sin(ai), np.sin(aj), np.sin(ak)
+-    ci, cj, ck = np.cos(ai), np.cos(aj), np.cos(ak)
+-    cc, cs = ci * ck, ci * sk
+-    sc, ss = si * ck, si * sk
+-
+-    quat = np.empty(euler.shape[:-1] + (4,), dtype=np.float64)
+-    quat[..., 0] = cj * cc + sj * ss
+-    quat[..., 3] = cj * sc - sj * cs
+-    quat[..., 2] = -(cj * ss + sj * cc)
+-    quat[..., 1] = cj * cs - sj * sc
+-    return quat
+-
+-
+-def mat2euler(mat):
+-    """ Convert Rotation Matrix to Euler Angles.  See rotation.py for notes """
+-    mat = np.asarray(mat, dtype=np.float64)
+-    assert mat.shape[-2:] == (3, 3), "Invalid shape matrix {}".format(mat)
+-
+-    cy = np.sqrt(mat[..., 2, 2] * mat[..., 2, 2] + mat[..., 1, 2] * mat[..., 1, 2])
+-    condition = cy > _EPS4
+-    euler = np.empty(mat.shape[:-1], dtype=np.float64)
+-    euler[..., 2] = np.where(condition,
+-                             -np.arctan2(mat[..., 0, 1], mat[..., 0, 0]),
+-                             -np.arctan2(-mat[..., 1, 0], mat[..., 1, 1]))
+-    euler[..., 1] = np.where(condition,
+-                             -np.arctan2(-mat[..., 0, 2], cy),
+-                             -np.arctan2(-mat[..., 0, 2], cy))
+-    euler[..., 0] = np.where(condition,
+-                             -np.arctan2(mat[..., 1, 2], mat[..., 2, 2]),
+-                             0.0)
+-    return euler
+-
+-
+-def mat2quat(mat):
+-    """ Convert Rotation Matrix to Quaternion.  See rotation.py for notes """
+-    mat = np.asarray(mat, dtype=np.float64)
+-    assert mat.shape[-2:] == (3, 3), "Invalid shape matrix {}".format(mat)
+-
+-    Qxx, Qyx, Qzx = mat[..., 0, 0], mat[..., 0, 1], mat[..., 0, 2]
+-    Qxy, Qyy, Qzy = mat[..., 1, 0], mat[..., 1, 1], mat[..., 1, 2]
+-    Qxz, Qyz, Qzz = mat[..., 2, 0], mat[..., 2, 1], mat[..., 2, 2]
+-    # Fill only lower half of symmetric matrix
+-    K = np.zeros(mat.shape[:-2] + (4, 4), dtype=np.float64)
+-    K[..., 0, 0] = Qxx - Qyy - Qzz
+-    K[..., 1, 0] = Qyx + Qxy
+-    K[..., 1, 1] = Qyy - Qxx - Qzz
+-    K[..., 2, 0] = Qzx + Qxz
+-    K[..., 2, 1] = Qzy + Qyz
+-    K[..., 2, 2] = Qzz - Qxx - Qyy
+-    K[..., 3, 0] = Qyz - Qzy
+-    K[..., 3, 1] = Qzx - Qxz
+-    K[..., 3, 2] = Qxy - Qyx
+-    K[..., 3, 3] = Qxx + Qyy + Qzz
+-    K /= 3.0
+-    # TODO: vectorize this -- probably could be made faster
+-    q = np.empty(K.shape[:-2] + (4,))
+-    it = np.nditer(q[..., 0], flags=['multi_index'])
+-    while not it.finished:
+-        # Use Hermitian eigenvectors, values for speed
+-        vals, vecs = np.linalg.eigh(K[it.multi_index])
+-        # Select largest eigenvector, reorder to w,x,y,z quaternion
+-        q[it.multi_index] = vecs[[3, 0, 1, 2], np.argmax(vals)]
+-        # Prefer quaternion with positive w
+-        # (q * -1 corresponds to same rotation as q)
+-        if q[it.multi_index][0] < 0:
+-            q[it.multi_index] *= -1
+-        it.iternext()
+-    return q
+-
+-
+-def quat2euler(quat):
+-    """ Convert Quaternion to Euler Angles.  See rotation.py for notes """
+-    return mat2euler(quat2mat(quat))
+-
+-
+-def subtract_euler(e1, e2):
+-    assert e1.shape == e2.shape
+-    assert e1.shape[-1] == 3
+-    q1 = euler2quat(e1)
+-    q2 = euler2quat(e2)
+-    q_diff = quat_mul(q1, quat_conjugate(q2))
+-    return quat2euler(q_diff)
+-
+-
+-def quat2mat(quat):
+-    """ Convert Quaternion to Euler Angles.  See rotation.py for notes """
+-    quat = np.asarray(quat, dtype=np.float64)
+-    assert quat.shape[-1] == 4, "Invalid shape quat {}".format(quat)
+-
+-    w, x, y, z = quat[..., 0], quat[..., 1], quat[..., 2], quat[..., 3]
+-    Nq = np.sum(quat * quat, axis=-1)
+-    s = 2.0 / Nq
+-    X, Y, Z = x * s, y * s, z * s
+-    wX, wY, wZ = w * X, w * Y, w * Z
+-    xX, xY, xZ = x * X, x * Y, x * Z
+-    yY, yZ, zZ = y * Y, y * Z, z * Z
+-
+-    mat = np.empty(quat.shape[:-1] + (3, 3), dtype=np.float64)
+-    mat[..., 0, 0] = 1.0 - (yY + zZ)
+-    mat[..., 0, 1] = xY - wZ
+-    mat[..., 0, 2] = xZ + wY
+-    mat[..., 1, 0] = xY + wZ
+-    mat[..., 1, 1] = 1.0 - (xX + zZ)
+-    mat[..., 1, 2] = yZ - wX
+-    mat[..., 2, 0] = xZ - wY
+-    mat[..., 2, 1] = yZ + wX
+-    mat[..., 2, 2] = 1.0 - (xX + yY)
+-    return np.where((Nq > _FLOAT_EPS)[..., np.newaxis, np.newaxis], mat, np.eye(3))
+-
+-
+-def quat_conjugate(q):
+-    inv_q = -q
+-    inv_q[..., 0] *= -1
+-    return inv_q
+-
+-
+-def quat_mul(quat0, quat1):
+-    assert quat0.shape == quat1.shape
+-    assert quat0.shape[-1] == 4
+-
+-    w0 = quat0[..., 0]
+-    x0 = quat0[..., 1]
+-    y0 = quat0[..., 2]
+-    z0 = quat0[..., 3]
+-
+-    w1 = quat1[..., 0]
+-    x1 = quat1[..., 1]
+-    y1 = quat1[..., 2]
+-    z1 = quat1[..., 3]
+-
+-    w = w0 * w1 - x0 * x1 - y0 * y1 - z0 * z1
+-    x = w0 * x1 + x0 * w1 + y0 * z1 - z0 * y1
+-    y = w0 * y1 + y0 * w1 + z0 * x1 - x0 * z1
+-    z = w0 * z1 + z0 * w1 + x0 * y1 - y0 * x1
+-    quat = np.stack([w, x, y, z], axis=-1)
+-
+-    assert quat.shape == quat0.shape
+-    return quat
+-
+-
+-def quat_rot_vec(q, v0):
+-    q_v0 = np.array([0, v0[0], v0[1], v0[2]])
+-    q_v = quat_mul(q, quat_mul(q_v0, quat_conjugate(q)))
+-    v = q_v[1:]
+-    return v
+-
+-
+-def quat_identity():
+-    return np.array([1, 0, 0, 0])
+-
+-
+-def quat_difference(q, p):
+-    return quat_normalize(quat_mul(q, quat_conjugate(p)))
+-
+-
+-def quat_magnitude(q):
+-    w = q[..., 0]
+-    assert np.all(w >= 0)
+-    return 2 * np.arccos(np.clip(w, -1., 1.))
+-
+-
+-def quat_normalize(q):
+-    assert q.shape[-1] == 4
+-    return q * np.sign(q[..., [0]])  # use quat with w >= 0
+-
+-
+-def quat_average(quats, weights=None):
+-    """Weighted average of a list of quaternions."""
+-    n_quats = len(quats)
+-    weights = np.array([1.0 / n_quats] * n_quats if weights is None else weights)
+-    assert np.all(weights >= 0.0)
+-    assert len(weights) == len(quats)
+-    weights = weights / np.sum(weights)
+-
+-    # Average of quaternion:
+-    # https://math.stackexchange.com/questions/1204228
+-    # /how-would-i-apply-an-exponential-moving-average-to-quaternions
+-    outer_prods = [w * np.outer(q, q) for w, q in zip(weights, quats)]
+-    summed_outer_prod = np.sum(outer_prods, axis=0)
+-    assert summed_outer_prod.shape == (4, 4)
+-
+-    evals, evecs = np.linalg.eig(summed_outer_prod)
+-    biggest_i = np.argmax(np.real(evals))
+-    return quat_normalize(evecs[:, biggest_i])
+-
+-
+-def quat2axisangle(quat):
+-    theta = 0
+-    axis = np.array([0, 0, 1])
+-    sin_theta = np.linalg.norm(quat[1:])
+-
+-    if (sin_theta > 0.0001):
+-        theta = 2 * np.arcsin(sin_theta)
+-        theta *= 1 if quat[0] >= 0 else -1
+-        axis = quat[1:] / sin_theta
+-
+-    return axis, theta
+-
+-
+-def euler2point_euler(euler):
+-    _euler = euler.copy()
+-    if len(_euler.shape) < 2:
+-        _euler = np.expand_dims(_euler, 0)
+-    assert(_euler.shape[1] == 3)
+-    _euler_sin = np.sin(_euler)
+-    _euler_cos = np.cos(_euler)
+-    return np.concatenate([_euler_sin, _euler_cos], axis=-1)
+-
+-
+-def point_euler2euler(euler):
+-    _euler = euler.copy()
+-    if len(_euler.shape) < 2:
+-        _euler = np.expand_dims(_euler, 0)
+-    assert(_euler.shape[1] == 6)
+-    angle = np.arctan(_euler[..., :3] / _euler[..., 3:])
+-    angle[_euler[..., 3:] < 0] += np.pi
+-    return angle
+-
+-
+-def quat2point_quat(quat):
+-    # Should be in qw, qx, qy, qz
+-    _quat = quat.copy()
+-    if len(_quat.shape) < 2:
+-        _quat = np.expand_dims(_quat, 0)
+-    assert(_quat.shape[1] == 4)
+-    angle = np.arccos(_quat[:, [0]]) * 2
+-    xyz = _quat[:, 1:]
+-    xyz[np.squeeze(np.abs(np.sin(angle/2))) >= 1e-5] = (xyz / np.sin(angle / 2))[np.squeeze(np.abs(np.sin(angle/2))) >= 1e-5]
+-    return np.concatenate([np.sin(angle), np.cos(angle), xyz], axis=-1)
+-
+-
+-def point_quat2quat(quat):
+-    _quat = quat.copy()
+-    if len(_quat.shape) < 2:
+-        _quat = np.expand_dims(_quat, 0)
+-    assert(_quat.shape[1] == 5)
+-    angle = np.arctan(_quat[:, [0]] / _quat[:, [1]])
+-    qw = np.cos(angle / 2)
+-
+-    qxyz = _quat[:, 2:]
+-    qxyz[np.squeeze(np.abs(np.sin(angle/2))) >= 1e-5] = (qxyz * np.sin(angle/2))[np.squeeze(np.abs(np.sin(angle/2))) >= 1e-5]
+-    return np.concatenate([qw, qxyz], axis=-1)
+-
+-
+-def normalize_angles(angles):
+-    '''Puts angles in [-pi, pi] range.'''
+-    angles = angles.copy()
+-    if angles.size > 0:
+-        angles = (angles + np.pi) % (2 * np.pi) - np.pi
+-        assert -(np.pi + 1e-6) <= angles.min() and angles.max() <= (np.pi + 1e-6)
+-    return angles
+-
+-
+-def round_to_straight_angles(angles):
+-    '''Returns closest angle modulo 90 degrees '''
+-    angles = np.round(angles / (np.pi / 2)) * (np.pi / 2)
+-    return normalize_angles(angles)
+-
+-
+-def round_to_straight_quat(quat):
+-    angles = quat2euler(quat)
+-    rounded_angles = round_to_straight_angles(angles)
+-    return euler2quat(rounded_angles)
+-
+-
+-def get_parallel_rotations():
+-    mult90 = [0, np.pi/2, -np.pi/2, np.pi]
+-    parallel_rotations = []
+-    for euler in itertools.product(mult90, repeat=3):
+-        canonical = mat2euler(euler2mat(euler))
+-        canonical = np.round(canonical / (np.pi / 2))
+-        if canonical[0] == -2:
+-            canonical[0] = 2
+-        if canonical[2] == -2:
+-            canonical[2] = 2
+-        canonical *= np.pi / 2
+-        if all([(canonical != rot).any() for rot in parallel_rotations]):
+-            parallel_rotations += [canonical]
+-    assert len(parallel_rotations) == 24
+-    return parallel_rotations
+-
+-
+-def quat_from_angle_and_axis(angle, axis):
+-    assert axis.shape[-1] == 3
+-    axis /= np.linalg.norm(axis, axis=-1, keepdims=True)
+-    angle = np.reshape(angle, axis[..., :1].shape)
+-    w = np.cos(angle / 2.)
+-    v = np.sin(angle / 2.) * axis
+-    quat = np.concatenate([w, v], axis=-1)
+-    quat /= np.linalg.norm(quat, axis=-1, keepdims=True)
+-
+-    assert np.array_equal(quat.shape[:-1], axis.shape[:-1])
+-    return quat
+-
+-
+-def uniform_quat(random):
+-    """ Returns a quaternion uniformly at random. Choosing a random axis/angle or even uniformly
+-    random Euler angles will result in a biased angle rather than a spherically symmetric one.
+-    See https://en.wikipedia.org/wiki/Rotation_matrix#Uniform_random_rotation_matrices for details.
+-    """
+-    w = random.randn(4)
+-    return quat_normalize(w / np.linalg.norm(w))
+-
+-
+-def apply_euler_rotations(base_quat, rotation_angles):
+-    """Apply a sequence of euler angle rotations on to the base quaternion
+-    """
+-    new_rot_mat = np.eye(3)
+-    for rot_angle in rotation_angles:
+-        new_rot_mat = np.matmul(euler2mat(rot_angle * np.pi / 2.), new_rot_mat)
+-
+-    new_rot_mat = np.matmul(quat2mat(base_quat), new_rot_mat)
+-    new_quat = mat2quat(new_rot_mat)
+-    return new_quat
+diff --git a/code/convert.py b/code/convert.py
+index 45292ae..7e9622e 100644
+--- a/code/convert.py
++++ b/code/convert.py
+@@ -1,57 +1,39 @@
+ import torch
+ import numpy as np
+ from new_mujoco import fast_rotVecQuat, own_rotVecQuat
++from pyquaternion import Quaternion
++from rotation_Thijs import quat2mat
+ 
+ def eucl2pos(eucl_motion, start_pos):
++    # print(eucl.shape, start_pos.shape)
++    # NN
++    # (128 x 12), (128 x 8 x 3)
++    # LSTM
++    # (128 x 20 x 12), (128 x 8 x 3)
+     """
+     Input:
+         eucl_motion: Original predictions (euclidean motion)
+         start_pos: Start position of simulation
+ 
+     Output:
+-        Converted eucledian motion to current position
++        Converted eucledian motion to current xyz position
+     """
+-    # Convert to [batch, 1, ...]
++    # print(start_pos.shape, eucl_motion.shape)
+     if len(eucl_motion.shape) == 2:
+         out = torch.empty_like(start_pos)
+-        # print(eucl_motion.dtype)
+-        # eucl_motion = eucl_motion.astype('float64')
+-        # start_pos = start_pos.astype('float64')
+         for batch in range(out.shape[0]):
+-            out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
++            out[batch] =  (eucl_motion[batch, :9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
+ 
+-        # eucl_motion = eucl_motion[:, None, :]
+-        # start_pos = start_pos[:, None, :]
+     else:
+-        # print(eucl_motion.shape, start_pos.shape)
+         out = torch.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-1]))
+         eucl_motion = eucl_motion.astype('float64')
+         start_pos = start_pos.astype('float64')
+         frames = eucl_motion.shape[1]
+-        # print(start_pos[0].shape)
+         for batch in range(out.shape[0]):
+-            # out[batch] =  (eucl_motion[batch,:9].reshape(3,3) @ start_pos[batch].T + np.vstack([eucl_motion[batch, 9:]]*8).T).T
+-
+             for frame in range(frames):
+-                # print(print(out[batch, frame].shape))
+-                # print("reshaped_rot_mat", eucl_motion[batch, frame,:9].reshape(3,3).shape)
+-                # print("reshaped start pos", start_pos[batch].reshape(8,3).T.shape)
+-                # print("translation?", np.vstack([eucl_motion[batch, frame, 9:]]*8).T.shape)
+-                # print((eucl_motion[batch, frame,:9].reshape(3,3) @ start_pos[batch].reshape(8,3).T + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).T.shape)
+-
+                 rotated_start = eucl_motion[batch, frame, :9].reshape(3,3) @ start_pos[batch].reshape(8,3).T
+-                # print("rot_start", rotated_start.shape)
+-                # print((rotated_start + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).flatten().shape)
+                 out[batch, frame] =  (rotated_start + np.vstack([eucl_motion[batch, frame, 9:]]*8).T).flatten()
+ 
+-            # start_posc = start_pos[batch].reshape((8,3))
+-            # reshaped_rot = eucl_motion[batch,:,:9].reshape(frames,3,3).reshape(60,-1)
+-            # print("res_rot", reshaped_rot.reshape(60,-1).shape)
+-
+-            # print((reshaped_rot.squeeze() @ start_posc.squeeze().T).shape)
+-
+-            # out[batch,:] =  (reshaped_rot.squeeze() @ start_posc.squeeze().T + np.vstack([eucl_motion[batch, :, 9:]]*8).T).T
+-
+ 
+     return out.reshape((out.shape[0], -1))
+ 
+@@ -71,7 +53,7 @@ def quat2pos(quat, start_pos):
+             (batch, .., 8, 3)
+ 
+     Output:
+-        Converted quaternion to current position
++        Converted quaternion to current xyz position
+     """
+ 
+ 
+@@ -109,12 +91,17 @@ def log_quat2pos(log_quat, start_pos):
+         start_pos: Start position of simulation
+ 
+     Output:
+-        Converted log quaternion to current position
++        Converted log quaternion to current xyz position
+     """
++    print(len(log_quat.shape))
+     if len(log_quat.shape) == 2:
+         rot_vec = log_quat[:, :3]
++        print(rot_vec)
++
+         angle = log_quat[:, 3]
++        print(angle)
+         trans = log_quat[:, 4:]
++        print(trans)
+ 
+         cos = torch.cos(angle/2).reshape(-1, 1)
+         sin = torch.sin(angle/2)
+@@ -125,6 +112,8 @@ def log_quat2pos(log_quat, start_pos):
+         part1_1 = rot_vec * torch.vstack([sin]*3).T
+         quat[:, 1:4] = part1_1
+         quat[:, 4:] = trans
++        print("dhwie",quat)
++        exit()
+ 
+         return quat2pos(quat, start_pos)
+ 
+@@ -147,13 +136,18 @@ def log_quat2pos(log_quat, start_pos):
+ # start = [[[1,0,0],[2,0,0],[0.5,0,0]],
+ #             [[0,1,0],[0,2,0],[0,0.5,0]]]
+ 
+-# start_nn = [[[1,0,0],[2,0,0],[0.5,0,0]]]
++# start_nn = torch.tensor([[[1,0,0],[2,0,0],[0.5,0,0]]])
+ 
+ # log_quat = [[[1,0,0.7,0.4,0,0,-0.2]],
+ #             [[0.3,0,0.7,0.4,0,0,-0.3]]]
+ # log_quat_nn = [[[1,0,0.7,0.4,0,0,-0.2]]]
+ 
+-# log_quat2pos(log_quat, start)
++# lq = torch.tensor([[0.304, 0.397 , 0.616, 0.609]])
++# # q =  Quaternion.random()
++# # print(q)
++# # print(Quaternion.exp(q))
++
++# print(log_quat2pos(lq, start_nn))
+ 
+ 
+ def diff_pos_start2pos(true_preds, start_pos):
+diff --git a/code/lstm.py b/code/lstm.py
+index 46e91d6..d289dc6 100644
+--- a/code/lstm.py
++++ b/code/lstm.py
+@@ -18,7 +18,7 @@ class LSTM(nn.Module):
+         self.n_layers = config.n_layers
+         self.hidden_size = config.hidden_size
+         self.in_size = in_size
+-        self.lstm = nn.LSTM(in_size, self.hidden_size, batch_first=True)
++        self.lstm = nn.LSTM(in_size, self.hidden_size, batch_first=True, dropout=config.dropout, num_layers=config.num_layers)
+         self.layers = nn.Sequential(
+             nn.Linear(self.hidden_size, in_size)
+         )
+@@ -135,9 +135,9 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
+         if epoch % 10 == 0:
+             train_log(loss_epoch/len(data_loader), epoch)
+ 
+-            true_loss, convert_loss = eval_model(model, test_loader, loss_module)
++            convert_loss = eval_model(model, test_loader, loss_module)
+             model.train()
+-            print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
++            print(epoch, round(loss_epoch.item()/len(data_loader), 10), '\t', round(convert_loss, 10))
+ 
+             # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
+             # f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
+@@ -167,7 +167,7 @@ def eval_model(model, data_loader, loss_module):
+ 
+         wandb.log({"Converted test loss": total_convert_loss/len(data_loader)})
+ 
+-    return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
++    return total_convert_loss.item()/len(data_loader)
+ 
+ 
+ 
+@@ -221,16 +221,18 @@ config = dict(
+     learning_rate = 0.01,
+     epochs = 400,
+     batch_size = 128,
++    dropout = 0,
++    num_layers = 1, 
+     loss_type = "L1",
+     loss_reduction_type = "mean",
+     optimizer = "Adam",
+-    data_type = "log_quat",
++    data_type = "quat",
+     architecture = "lstm",
+     train_sims = list(train_sims),
+     test_sims = list(test_sims),
+     n_frames = 20,
+     n_sims = n_sims,
+-    n_layers = 2,
++    n_layers = 1,
+     hidden_size = 96
+     )
+ 
+diff --git a/code/new_mujoco.py b/code/new_mujoco.py
+index 901482e..32a69cc 100644
+--- a/code/new_mujoco.py
++++ b/code/new_mujoco.py
+@@ -16,15 +16,6 @@ import roma
+ 
+ VERT_NUM = 1
+ 
+-def rot_quaternions(q1, q2):
+-    # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
+-    w0, x0, y0, z0 = q1
+-    w1, x1, y1, z1 = q2
+-    return torch.tensor([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+-                     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+-                     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+-                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
+-
+ # def own_rotVecQuat(v, q):
+ # original from https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
+ #     v_new = np.zeros(4)
+@@ -60,6 +51,14 @@ def fast_rotVecQuat(v, q):
+ 
+     return mult2[:, :3]
+ 
++def rot_quaternions(q1, q2):
++    # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
++    w0, x0, y0, z0 = q1
++    w1, x1, y1, z1 = q2
++    return torch.tensor([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
++                     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
++                     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
++                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
+ 
+ def own_rotVecQuat(v, q):
+     # According to mujoco? Ask Steven/Leo
+@@ -147,7 +146,6 @@ def generate_data(string, n_steps):
+     xyz_local = get_vert_local(sim, object_id)
+     # viewer = mujoco_py.MjViewer(sim)
+ 
+-
+     dataset = {"pos": np.empty((n_steps//10, 8, 3)),
+                 "eucl_motion" : np.empty((n_steps//10, 1, 12)),
+                 "quat": np.empty((n_steps//10, 1, 7)),
+@@ -189,19 +187,3 @@ def write_data_nsim(num_sims, n_steps):
+             pickle.dump(sim_data, f)
+         f.close()
+ 
+-# if __name__ == "__main__":
+-
+-#     obj_type = "box"
+-#     n_steps = 500
+-
+-#     num_sims = 1000
+-#     write_data_nsim(num_sims, n_steps)
+-
+-#     with open(f'data/sim_0.pickle', 'rb') as f:
+-#         print(pickle.load(f)["data"]["pos_diff_start"])
+-
+-
+-#     """
+-#     Vragen:
+-
+-#     """
+\ No newline at end of file
+diff --git a/code/results/log_quat/400_0.1_L1.txt b/code/results/log_quat/400_0.1_L1.txt
+index e4e1d45..35a72a2 100644
+--- a/code/results/log_quat/400_0.1_L1.txt
++++ b/code/results/log_quat/400_0.1_L1.txt
+@@ -94,3 +94,83 @@
+ 
+ [70, 16.5515405991, 49.6468972599, 32.806001551] 
+ 
++[0, 170.1999368107, 38.9321648093, 105.6056554458] 
++
++[10, 92.6035084444, 31.2090238683, 93.6285113166] 
++
++[20, 82.7709099265, 33.9736040901, 79.6830049403] 
++
++[30, 81.6609173943, 34.9503425149, 80.7188002642] 
++
++[40, 76.1201530905, 35.9844647576, 71.7593132468] 
++
++[50, 67.648272346, 36.2768770106, 61.6949247472] 
++
++[60, 65.1045783548, 35.6675163718, 59.1706255744] 
++
++[70, 63.8590375115, 36.1910938936, 59.1207993451] 
++
++[80, 64.029095818, 35.8896987017, 63.7765754251] 
++
++[90, 63.6038674747, 36.5385813994, 56.9994363224] 
++
++[100, 63.3908547794, 36.0028363396, 60.7586741728] 
++
++[110, 62.9007711972, 35.598449707, 60.3891529756] 
++
++[120, 63.2560819738, 35.4715037626, 58.273236443] 
++
++[130, 63.2373262293, 35.9498685949, 59.0199513155] 
++
++[140, 62.5842428768, 36.4538646025, 59.0598467659] 
++
++[150, 62.4917782054, 36.0976095761, 58.2565594841] 
++
++[160, 63.0035328585, 35.9698917165, 58.0612613454] 
++
++[170, 62.608333812, 36.945750517, 53.0548849667] 
++
++[180, 62.7929472082, 35.7922004251, 62.4459731158] 
++
++[190, 62.0805305032, 37.0587301815, 53.8170919979] 
++
++[200, 62.016702091, 35.8602366728, 59.0045166016] 
++
++[210, 61.8454805262, 36.7242288028, 56.912629969] 
++
++[220, 61.6765352137, 35.8945348403, 56.7751859777] 
++
++[230, 61.266501034, 35.6148178998, 61.395170324] 
++
++[240, 62.9870102826, 35.4338594324, 60.9439338235] 
++
++[250, 61.9982910156, 35.9463034237, 62.0120059743] 
++
++[260, 62.2355310777, 35.3866218118, 61.0965145335] 
++
++[270, 62.1486672794, 36.4505292107, 60.5655445772] 
++
++[280, 61.8217127183, 36.0704920152, 57.4367388557] 
++
++[290, 62.1719970703, 35.9509887695, 65.0177504596] 
++
++[300, 62.2935001149, 36.2360875747, 57.9245461857] 
++
++[310, 62.0312356388, 36.3793586282, 59.7045036765] 
++
++[320, 62.2194967831, 36.6936286477, 57.7930082433] 
++
++[330, 62.0692497702, 36.9619248334, 54.755385455] 
++
++[340, 61.5714542165, 36.4412985409, 55.0698924345] 
++
++[350, 62.1022805607, 36.8978307387, 55.4577277688] 
++
++[360, 62.1653550092, 36.011754653, 60.232895795] 
++
++[370, 62.0070800781, 36.9336224724, 56.9202880859] 
++
++[380, 61.5735078699, 36.0806023093, 58.029013241] 
++
++[390, 61.3278162339, 35.8280244715, 61.9018411075] 
++
+diff --git a/code/results/quat/400_0.1_L1.txt b/code/results/quat/400_0.1_L1.txt
+index bb94ad1..2096513 100644
+--- a/code/results/quat/400_0.1_L1.txt
++++ b/code/results/quat/400_0.1_L1.txt
+@@ -148,3 +148,27 @@
+ 
+ [0, 172.6938620175, 38.0000035903, 83.811221852] 
+ 
++[0, 180.487003102, 35.6888391831, 80.507173426] 
++
++[10, 80.157362994, 38.0705386891, 82.8792293773] 
++
++[20, 80.2578053194, 38.6525663488, 80.1584329044] 
++
++[30, 80.3741096048, 38.7345545152, 81.3423066981] 
++
++[40, 80.2598805147, 38.6987412397, 82.7293270335] 
++
++[50, 79.9452478745, 38.7075733858, 81.0898940142] 
++
++[60, 80.0512049058, 38.7833180147, 81.4423684513] 
++
++[70, 80.1886776195, 38.7475944968, 80.1777200138] 
++
++[80, 80.3044002757, 38.7675027286, 80.826006721] 
++
++[90, 80.0417695887, 38.7096557617, 79.6358211742] 
++
++[100, 80.3345013787, 38.7005651137, 80.8273638557] 
++
++[110, 80.6687011719, 38.6507999196, 81.7869873047] 
++
+diff --git a/code/torch_nn.py b/code/torch_nn.py
+index 94badfa..8ec4f06 100644
+--- a/code/torch_nn.py
++++ b/code/torch_nn.py
+@@ -144,7 +144,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
+ 
+             true_loss, convert_loss = eval_model(model, test_loader, loss_module)
+             model.train()
+-            print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(true_loss, 10), '\t', round(convert_loss, 10))
++            print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(convert_loss, 10))
+ 
+             f = open(f"results/{config.data_type}/{num_epochs}_{config.learning_rate}_{loss_type}.txt", "a")
+             f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
+@@ -232,7 +232,7 @@ config = dict(
+     loss_type = "L1",
+     loss_reduction_type = "mean",
+     optimizer = "Adam",
+-    data_type = "log_quat",
++    data_type = "pos_diff_start",
+     architecture = "fcnn",
+     train_sims = list(train_sims),
+     test_sims = list(test_sims),
+@@ -240,7 +240,7 @@ config = dict(
+     n_sims = n_sims,
+     hidden_sizes = [128, 256, 128],
+     activation_func = ["Tanh", "Tanh", "ReLU"],
+-    dropout = [0, 0, 0],
++    dropout = [0.4, 0.2, 0.3],
+     batch_norm = [True, True, True]
+     )
+ 
+diff --git a/code/wandb/latest-run b/code/wandb/latest-run
+index 6c008a6..aff7b5d 120000
+--- a/code/wandb/latest-run
++++ b/code/wandb/latest-run
+@@ -1 +1 @@
+-run-20220819_163427-392uey4r
+\ No newline at end of file
++run-20220907_151323-3ozsj0sl
+\ No newline at end of file
+diff --git a/code/wandb/run-20220819_163427-392uey4r/files/config.yaml b/code/wandb/run-20220819_163427-392uey4r/files/config.yaml
+index 830b016..efc7a04 100644
+--- a/code/wandb/run-20220819_163427-392uey4r/files/config.yaml
++++ b/code/wandb/run-20220819_163427-392uey4r/files/config.yaml
+@@ -19,6 +19,7 @@ _wandb:
+       - 55
+       3:
+       - 1
++      - 2
+       - 16
+       - 23
+       4: 3.9.10
+diff --git a/code/wandb/run-20220819_163427-392uey4r/files/wandb-summary.json b/code/wandb/run-20220819_163427-392uey4r/files/wandb-summary.json
+index 7fad60a..f9c0979 100644
+--- a/code/wandb/run-20220819_163427-392uey4r/files/wandb-summary.json
++++ b/code/wandb/run-20220819_163427-392uey4r/files/wandb-summary.json
+@@ -1 +1 @@
+-{"parameters/lstm.weight_ih_l0": {"_type": "histogram", "values": [1.0, 0.0, 1.0, 0.0, 1.0, 2.0, 0.0, 2.0, 2.0, 1.0, 1.0, 7.0, 4.0, 3.0, 2.0, 2.0, 3.0, 2.0, 3.0, 8.0, 5.0, 11.0, 16.0, 18.0, 29.0, 60.0, 103.0, 397.0, 991.0, 639.0, 159.0, 70.0, 29.0, 26.0, 10.0, 12.0, 10.0, 11.0, 6.0, 5.0, 4.0, 7.0, 8.0, 5.0, 1.0, 3.0, 3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0], "bins": [-7.5569658279418945, -7.293715953826904, -7.030465602874756, -6.767215728759766, -6.503965377807617, -6.240715503692627, -5.977465629577637, -5.714215278625488, -5.450965404510498, -5.187715530395508, -4.924465179443359, -4.661215305328369, -4.397965431213379, -4.1347150802612305, -3.8714652061462402, -3.608215093612671, -3.3449649810791016, -3.0817148685455322, -2.818464756011963, -2.5552148818969727, -2.2919647693634033, -2.028714656829834, -1.7654646635055542, -1.5022146701812744, -1.238964557647705, -0.9757145047187805, -0.712464451789856, -0.4492143988609314, -0.18596434593200684, 0.07728570699691772, 0.3405357599258423, 0.6037858128547668, 0.8670358657836914, 1.1302859783172607, 1.3935359716415405, 1.6567859649658203, 1.9200360774993896, 2.183286190032959, 2.446536064147949, 2.7097861766815186, 2.973036289215088, 3.2362864017486572, 3.4995365142822266, 3.762786388397217, 4.026036262512207, 4.2892866134643555, 4.552536487579346, 4.815786838531494, 5.079036712646484, 5.342286586761475, 5.605536937713623, 5.868786811828613, 6.132037162780762, 6.395287036895752, 6.658536911010742, 6.921787261962891, 7.185037136077881, 7.448287010192871, 7.7115373611450195, 7.97478723526001, 8.238037109375, 8.501287460327148, 8.764537811279297, 9.027787208557129, 9.291037559509277]}, "_timestamp": 1660919743.956032, "_runtime": 76.85265302658081, "parameters/lstm.weight_hh_l0": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 2.0, 1.0, 4.0, 2.0, 3.0, 4.0, 4.0, 4.0, 11.0, 13.0, 16.0, 35.0, 36.0, 51.0, 104.0, 113.0, 184.0, 296.0, 505.0, 1063.0, 2433.0, 6794.0, 12178.0, 7724.0, 2685.0, 1118.0, 570.0, 311.0, 208.0, 128.0, 63.0, 56.0, 47.0, 30.0, 11.0, 12.0, 11.0, 4.0, 6.0, 5.0, 3.0, 2.0, 3.0, 1.0, 1.0, 1.0, 0.0, 0.0, 2.0, 0.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0], "bins": [-3.7952775955200195, -3.6524219512939453, -3.509566307067871, -3.366710662841797, -3.2238550186157227, -3.0809993743896484, -2.938143730163574, -2.7952880859375, -2.652432441711426, -2.5095767974853516, -2.3667211532592773, -2.223865509033203, -2.081009864807129, -1.9381542205810547, -1.7952985763549805, -1.6524429321289062, -1.509587287902832, -1.3667316436767578, -1.2238759994506836, -1.0810203552246094, -0.9381647109985352, -0.7953090667724609, -0.6524534225463867, -0.5095977783203125, -0.3667421340942383, -0.22388648986816406, -0.08103084564208984, 0.061824798583984375, 0.2046804428100586, 0.3475360870361328, 0.49039173126220703, 0.6332473754882812, 0.7761034965515137, 0.9189591407775879, 1.061814785003662, 1.2046704292297363, 1.3475260734558105, 1.4903817176818848, 1.633237361907959, 1.7760930061340332, 1.9189486503601074, 2.0618042945861816, 2.204659938812256, 2.34751558303833, 2.4903712272644043, 2.6332268714904785, 2.7760825157165527, 2.918938159942627, 3.061793804168701, 3.2046494483947754, 3.3475050926208496, 3.490360736846924, 3.633216381072998, 3.7760720252990723, 3.9189276695251465, 4.061783313751221, 4.204638957977295, 4.347494602203369, 4.490350246429443, 4.633205890655518, 4.776061534881592, 4.918917179107666, 5.06177282333374, 5.2046284675598145, 5.347484111785889]}, "parameters/lstm.bias_ih_l0": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 4.0, 2.0, 2.0, 5.0, 3.0, 2.0, 1.0, 3.0, 4.0, 4.0, 3.0, 5.0, 10.0, 10.0, 19.0, 12.0, 25.0, 28.0, 22.0, 20.0, 16.0, 19.0, 19.0, 26.0, 20.0, 20.0, 13.0, 13.0, 10.0, 11.0, 7.0, 7.0, 5.0, 2.0, 1.0, 1.0, 0.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0], "bins": [-1.1774333715438843, -1.1431559324264526, -1.108878493309021, -1.0746010541915894, -1.0403234958648682, -1.0060460567474365, -0.9717686176300049, -0.9374911785125732, -0.9032137393951416, -0.86893630027771, -0.8346588611602783, -0.8003813624382019, -0.7661039233207703, -0.7318264842033386, -0.6975489854812622, -0.6632715463638306, -0.6289941072463989, -0.5947166681289673, -0.5604392290115356, -0.5261617302894592, -0.4918842911720276, -0.45760685205459595, -0.4233293831348419, -0.3890519142150879, -0.35477447509765625, -0.3204970359802246, -0.2862195670604706, -0.25194209814071655, -0.2176646590232849, -0.18338720500469208, -0.14910975098609924, -0.11483229696750641, -0.08055484294891357, -0.04627738893032074, -0.011999934911727905, 0.02227751910686493, 0.056554973125457764, 0.0908324271440506, 0.12510988116264343, 0.15938733518123627, 0.1936647891998291, 0.22794224321842194, 0.26221969723701477, 0.2964971661567688, 0.33077460527420044, 0.3650520443916321, 0.3993295133113861, 0.43360698223114014, 0.4678844213485718, 0.5021618604660034, 0.5364392995834351, 0.5707167983055115, 0.6049942374229431, 0.6392716765403748, 0.6735491752624512, 0.7078266143798828, 0.7421040534973145, 0.7763814926147461, 0.8106589317321777, 0.8449364304542542, 0.8792138695716858, 0.9134913086891174, 0.9477688074111938, 0.9820462465286255, 1.0163236856460571]}, "parameters/lstm.bias_hh_l0": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 4.0, 1.0, 5.0, 3.0, 1.0, 3.0, 0.0, 3.0, 2.0, 4.0, 6.0, 7.0, 12.0, 17.0, 17.0, 17.0, 22.0, 20.0, 23.0, 23.0, 23.0, 18.0, 24.0, 23.0, 21.0, 16.0, 16.0, 9.0, 13.0, 7.0, 5.0, 6.0, 0.0, 2.0, 1.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0], "bins": [-1.1137187480926514, -1.0788301229476929, -1.0439414978027344, -1.0090528726577759, -0.9741643071174622, -0.9392757415771484, -0.9043871164321899, -0.8694984912872314, -0.834609866142273, -0.7997212409973145, -0.7648326754570007, -0.7299440503120422, -0.6950554251670837, -0.66016685962677, -0.6252782344818115, -0.590389609336853, -0.5555010437965393, -0.5206124186515808, -0.4857238233089447, -0.4508352279663086, -0.4159466028213501, -0.381058007478714, -0.3461694121360779, -0.3112807869911194, -0.27639222145080566, -0.24150361120700836, -0.20661500096321106, -0.17172640562057495, -0.13683779537677765, -0.10194918513298035, -0.06706058233976364, -0.03217197582125664, 0.002716660499572754, 0.03760526701807976, 0.07249387353658676, 0.10738247632980347, 0.14227108657360077, 0.17715969681739807, 0.21204829216003418, 0.24693690240383148, 0.28182554244995117, 0.3167141377925873, 0.3516027629375458, 0.3864913582801819, 0.4213799834251404, 0.4562685787677765, 0.4911571741104126, 0.5260457992553711, 0.5609343647956848, 0.5958229899406433, 0.630711555480957, 0.6656001806259155, 0.700488805770874, 0.7353773713111877, 0.7702659964561462, 0.8051546216011047, 0.8400431871414185, 0.874931812286377, 0.9098203778266907, 0.9447090029716492, 0.9795976281166077, 1.0144861936569214, 1.0493748188018799, 1.0842634439468384, 1.1191520690917969]}, "parameters/layers.0.weight": {"_type": "histogram", "values": [1.0, 2.0, 0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 4.0, 1.0, 1.0, 0.0, 3.0, 3.0, 3.0, 2.0, 7.0, 2.0, 2.0, 7.0, 4.0, 3.0, 5.0, 6.0, 10.0, 15.0, 18.0, 44.0, 125.0, 190.0, 93.0, 30.0, 18.0, 12.0, 3.0, 9.0, 5.0, 2.0, 1.0, 6.0, 1.0, 4.0, 2.0, 2.0, 3.0, 4.0, 4.0, 3.0, 0.0, 3.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0], "bins": [-6.358852386474609, -6.142219543457031, -5.925586700439453, -5.708953857421875, -5.492321014404297, -5.275688171386719, -5.059055328369141, -4.8424224853515625, -4.625789642333984, -4.409156799316406, -4.192523956298828, -3.97589111328125, -3.759258270263672, -3.5426254272460938, -3.3259925842285156, -3.1093597412109375, -2.8927271366119385, -2.6760942935943604, -2.4594614505767822, -2.242828607559204, -2.026195764541626, -1.8095630407333374, -1.5929301977157593, -1.3762973546981812, -1.1596646308898926, -0.9430317878723145, -0.7263989448547363, -0.509766161441803, -0.29313331842422485, -0.07650049030780792, 0.140132337808609, 0.35676515102386475, 0.5733981132507324, 0.7900309562683105, 1.0066637992858887, 1.2232966423034668, 1.439929485321045, 1.6565622091293335, 1.8731950521469116, 2.0898280143737793, 2.3064608573913574, 2.5230937004089355, 2.7397265434265137, 2.956359386444092, 3.17299222946167, 3.389625072479248, 3.606257915496826, 3.8228907585144043, 4.039523124694824, 4.256155967712402, 4.4727888107299805, 4.689421653747559, 4.906054496765137, 5.122687339782715, 5.339320182800293, 5.555953025817871, 5.772585868835449, 5.989218711853027, 6.2058515548706055, 6.422484397888184, 6.639117240905762, 6.85575008392334, 7.072382926940918, 7.289015769958496, 7.505648612976074]}, "parameters/layers.0.bias": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-0.9776317477226257, -0.9191328287124634, -0.8606339693069458, -0.8021351099014282, -0.7436361908912659, -0.6851372718811035, -0.6266384124755859, -0.5681395530700684, -0.509640634059906, -0.45114174485206604, -0.3926428556442261, -0.3341439664363861, -0.27564507722854614, -0.21714618802070618, -0.1586472988128662, -0.10014840960502625, -0.04164952039718628, 0.016849368810653687, 0.07534825801849365, 0.13384714722633362, 0.19234603643417358, 0.25084492564201355, 0.3093438148498535, 0.3678427040576935, 0.42634159326553345, 0.4848404824733734, 0.5433393716812134, 0.601838231086731, 0.6603371500968933, 0.7188360691070557, 0.7773349285125732, 0.8358337879180908, 0.8943326473236084, 0.952831506729126, 1.0113303661346436, 1.0698293447494507, 1.1283282041549683, 1.1868270635604858, 1.245326042175293, 1.3038249015808105, 1.3623237609863281, 1.4208226203918457, 1.4793214797973633, 1.5378204584121704, 1.596319317817688, 1.6548181772232056, 1.7133171558380127, 1.7718160152435303, 1.8303148746490479, 1.8888137340545654, 1.947312593460083, 2.0058114528656006, 2.0643105506896973, 2.122809410095215, 2.1813082695007324, 2.23980712890625, 2.2983059883117676, 2.356804847717285, 2.4153037071228027, 2.4738025665283203, 2.532301425933838, 2.5908005237579346, 2.649299383163452, 2.7077982425689697, 2.7662971019744873]}, "gradients/layers.0.bias": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-4.514890670776367, -4.311809539794922, -4.108728408813477, -3.9056472778320312, -3.702566146850586, -3.4994847774505615, -3.296403646469116, -3.093322515487671, -2.8902413845062256, -2.6871602535247803, -2.484079122543335, -2.2809979915618896, -2.0779166221618652, -1.8748356103897095, -1.6717543601989746, -1.4686732292175293, -1.265592098236084, -1.0625109672546387, -0.8594297766685486, -0.6563485860824585, -0.4532674551010132, -0.2501862943172455, -0.04710513353347778, 0.15597602725028992, 0.3590574264526367, 0.562138557434082, 0.7652197480201721, 0.9683009386062622, 1.1713820695877075, 1.3744632005691528, 1.5775444507598877, 1.780625581741333, 1.9837064743041992, 2.1867876052856445, 2.38986873626709, 2.592949867248535, 2.7960309982299805, 2.999112367630005, 3.20219349861145, 3.4052746295928955, 3.6083555221557617, 3.811436653137207, 4.014517784118652, 4.217598915100098, 4.420680046081543, 4.623761177062988, 4.826842308044434, 5.029923439025879, 5.233005046844482, 5.436086177825928, 5.639167308807373, 5.842248439788818, 6.045329570770264, 6.248410701751709, 6.451491832733154, 6.6545729637146, 6.857654571533203, 7.060735702514648, 7.263816833496094, 7.466897964477539, 7.669979095458984, 7.87306022644043, 8.076141357421875, 8.27922248840332, 8.482303619384766]}, "gradients/layers.0.weight": {"_type": "histogram", "values": [3.0, 0.0, 2.0, 1.0, 1.0, 0.0, 2.0, 1.0, 3.0, 0.0, 0.0, 2.0, 1.0, 0.0, 2.0, 3.0, 3.0, 0.0, 3.0, 6.0, 4.0, 4.0, 4.0, 2.0, 1.0, 3.0, 6.0, 12.0, 15.0, 15.0, 454.0, 30.0, 16.0, 14.0, 10.0, 3.0, 6.0, 5.0, 1.0, 3.0, 1.0, 2.0, 3.0, 2.0, 4.0, 1.0, 4.0, 2.0, 0.0, 0.0, 2.0, 0.0, 0.0, 3.0, 1.0, 1.0, 0.0, 0.0, 2.0, 0.0, 1.0, 0.0, 1.0, 1.0], "bins": [-8.439408302307129, -8.165785789489746, -7.89216423034668, -7.618542194366455, -7.3449201583862305, -7.071297645568848, -6.797675609588623, -6.524053573608398, -6.250431537628174, -5.976809501647949, -5.703187465667725, -5.4295654296875, -5.155942916870117, -4.882320880889893, -4.608698844909668, -4.335076808929443, -4.061454772949219, -3.787832736968994, -3.5142107009887695, -3.240588426589966, -2.966966390609741, -2.6933443546295166, -2.419722080230713, -2.1461000442504883, -1.8724780082702637, -1.598855972290039, -1.325233817100525, -1.0516116619110107, -0.7779896259307861, -0.5043675303459167, -0.23074543476104736, 0.04287666082382202, 0.3164987564086914, 0.5901208519935608, 0.8637429475784302, 1.1373651027679443, 1.410987138748169, 1.6846091747283936, 1.9582313299179077, 2.231853485107422, 2.5054755210876465, 2.779097557067871, 3.0527195930480957, 3.3263418674468994, 3.599963903427124, 3.8735859394073486, 4.147208213806152, 4.420830249786377, 4.694452285766602, 4.968074321746826, 5.241696357727051, 5.515318393707275, 5.7889404296875, 6.062562942504883, 6.336184978485107, 6.609807014465332, 6.883429050445557, 7.157051086425781, 7.430673122406006, 7.7042951583862305, 7.977917671203613, 8.25153923034668, 8.525161743164062, 8.798783302307129, 9.072405815124512]}, "gradients/lstm.bias_hh_l0": {"_type": "histogram", "values": [2.0, 1.0, 1.0, 1.0, 2.0, 0.0, 1.0, 1.0, 1.0, 2.0, 3.0, 2.0, 2.0, 9.0, 12.0, 321.0, 6.0, 5.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-0.14075972139835358, -0.13144050538539886, -0.12212130427360535, -0.11280208826065063, -0.10348287969827652, -0.0941636711359024, -0.08484445512294769, -0.07552524656057358, -0.06620603799819946, -0.05688682943582535, -0.047567617148160934, -0.03824840486049652, -0.028929196298122406, -0.019609985873103142, -0.010290775448083878, -0.0009715650230646133, 0.008347645401954651, 0.017666855826973915, 0.02698606625199318, 0.03630527853965759, 0.04562448710203171, 0.05494369566440582, 0.06426291167736053, 0.07358212023973465, 0.08290132880210876, 0.09222053736448288, 0.101539745926857, 0.1108589619398117, 0.12017817050218582, 0.12949737906455994, 0.13881659507751465, 0.14813579618930817, 0.15745499730110168, 0.1667742133140564, 0.17609341442584991, 0.18541263043880463, 0.19473183155059814, 0.20405104756355286, 0.21337026357650757, 0.2226894646883011, 0.2320086807012558, 0.2413278967142105, 0.25064709782600403, 0.25996631383895874, 0.26928552985191345, 0.27860474586486816, 0.2879239320755005, 0.2972431480884552, 0.3065623641014099, 0.3158815801143646, 0.32520079612731934, 0.33451998233795166, 0.34383919835090637, 0.3531584143638611, 0.3624776303768158, 0.3717968463897705, 0.38111603260040283, 0.39043524861335754, 0.39975446462631226, 0.4090736508369446, 0.4183928668498993, 0.427712082862854, 0.4370312988758087, 0.4463505148887634, 0.45566973090171814]}, "gradients/lstm.weight_hh_l0": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 2.0, 1.0, 3.0, 3.0, 1.0, 1.0, 3.0, 6.0, 3.0, 10.0, 9.0, 12.0, 25.0, 26.0, 52.0, 57.0, 182.0, 35329.0, 772.0, 135.0, 56.0, 50.0, 40.0, 29.0, 13.0, 18.0, 2.0, 2.0, 7.0, 2.0, 3.0, 1.0, 2.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0], "bins": [-0.9147608280181885, -0.8892996907234192, -0.8638385534286499, -0.8383773565292358, -0.8129162192344666, -0.7874550819396973, -0.7619938850402832, -0.7365327477455139, -0.7110716104507446, -0.6856104731559753, -0.660149335861206, -0.634688138961792, -0.6092270016670227, -0.5837658643722534, -0.5583046674728394, -0.5328435301780701, -0.5073823928833008, -0.4819212555885315, -0.4564600884914398, -0.43099892139434814, -0.40553778409957886, -0.38007664680480957, -0.3546154797077179, -0.3291543126106262, -0.30369317531585693, -0.27823203802108765, -0.25277087092399597, -0.2273097187280655, -0.201848566532135, -0.17638741433620453, -0.15092626214027405, -0.12546510994434357, -0.10000389814376831, -0.07454274594783783, -0.04908159375190735, -0.023620441555976868, 0.0018407106399536133, 0.027301862835884094, 0.052763015031814575, 0.07822416722774506, 0.10368531942367554, 0.12914647161960602, 0.1546076238155365, 0.18006877601146698, 0.20552992820739746, 0.23099108040332794, 0.2564522325992584, 0.2819133996963501, 0.3073745369911194, 0.33283567428588867, 0.35829684138298035, 0.383758008480072, 0.4092191457748413, 0.4346802830696106, 0.46014145016670227, 0.48560261726379395, 0.5110637545585632, 0.5365248918533325, 0.5619860887527466, 0.5874472260475159, 0.6129083633422852, 0.6383695006370544, 0.6638306379318237, 0.6892918348312378, 0.7147529721260071]}, "gradients/lstm.bias_ih_l0": {"_type": "histogram", "values": [2.0, 1.0, 1.0, 1.0, 2.0, 0.0, 1.0, 1.0, 1.0, 2.0, 3.0, 2.0, 2.0, 9.0, 12.0, 321.0, 6.0, 5.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-0.14075972139835358, -0.13144050538539886, -0.12212130427360535, -0.11280208826065063, -0.10348287969827652, -0.0941636711359024, -0.08484445512294769, -0.07552524656057358, -0.06620603799819946, -0.05688682943582535, -0.047567617148160934, -0.03824840486049652, -0.028929196298122406, -0.019609985873103142, -0.010290775448083878, -0.0009715650230646133, 0.008347645401954651, 0.017666855826973915, 0.02698606625199318, 0.03630527853965759, 0.04562448710203171, 0.05494369566440582, 0.06426291167736053, 0.07358212023973465, 0.08290132880210876, 0.09222053736448288, 0.101539745926857, 0.1108589619398117, 0.12017817050218582, 0.12949737906455994, 0.13881659507751465, 0.14813579618930817, 0.15745502710342407, 0.16677424311637878, 0.1760934442281723, 0.18541266024112701, 0.19473186135292053, 0.20405107736587524, 0.21337029337882996, 0.22268949449062347, 0.23200871050357819, 0.2413279265165329, 0.2506471276283264, 0.25996634364128113, 0.26928555965423584, 0.27860477566719055, 0.2879239618778229, 0.2972431778907776, 0.3065623939037323, 0.315881609916687, 0.3252008259296417, 0.33452001214027405, 0.34383922815322876, 0.35315844416618347, 0.3624776601791382, 0.3717968761920929, 0.3811160922050476, 0.3904353082180023, 0.39975452423095703, 0.40907371044158936, 0.41839292645454407, 0.4277121424674988, 0.4370313584804535, 0.4463505744934082, 0.4556697607040405]}, "gradients/lstm.weight_ih_l0": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 1.0, 0.0, 0.0, 1.0, 3.0, 10.0, 2.0, 6.0, 12.0, 81.0, 2525.0, 17.0, 5.0, 3.0, 2.0, 3.0, 3.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-53.651832580566406, -51.323692321777344, -48.99555587768555, -46.667415618896484, -44.33927917480469, -42.011138916015625, -39.68300247192383, -37.354862213134766, -35.02672576904297, -32.698585510253906, -30.37044906616211, -28.04231071472168, -25.71417236328125, -23.386032104492188, -21.057893753051758, -18.729755401611328, -16.401615142822266, -14.073476791381836, -11.745338439941406, -9.41719913482666, -7.0890607833862305, -4.760922431945801, -2.432783603668213, -0.1046450138092041, 2.2234954833984375, 4.551633834838867, 6.879772663116455, 9.207911491394043, 11.536049842834473, 13.864188194274902, 16.19232749938965, 18.520465850830078, 20.848602294921875, 23.176740646362305, 25.504878997802734, 27.833017349243164, 30.161155700683594, 32.489295959472656, 34.81743240356445, 37.145572662353516, 39.47370910644531, 41.801849365234375, 44.12998580932617, 46.458126068115234, 48.78626251220703, 51.114402770996094, 53.44253921508789, 55.77067947387695, 58.098819732666016, 60.42695999145508, 62.755096435546875, 65.08323669433594, 67.411376953125, 69.73950958251953, 72.0676498413086, 74.39579010009766, 76.72393035888672, 79.05207061767578, 81.38021087646484, 83.70834350585938, 86.03648376464844, 88.3646240234375, 90.69276428222656, 93.0208969116211, 95.34903717041016]}, "Epoch": 10, "Train loss": 55.045379638671875, "Converted test loss": 72.92322540283203, "_step": 10}
+\ No newline at end of file
++{"parameters/lstm.weight_ih_l0": {"_type": "histogram", "values": [2.0, 0.0, 0.0, 1.0, 4.0, 2.0, 1.0, 4.0, 2.0, 0.0, 2.0, 1.0, 4.0, 4.0, 4.0, 7.0, 9.0, 10.0, 6.0, 11.0, 7.0, 9.0, 9.0, 18.0, 29.0, 39.0, 102.0, 401.0, 1157.0, 534.0, 105.0, 37.0, 21.0, 19.0, 17.0, 15.0, 10.0, 11.0, 10.0, 6.0, 10.0, 2.0, 3.0, 8.0, 3.0, 3.0, 2.0, 3.0, 6.0, 1.0, 2.0, 2.0, 3.0, 1.0, 2.0, 0.0, 2.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 2.0], "bins": [-15.193337440490723, -14.661935806274414, -14.130533218383789, -13.59913158416748, -13.067729949951172, -12.536327362060547, -12.004925727844238, -11.47352409362793, -10.942121505737305, -10.410719871520996, -9.879317283630371, -9.347915649414062, -8.816514015197754, -8.285111427307129, -7.75370979309082, -7.222308158874512, -6.690906524658203, -6.159504413604736, -5.628102779388428, -5.096700668334961, -4.565299034118652, -4.0338969230651855, -3.5024948120117188, -2.971092939376831, -2.439690589904785, -1.9082887172698975, -1.3768867254257202, -0.8454847931861877, -0.3140828609466553, 0.2173190712928772, 0.7487210035324097, 1.280122995376587, 1.8115234375, 2.3429253101348877, 2.8743271827697754, 3.405729293823242, 3.93713116645813, 4.468533039093018, 4.999935150146484, 5.531336784362793, 6.062738418579102, 6.594140529632568, 7.125542163848877, 7.656944274902344, 8.188345909118652, 8.719748497009277, 9.251150131225586, 9.782551765441895, 10.31395435333252, 10.845355987548828, 11.376758575439453, 11.908160209655762, 12.43956184387207, 12.970964431762695, 13.502366065979004, 14.033767700195312, 14.565170288085938, 15.096571922302246, 15.627974510192871, 16.15937614440918, 16.690778732299805, 17.222179412841797, 17.753582000732422, 18.284984588623047, 18.81638526916504]}, "_timestamp": 1660920652.547945, "_runtime": 985.4445660114288, "parameters/lstm.weight_hh_l0": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 1.0, 0.0, 2.0, 1.0, 1.0, 2.0, 7.0, 6.0, 11.0, 8.0, 10.0, 23.0, 31.0, 35.0, 35.0, 46.0, 70.0, 82.0, 132.0, 160.0, 223.0, 338.0, 646.0, 2411.0, 18138.0, 11021.0, 1743.0, 545.0, 313.0, 180.0, 150.0, 96.0, 89.0, 63.0, 54.0, 48.0, 30.0, 22.0, 20.0, 12.0, 7.0, 11.0, 8.0, 8.0, 4.0, 3.0, 1.0, 1.0, 2.0, 6.0, 0.0, 2.0, 0.0, 0.0, 0.0, 1.0, 1.0], "bins": [-16.37076759338379, -15.857282638549805, -15.34379768371582, -14.830312728881836, -14.316827774047852, -13.80334186553955, -13.289856910705566, -12.776371955871582, -12.262887001037598, -11.749402046203613, -11.235917091369629, -10.722432136535645, -10.208946228027344, -9.69546127319336, -9.181976318359375, -8.66849136352539, -8.155006408691406, -7.641521453857422, -7.1280364990234375, -6.614551067352295, -6.1010661125183105, -5.587581157684326, -5.074095726013184, -4.560610771179199, -4.047125816345215, -3.5336408615112305, -3.020155668258667, -2.5066704750061035, -1.9931855201721191, -1.4797004461288452, -0.9662153720855713, -0.45273029804229736, 0.06075477600097656, 0.5742398500442505, 1.0877249240875244, 1.6012099981307983, 2.1146950721740723, 2.6281800270080566, 3.14166522026062, 3.6551504135131836, 4.168635368347168, 4.682120323181152, 5.195605278015137, 5.709090709686279, 6.222575664520264, 6.736060619354248, 7.249546051025391, 7.763031005859375, 8.27651596069336, 8.790000915527344, 9.303485870361328, 9.816970825195312, 10.330455780029297, 10.843941688537598, 11.357426643371582, 11.870911598205566, 12.38439655303955, 12.897881507873535, 13.41136646270752, 13.924851417541504, 14.438337326049805, 14.951822280883789, 15.465307235717773, 15.978792190551758, 16.492277145385742]}, "parameters/lstm.bias_ih_l0": {"_type": "histogram", "values": [2.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 3.0, 1.0, 0.0, 2.0, 2.0, 1.0, 0.0, 0.0, 4.0, 2.0, 3.0, 4.0, 5.0, 29.0, 26.0, 24.0, 40.0, 39.0, 32.0, 34.0, 38.0, 31.0, 16.0, 5.0, 8.0, 6.0, 2.0, 1.0, 3.0, 3.0, 0.0, 2.0, 3.0, 2.0, 2.0, 1.0, 1.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-4.018341541290283, -3.87371826171875, -3.729094982147217, -3.5844717025756836, -3.4398484230041504, -3.295225143432617, -3.150601863861084, -3.005978584289551, -2.8613553047180176, -2.7167320251464844, -2.572108745574951, -2.427485466003418, -2.2828621864318848, -2.1382389068603516, -1.9936156272888184, -1.8489923477172852, -1.704369068145752, -1.5597457885742188, -1.4151225090026855, -1.2704992294311523, -1.1258759498596191, -0.9812526702880859, -0.8366293907165527, -0.6920061111450195, -0.5473828315734863, -0.4027595520019531, -0.2581362724304199, -0.11351299285888672, 0.031110286712646484, 0.1757335662841797, 0.3203568458557129, 0.4649801254272461, 0.6096038818359375, 0.7542271614074707, 0.8988504409790039, 1.043473720550537, 1.1880970001220703, 1.3327202796936035, 1.4773435592651367, 1.62196683883667, 1.7665901184082031, 1.9112133979797363, 2.0558366775512695, 2.2004599571228027, 2.345083236694336, 2.489706516265869, 2.6343297958374023, 2.7789530754089355, 2.9235763549804688, 3.068199634552002, 3.212822914123535, 3.3574461936950684, 3.5020694732666016, 3.6466927528381348, 3.791316032409668, 3.935939311981201, 4.080562591552734, 4.225185871124268, 4.369809150695801, 4.514432430267334, 4.659055709838867, 4.8036789894104, 4.948302268981934, 5.092925548553467, 5.237548828125]}, "parameters/lstm.bias_hh_l0": {"_type": "histogram", "values": [1.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 0.0, 2.0, 1.0, 2.0, 0.0, 2.0, 3.0, 2.0, 4.0, 7.0, 13.0, 28.0, 24.0, 38.0, 35.0, 35.0, 33.0, 42.0, 34.0, 22.0, 8.0, 9.0, 5.0, 4.0, 1.0, 3.0, 2.0, 1.0, 2.0, 2.0, 3.0, 2.0, 1.0, 1.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-3.96797513961792, -3.8224167823791504, -3.6768581867218018, -3.5312998294830322, -3.3857412338256836, -3.240182876586914, -3.0946245193481445, -2.949065923690796, -2.8035075664520264, -2.657949209213257, -2.512390613555908, -2.3668322563171387, -2.221273899078369, -2.0757153034210205, -1.930156946182251, -1.784598469734192, -1.6390399932861328, -1.4934815168380737, -1.3479230403900146, -1.2023646831512451, -1.056806206703186, -0.911247730255127, -0.7656893134117126, -0.6201308965682983, -0.47457242012023926, -0.32901397347450256, -0.18345552682876587, -0.037897080183029175, 0.10766136646270752, 0.2532198131084442, 0.3987782597541809, 0.5443366765975952, 0.6898946762084961, 0.8354531526565552, 0.9810115694999695, 1.1265699863433838, 1.2721284627914429, 1.417686939239502, 1.5632452964782715, 1.7088037729263306, 1.8543622493743896, 1.9999207258224487, 2.145479202270508, 2.2910375595092773, 2.436595916748047, 2.5821545124053955, 2.727712869644165, 2.8732714653015137, 3.018829822540283, 3.1643881797790527, 3.3099467754364014, 3.455505132675171, 3.6010637283325195, 3.746622085571289, 3.8921804428100586, 4.037738800048828, 4.183297157287598, 4.328855514526367, 4.474413871765137, 4.6199727058410645, 4.765531063079834, 4.9110894203186035, 5.056647777557373, 5.202206134796143, 5.34776496887207]}, "parameters/layers.0.weight": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 3.0, 1.0, 4.0, 1.0, 3.0, 2.0, 3.0, 1.0, 4.0, 3.0, 2.0, 6.0, 6.0, 6.0, 9.0, 8.0, 6.0, 9.0, 14.0, 204.0, 290.0, 20.0, 6.0, 6.0, 3.0, 6.0, 5.0, 5.0, 6.0, 4.0, 6.0, 2.0, 2.0, 2.0, 2.0, 1.0, 2.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0], "bins": [-35.26582717895508, -34.16590881347656, -33.06599426269531, -31.96607780456543, -30.866161346435547, -29.766244888305664, -28.66632843017578, -27.5664119720459, -26.466495513916016, -25.366579055786133, -24.26666259765625, -23.166746139526367, -22.066829681396484, -20.9669132232666, -19.86699676513672, -18.767080307006836, -17.66716194152832, -16.567245483398438, -15.467329025268555, -14.367412567138672, -13.267496109008789, -12.16757869720459, -11.067662239074707, -9.967745780944824, -8.867828369140625, -7.767911911010742, -6.667995452880859, -5.568078517913818, -4.4681620597839355, -3.3682456016540527, -2.268328905105591, -1.1684123277664185, -0.0684967041015625, 1.0314198732376099, 2.1313364505767822, 3.231253147125244, 4.331169605255127, 5.43108606338501, 6.531002998352051, 7.630919456481934, 8.7308349609375, 9.830751419067383, 10.930667877197266, 12.030584335327148, 13.130500793457031, 14.23041820526123, 15.330334663391113, 16.43025016784668, 17.530168533325195, 18.630084991455078, 19.73000144958496, 20.829917907714844, 21.929834365844727, 23.02975082397461, 24.129667282104492, 25.229583740234375, 26.32950210571289, 27.429418563842773, 28.529335021972656, 29.62925148010254, 30.729167938232422, 31.829084396362305, 32.92900085449219, 34.0289192199707, 35.12883377075195]}, "parameters/layers.0.bias": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0], "bins": [-2.5644590854644775, -2.4990336894989014, -2.433608055114746, -2.36818265914917, -2.3027570247650146, -2.2373316287994385, -2.1719062328338623, -2.106480598449707, -2.041055202484131, -1.9756296873092651, -1.9102041721343994, -1.8447787761688232, -1.7793532609939575, -1.7139277458190918, -1.648502230644226, -1.5830767154693604, -1.5176512002944946, -1.452225685119629, -1.3868001699447632, -1.321374773979187, -1.2559492588043213, -1.1905237436294556, -1.1250982284545898, -1.0596727132797241, -0.9942471981048584, -0.9288216829299927, -0.8633962273597717, -0.797970712184906, -0.7325452566146851, -0.6671197414398193, -0.6016942262649536, -0.5362687706947327, -0.4708433151245117, -0.4054178297519684, -0.33999234437942505, -0.2745668292045593, -0.209141343832016, -0.14371585845947266, -0.07829035818576813, -0.012864865362644196, 0.05256056785583496, 0.11798606067895889, 0.18341155350208282, 0.24883705377578735, 0.3142625391483307, 0.379688024520874, 0.44511353969573975, 0.5105389952659607, 0.5759645700454712, 0.6413900852203369, 0.7068155407905579, 0.7722410559654236, 0.8376665115356445, 0.9030920267105103, 0.968517541885376, 1.0339430570602417, 1.0993685722351074, 1.1647940874099731, 1.2302196025848389, 1.295644998550415, 1.3610705137252808, 1.4264960289001465, 1.4919215440750122, 1.557347059249878, 1.622772455215454]}, "gradients/layers.0.bias": {"_type": "histogram", "values": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-16.503604888916016, -15.599766731262207, -14.695928573608398, -13.79209041595459, -12.888252258300781, -11.984415054321289, -11.08057689666748, -10.176738739013672, -9.272900581359863, -8.369062423706055, -7.465224266052246, -6.561386585235596, -5.657548427581787, -4.7537102699279785, -3.849872350692749, -2.9460344314575195, -2.042196273803711, -1.138358235359192, -0.23452019691467285, 0.6693178415298462, 1.5731558799743652, 2.476994037628174, 3.3808319568634033, 4.284669876098633, 5.188507080078125, 6.092345237731934, 6.996183395385742, 7.900021076202393, 8.80385971069336, 9.707696914672852, 10.61153507232666, 11.515373229980469, 12.419212341308594, 13.323050498962402, 14.226888656616211, 15.13072681427002, 16.034564971923828, 16.93840217590332, 17.842241287231445, 18.746078491210938, 19.649917602539062, 20.553754806518555, 21.45759391784668, 22.361431121826172, 23.265270233154297, 24.16910743713379, 25.072946548461914, 25.976783752441406, 26.8806209564209, 27.78445816040039, 28.688297271728516, 29.592134475708008, 30.495973587036133, 31.399810791015625, 32.30364990234375, 33.207489013671875, 34.111324310302734, 35.01516342163086, 35.91899871826172, 36.822837829589844, 37.72667694091797, 38.630516052246094, 39.53435134887695, 40.43819046020508, 41.3420295715332]}, "gradients/layers.0.weight": {"_type": "histogram", "values": [1.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 7.0, 2.0, 5.0, 6.0, 0.0, 6.0, 8.0, 2.0, 9.0, 9.0, 9.0, 25.0, 487.0, 16.0, 7.0, 8.0, 3.0, 7.0, 6.0, 9.0, 2.0, 2.0, 3.0, 5.0, 5.0, 1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0, 1.0, 3.0, 2.0, 0.0, 1.0, 0.0, 0.0, 1.0], "bins": [-44.86668395996094, -43.52189254760742, -42.177101135253906, -40.832305908203125, -39.48751449584961, -38.142723083496094, -36.79792785644531, -35.4531364440918, -34.10834503173828, -32.763553619384766, -31.418760299682617, -30.07396697998047, -28.729175567626953, -27.384384155273438, -26.03959083557129, -24.69479751586914, -23.350006103515625, -22.00521469116211, -20.66042137145996, -19.315628051757812, -17.970836639404297, -16.62604522705078, -15.281251907348633, -13.9364595413208, -12.591667175292969, -11.246874809265137, -9.902082443237305, -8.557290077209473, -7.212497711181641, -5.867705345153809, -4.522912979125977, -3.1781206130981445, -1.8333320617675781, -0.4885396957397461, 0.8562526702880859, 2.201045036315918, 3.54583740234375, 4.890629768371582, 6.235422134399414, 7.580214500427246, 8.925006866455078, 10.26979923248291, 11.614591598510742, 12.959383964538574, 14.304176330566406, 15.648968696594238, 16.99376106262207, 18.33855438232422, 19.683345794677734, 21.02813720703125, 22.3729305267334, 23.717723846435547, 25.062515258789062, 26.407306671142578, 27.752099990844727, 29.096893310546875, 30.44168472290039, 31.786476135253906, 33.13127136230469, 34.4760627746582, 35.82085418701172, 37.165645599365234, 38.51043701171875, 39.85523223876953, 41.20002365112305]}, "gradients/lstm.bias_hh_l0": {"_type": "histogram", "values": [1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, 376.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-2.5105955600738525, -2.373779058456421, -2.2369625568389893, -2.1001460552215576, -1.963329553604126, -1.8265131711959839, -1.6896966695785522, -1.5528801679611206, -1.416063666343689, -1.2792471647262573, -1.1424306631088257, -1.005614161491394, -0.8687977194786072, -0.7319812178611755, -0.5951647758483887, -0.45834827423095703, -0.3215317726135254, -0.18471528589725494, -0.0478987991809845, 0.08891768753528595, 0.2257341742515564, 0.36255067586898804, 0.4993671476840973, 0.6361836194992065, 0.7730000019073486, 0.9098165035247803, 1.046633005142212, 1.1834495067596436, 1.3202660083770752, 1.4570823907852173, 1.593898892402649, 1.7307153940200806, 1.8675322532653809, 2.0043487548828125, 2.141165256500244, 2.277981758117676, 2.4147982597351074, 2.551614761352539, 2.6884312629699707, 2.8252477645874023, 2.962064266204834, 3.0988807678222656, 3.2356972694396973, 3.372513771057129, 3.5093302726745605, 3.646146774291992, 3.782963275909424, 3.9197797775268555, 4.056595802307129, 4.1934123039245605, 4.330228805541992, 4.467045307159424, 4.6038618087768555, 4.740678310394287, 4.877494812011719, 5.01431131362915, 5.151127815246582, 5.287944316864014, 5.424760818481445, 5.561577320098877, 5.698393821716309, 5.83521032333374, 5.972026824951172, 6.1088433265686035, 6.245659828186035]}, "gradients/lstm.weight_hh_l0": {"_type": "histogram", "values": [1.0, 3.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 0.0, 2.0, 1.0, 7.0, 5.0, 4.0, 8.0, 3.0, 5.0, 7.0, 9.0, 6.0, 21.0, 36628.0, 75.0, 11.0, 7.0, 11.0, 4.0, 2.0, 4.0, 4.0, 3.0, 4.0, 2.0, 4.0, 5.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 3.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0], "bins": [-6.514959812164307, -6.316242694854736, -6.117525577545166, -5.918808460235596, -5.720091819763184, -5.521374702453613, -5.322657585144043, -5.123940467834473, -4.925223350524902, -4.726506233215332, -4.527789115905762, -4.329071998596191, -4.130354881286621, -3.93163800239563, -3.7329211235046387, -3.5342040061950684, -3.335486888885498, -3.1367697715759277, -2.9380526542663574, -2.739335775375366, -2.540618658065796, -2.3419015407562256, -2.1431846618652344, -1.944467544555664, -1.7457504272460938, -1.5470333099365234, -1.3483163118362427, -1.149599313735962, -0.9508821964263916, -0.7521651387214661, -0.5534480810165405, -0.354731023311615, -0.15601396560668945, 0.042703092098236084, 0.24142014980316162, 0.44013720750808716, 0.6388542652130127, 0.8375713229179382, 1.0362883806228638, 1.2350053787231445, 1.4337224960327148, 1.6324396133422852, 1.831156611442566, 2.0298736095428467, 2.228590726852417, 2.4273078441619873, 2.6260247230529785, 2.824741840362549, 3.023458957672119, 3.2221760749816895, 3.4208931922912598, 3.619610071182251, 3.8183271884918213, 4.0170440673828125, 4.215761184692383, 4.414478302001953, 4.613195419311523, 4.811912536621094, 5.010629653930664, 5.209346771240234, 5.408063888549805, 5.606780529022217, 5.805497646331787, 6.004214763641357, 6.202931880950928]}, "gradients/lstm.bias_ih_l0": {"_type": "histogram", "values": [1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.0, 376.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-2.5105948448181152, -2.3737783432006836, -2.236961841583252, -2.1001455783843994, -1.9633290767669678, -1.8265125751495361, -1.6896960735321045, -1.5528796911239624, -1.4160631895065308, -1.2792466878890991, -1.142430305480957, -1.0056138038635254, -0.8687973618507385, -0.7319809198379517, -0.59516441822052, -0.45834797620773315, -0.3215315341949463, -0.18471507728099823, -0.04789862036705017, 0.08891783654689789, 0.22573429346084595, 0.3625507354736328, 0.49936720728874207, 0.6361836791038513, 0.7730002403259277, 0.9098166823387146, 1.0466331243515015, 1.183449625968933, 1.3202660083770752, 1.4570825099945068, 1.5938990116119385, 1.7307153940200806, 1.8675317764282227, 2.0043482780456543, 2.141164779663086, 2.2779810428619385, 2.41479754447937, 2.5516140460968018, 2.6884305477142334, 2.825247049331665, 2.9620633125305176, 3.098879814147949, 3.235696315765381, 3.3725125789642334, 3.509329080581665, 3.6461455821990967, 3.7829620838165283, 3.91977858543396, 4.0565948486328125, 4.193411350250244, 4.330227851867676, 4.467044353485107, 4.603860855102539, 4.740677356719971, 4.877493381500244, 5.014309883117676, 5.151126861572266, 5.287943363189697, 5.424759864807129, 5.5615763664245605, 5.698392868041992, 5.835209369659424, 5.972025394439697, 6.108841896057129, 6.2456583976745605]}, "gradients/lstm.weight_ih_l0": {"_type": "histogram", "values": [2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 2670.0, 8.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "bins": [-485.01519775390625, -454.33917236328125, -423.66314697265625, -392.98712158203125, -362.31109619140625, -331.6350402832031, -300.9590148925781, -270.2829895019531, -239.60696411132812, -208.93093872070312, -178.25491333007812, -147.57887268066406, -116.90284729003906, -86.22682189941406, -55.55078887939453, -24.874759674072266, 5.80126953125, 36.477298736572266, 67.15332794189453, 97.82936096191406, 128.50538635253906, 159.18141174316406, 189.85745239257812, 220.53347778320312, 251.20953369140625, 281.88555908203125, 312.56158447265625, 343.23760986328125, 373.91363525390625, 404.5896911621094, 435.2657165527344, 465.9417419433594, 496.6177978515625, 527.2938232421875, 557.9698486328125, 588.6458740234375, 619.3218994140625, 649.9979248046875, 680.6739501953125, 711.3499755859375, 742.0260009765625, 772.7020263671875, 803.3780517578125, 834.0540771484375, 864.7301025390625, 895.4061279296875, 926.0821533203125, 956.7581787109375, 987.4342651367188, 1018.1102905273438, 1048.786376953125, 1079.46240234375, 1110.138427734375, 1140.814453125, 1171.490478515625, 1202.16650390625, 1232.842529296875, 1263.5185546875, 1294.194580078125, 1324.87060546875, 1355.546630859375, 1386.22265625, 1416.898681640625, 1447.57470703125, 1478.250732421875]}, "Epoch": 140, "Train loss": 14.357110977172852, "Converted test loss": 25.117490768432617, "_step": 141, "_wandb": {"runtime": 984}}
+\ No newline at end of file
+diff --git a/code/wandb/run-20220819_163427-392uey4r/run-392uey4r.wandb b/code/wandb/run-20220819_163427-392uey4r/run-392uey4r.wandb
+index 675046e..50ecaba 100644
+Binary files a/code/wandb/run-20220819_163427-392uey4r/run-392uey4r.wandb and b/code/wandb/run-20220819_163427-392uey4r/run-392uey4r.wandb differ
