@@ -24,7 +24,6 @@ def eucl2pos(eucl_motion, start_pos):
         for batch in range(out.shape[0]):
             out[batch] =  (eucl_motion[batch, :9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
 
-        # eucl_motion = eucl_motion[:, None, :]
     else:
         out = torch.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-2], start_pos.shape[-1]))
 
@@ -98,12 +97,12 @@ def log_quat2pos(log_quat, start_pos):
     # print(len(log_quat.shape))
     if len(log_quat.shape) == 2:
         rot_vec = log_quat[:, :3]
-        print(rot_vec)
+        # print(rot_vec)
 
         angle = log_quat[:, 3]
-        print(angle)
+        # print(angle)
         trans = log_quat[:, 4:]
-        print(trans)
+        # print(trans)
 
         cos = torch.cos(angle/2).reshape(-1, 1)
         sin = torch.sin(angle/2)
@@ -114,8 +113,8 @@ def log_quat2pos(log_quat, start_pos):
         part1_1 = rot_vec * torch.vstack([sin]*3).T
         quat[:, 1:4] = part1_1
         quat[:, 4:] = trans
-        print("dhwie",quat)
-        exit()
+        # print("dhwie",quat)
+        # exit()
 
         return quat2pos(quat, start_pos)
 

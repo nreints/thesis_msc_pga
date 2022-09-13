@@ -1,0 +1,50 @@
+diff --git a/.DS_Store b/.DS_Store
+index a004fec..b431a61 100644
+Binary files a/.DS_Store and b/.DS_Store differ
+diff --git a/code/convert.py b/code/convert.py
+index a379286..3f24701 100644
+--- a/code/convert.py
++++ b/code/convert.py
+@@ -24,7 +24,6 @@ def eucl2pos(eucl_motion, start_pos):
+         for batch in range(out.shape[0]):
+             out[batch] =  (eucl_motion[batch, :9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
+ 
+-        # eucl_motion = eucl_motion[:, None, :]
+     else:
+         out = torch.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-2], start_pos.shape[-1]))
+ 
+diff --git a/code/lstm.py b/code/lstm.py
+index a10cf89..76c7108 100644
+--- a/code/lstm.py
++++ b/code/lstm.py
+@@ -225,7 +225,7 @@ config = dict(
+     loss_type = "L1",
+     loss_reduction_type = "mean",
+     optimizer = "Adam",
+-    data_type = "pos_diff_start",
++    data_type = "log_quat",
+     architecture = "lstm",
+     train_sims = list(train_sims),
+     test_sims = list(test_sims),
+diff --git a/code/torch_nn.py b/code/torch_nn.py
+index 8ec4f06..e5efe82 100644
+--- a/code/torch_nn.py
++++ b/code/torch_nn.py
+@@ -232,7 +232,7 @@ config = dict(
+     loss_type = "L1",
+     loss_reduction_type = "mean",
+     optimizer = "Adam",
+-    data_type = "pos_diff_start",
++    data_type = "log_quat",
+     architecture = "fcnn",
+     train_sims = list(train_sims),
+     test_sims = list(test_sims),
+diff --git a/code/wandb/latest-run b/code/wandb/latest-run
+index 1152213..ac60a87 120000
+--- a/code/wandb/latest-run
++++ b/code/wandb/latest-run
+@@ -1 +1 @@
+-run-20220907_220814-2x14yb9t
+\ No newline at end of file
++run-20220909_141908-ufe6i1vz
+\ No newline at end of file

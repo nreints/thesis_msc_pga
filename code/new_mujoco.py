@@ -4,6 +4,7 @@ import itertools
 from create_strings import create_string
 import pickle
 import torch
+from pyquaternion import Quaternion
 import roma
 
 
@@ -127,11 +128,26 @@ def get_vert_coords(sim, obj_id, xyz_local):
     return obj_pos[:, None] + obj_mat @ xyz_local
 
 def calculate_log_quat(quat):
-    rot_vec_unit = quat[1:] / np.linalg.norm(quat[1:])
-    sin_vec = quat[1:] / rot_vec_unit
-    sin = sin_vec[0]
-    cos = quat[0]
-    angle = 2 * np.arctan(cos/sin)
+    """
+    Calculate the log quaternion based on the quaternion according
+        to https://en.wikipedia.org/wiki/Quaternion#Exponential,_logarithm,_and_power_functions
+    """
+    norm = np.linalg.norm(quat)
+    log_norm = np.log(norm)
+
+    inv_norm = 1 / np.linalg.norm(quat[1:])
+    arccos = np.arccos(quat[0]/norm)
+    part2 = inv_norm * arccos * quat[1:]
+
+    result = np.append(log_norm, part2)
+
+    return result
+
+    # rot_vec_unit = quat[1:] / np.linalg.norm(quat[1:])
+    # sin_vec = quat[1:] / rot_vec_unit
+    # sin = sin_vec[0]
+    # cos = quat[0]
+    # angle = 2 * np.arctan(cos/sin)
     return np.append(rot_vec_unit, angle)
 
 def generate_data(string, n_steps):
@@ -162,7 +178,7 @@ def generate_data(string, n_steps):
             start = prev
             dataset["pos_diff"][i] = np.zeros((8,3))
             dataset["pos_diff_start"][i] = np.zeros((8,3))
-        if i% 10 == 0:
+        if i % 10 == 0:
             dataset["pos"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T
             dataset["eucl_motion"][i//10] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
             dataset["quat"][i//10] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
@@ -174,7 +190,7 @@ def generate_data(string, n_steps):
     return dataset
 
 
-def write_data_nsim(num_sims, n_steps):
+def write_data_nsim(num_sims, n_steps, obj_type):
     for sim_id in range(num_sims):
         euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
         pos = f"{np.random.uniform(-100, 100)} {np.random.uniform(-100, 100)} {np.random.uniform(40, 300)}"
@@ -188,3 +204,5 @@ def write_data_nsim(num_sims, n_steps):
             pickle.dump(sim_data, f)
         f.close()
 
+obj_type = "box"
+write_data_nsim(500, 30, obj_type)
