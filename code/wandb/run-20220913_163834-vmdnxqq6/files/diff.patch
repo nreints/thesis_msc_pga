@@ -1,0 +1,1541 @@
+diff --git a/code/convert.py b/code/convert.py
+index ce2684e..be3acb9 100644
+--- a/code/convert.py
++++ b/code/convert.py
+@@ -108,22 +108,21 @@ def log_quat2pos(log_quat, start_pos):
+     if len(log_quat.shape) == 2:
+         print(log_quat[:, 1:4].shape)
+ 
+-        v_norm = torch.linalg.norm(log_quat[:, 1:4], dim=1)[:, None].repeat(1, 3)
++        v_norm = torch.linalg.norm(log_quat[:, 1:4], dim=1)
+         print("vnorm", v_norm.shape)
+ 
+ 
+-        vec = log_quat[:, 1:4] / v_norm
++        vec = torch.div(log_quat[:, 1:4].T, v_norm).T
+         print("vec", vec.shape)
+ 
+-        magn = torch.exp(log_quat[:, 0])[:, None].repeat(1, 3)
++        magn = torch.exp(log_quat[:, 0])
+         print("magn", magn.shape)
+ 
+-        vector = magn * torch.sin(v_norm) * vec
++        vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec)
+         print("vector", vector.shape)
+ 
+-
+         scalar = magn * torch.cos(v_norm)
+-        print("scalar", scalar[:,0])
++        print("scalar", scalar.shape)
+ 
+         # scalar = scalar.repeat(vector.shape[0], 1)
+         # print("scalar2", scalar.shape)
+diff --git a/code/data/sim_0.pickle b/code/data/sim_0.pickle
+index cfa2e68..3619572 100644
+Binary files a/code/data/sim_0.pickle and b/code/data/sim_0.pickle differ
+diff --git a/code/data/sim_1.pickle b/code/data/sim_1.pickle
+index cd9f577..ac93125 100644
+Binary files a/code/data/sim_1.pickle and b/code/data/sim_1.pickle differ
+diff --git a/code/data/sim_10.pickle b/code/data/sim_10.pickle
+index ef1a83d..95b766e 100644
+Binary files a/code/data/sim_10.pickle and b/code/data/sim_10.pickle differ
+diff --git a/code/data/sim_100.pickle b/code/data/sim_100.pickle
+index 4a7d552..73de96b 100644
+Binary files a/code/data/sim_100.pickle and b/code/data/sim_100.pickle differ
+diff --git a/code/data/sim_101.pickle b/code/data/sim_101.pickle
+index c2ed4ed..4fd86a4 100644
+Binary files a/code/data/sim_101.pickle and b/code/data/sim_101.pickle differ
+diff --git a/code/data/sim_102.pickle b/code/data/sim_102.pickle
+index 1f12cb5..cf4076d 100644
+Binary files a/code/data/sim_102.pickle and b/code/data/sim_102.pickle differ
+diff --git a/code/data/sim_103.pickle b/code/data/sim_103.pickle
+index 9c7eebb..fbc64f3 100644
+Binary files a/code/data/sim_103.pickle and b/code/data/sim_103.pickle differ
+diff --git a/code/data/sim_104.pickle b/code/data/sim_104.pickle
+index 77eb5ad..2c2e5a7 100644
+Binary files a/code/data/sim_104.pickle and b/code/data/sim_104.pickle differ
+diff --git a/code/data/sim_105.pickle b/code/data/sim_105.pickle
+index 826ef2c..594ebdf 100644
+Binary files a/code/data/sim_105.pickle and b/code/data/sim_105.pickle differ
+diff --git a/code/data/sim_106.pickle b/code/data/sim_106.pickle
+index 461ee75..a54a4c0 100644
+Binary files a/code/data/sim_106.pickle and b/code/data/sim_106.pickle differ
+diff --git a/code/data/sim_107.pickle b/code/data/sim_107.pickle
+index 8c14ebc..303372a 100644
+Binary files a/code/data/sim_107.pickle and b/code/data/sim_107.pickle differ
+diff --git a/code/data/sim_108.pickle b/code/data/sim_108.pickle
+index c7e1827..1edb797 100644
+Binary files a/code/data/sim_108.pickle and b/code/data/sim_108.pickle differ
+diff --git a/code/data/sim_109.pickle b/code/data/sim_109.pickle
+index 2d4a342..51d0d19 100644
+Binary files a/code/data/sim_109.pickle and b/code/data/sim_109.pickle differ
+diff --git a/code/data/sim_11.pickle b/code/data/sim_11.pickle
+index 6052e0d..03aad11 100644
+Binary files a/code/data/sim_11.pickle and b/code/data/sim_11.pickle differ
+diff --git a/code/data/sim_110.pickle b/code/data/sim_110.pickle
+index 80b0025..0b4e3c9 100644
+Binary files a/code/data/sim_110.pickle and b/code/data/sim_110.pickle differ
+diff --git a/code/data/sim_111.pickle b/code/data/sim_111.pickle
+index e375ca4..b0ec417 100644
+Binary files a/code/data/sim_111.pickle and b/code/data/sim_111.pickle differ
+diff --git a/code/data/sim_112.pickle b/code/data/sim_112.pickle
+index de4c1c2..3856484 100644
+Binary files a/code/data/sim_112.pickle and b/code/data/sim_112.pickle differ
+diff --git a/code/data/sim_113.pickle b/code/data/sim_113.pickle
+index 071b7ac..a049418 100644
+Binary files a/code/data/sim_113.pickle and b/code/data/sim_113.pickle differ
+diff --git a/code/data/sim_114.pickle b/code/data/sim_114.pickle
+index 8892019..1f7d3a2 100644
+Binary files a/code/data/sim_114.pickle and b/code/data/sim_114.pickle differ
+diff --git a/code/data/sim_115.pickle b/code/data/sim_115.pickle
+index 0aef311..ebad0c2 100644
+Binary files a/code/data/sim_115.pickle and b/code/data/sim_115.pickle differ
+diff --git a/code/data/sim_116.pickle b/code/data/sim_116.pickle
+index 84d7c08..2bf862a 100644
+Binary files a/code/data/sim_116.pickle and b/code/data/sim_116.pickle differ
+diff --git a/code/data/sim_117.pickle b/code/data/sim_117.pickle
+index 8a138eb..a097424 100644
+Binary files a/code/data/sim_117.pickle and b/code/data/sim_117.pickle differ
+diff --git a/code/data/sim_118.pickle b/code/data/sim_118.pickle
+index ae2d73c..5cb9db7 100644
+Binary files a/code/data/sim_118.pickle and b/code/data/sim_118.pickle differ
+diff --git a/code/data/sim_119.pickle b/code/data/sim_119.pickle
+index ec21d0b..904354a 100644
+Binary files a/code/data/sim_119.pickle and b/code/data/sim_119.pickle differ
+diff --git a/code/data/sim_12.pickle b/code/data/sim_12.pickle
+index f7a583f..102c4de 100644
+Binary files a/code/data/sim_12.pickle and b/code/data/sim_12.pickle differ
+diff --git a/code/data/sim_120.pickle b/code/data/sim_120.pickle
+index eca9aeb..827d66a 100644
+Binary files a/code/data/sim_120.pickle and b/code/data/sim_120.pickle differ
+diff --git a/code/data/sim_121.pickle b/code/data/sim_121.pickle
+index d8896f5..20035a2 100644
+Binary files a/code/data/sim_121.pickle and b/code/data/sim_121.pickle differ
+diff --git a/code/data/sim_122.pickle b/code/data/sim_122.pickle
+index 5b34efd..6fe3f75 100644
+Binary files a/code/data/sim_122.pickle and b/code/data/sim_122.pickle differ
+diff --git a/code/data/sim_123.pickle b/code/data/sim_123.pickle
+index c79ee63..727389f 100644
+Binary files a/code/data/sim_123.pickle and b/code/data/sim_123.pickle differ
+diff --git a/code/data/sim_124.pickle b/code/data/sim_124.pickle
+index e4eb604..099197c 100644
+Binary files a/code/data/sim_124.pickle and b/code/data/sim_124.pickle differ
+diff --git a/code/data/sim_125.pickle b/code/data/sim_125.pickle
+index b742d25..560b683 100644
+Binary files a/code/data/sim_125.pickle and b/code/data/sim_125.pickle differ
+diff --git a/code/data/sim_126.pickle b/code/data/sim_126.pickle
+index a0f1a54..3295e03 100644
+Binary files a/code/data/sim_126.pickle and b/code/data/sim_126.pickle differ
+diff --git a/code/data/sim_127.pickle b/code/data/sim_127.pickle
+index 54794cf..fc8641b 100644
+Binary files a/code/data/sim_127.pickle and b/code/data/sim_127.pickle differ
+diff --git a/code/data/sim_128.pickle b/code/data/sim_128.pickle
+index 6d423c9..6fa2111 100644
+Binary files a/code/data/sim_128.pickle and b/code/data/sim_128.pickle differ
+diff --git a/code/data/sim_129.pickle b/code/data/sim_129.pickle
+index 07dc79b..99e8b77 100644
+Binary files a/code/data/sim_129.pickle and b/code/data/sim_129.pickle differ
+diff --git a/code/data/sim_13.pickle b/code/data/sim_13.pickle
+index b427be4..ab8d817 100644
+Binary files a/code/data/sim_13.pickle and b/code/data/sim_13.pickle differ
+diff --git a/code/data/sim_130.pickle b/code/data/sim_130.pickle
+index c63a337..b36f016 100644
+Binary files a/code/data/sim_130.pickle and b/code/data/sim_130.pickle differ
+diff --git a/code/data/sim_131.pickle b/code/data/sim_131.pickle
+index c293be4..9b72360 100644
+Binary files a/code/data/sim_131.pickle and b/code/data/sim_131.pickle differ
+diff --git a/code/data/sim_132.pickle b/code/data/sim_132.pickle
+index e0f0a6c..8659a44 100644
+Binary files a/code/data/sim_132.pickle and b/code/data/sim_132.pickle differ
+diff --git a/code/data/sim_133.pickle b/code/data/sim_133.pickle
+index bfefd3d..58eae0d 100644
+Binary files a/code/data/sim_133.pickle and b/code/data/sim_133.pickle differ
+diff --git a/code/data/sim_134.pickle b/code/data/sim_134.pickle
+index c95f856..c55e13a 100644
+Binary files a/code/data/sim_134.pickle and b/code/data/sim_134.pickle differ
+diff --git a/code/data/sim_135.pickle b/code/data/sim_135.pickle
+index 48b0fc5..310afdb 100644
+Binary files a/code/data/sim_135.pickle and b/code/data/sim_135.pickle differ
+diff --git a/code/data/sim_136.pickle b/code/data/sim_136.pickle
+index 2ccaa5d..adaf474 100644
+Binary files a/code/data/sim_136.pickle and b/code/data/sim_136.pickle differ
+diff --git a/code/data/sim_137.pickle b/code/data/sim_137.pickle
+index d1df984..c83ef1c 100644
+Binary files a/code/data/sim_137.pickle and b/code/data/sim_137.pickle differ
+diff --git a/code/data/sim_138.pickle b/code/data/sim_138.pickle
+index 33257ab..4b7caf5 100644
+Binary files a/code/data/sim_138.pickle and b/code/data/sim_138.pickle differ
+diff --git a/code/data/sim_139.pickle b/code/data/sim_139.pickle
+index 87e74ae..80c5a66 100644
+Binary files a/code/data/sim_139.pickle and b/code/data/sim_139.pickle differ
+diff --git a/code/data/sim_14.pickle b/code/data/sim_14.pickle
+index 320363e..3e246af 100644
+Binary files a/code/data/sim_14.pickle and b/code/data/sim_14.pickle differ
+diff --git a/code/data/sim_140.pickle b/code/data/sim_140.pickle
+index 08cf072..b113ab8 100644
+Binary files a/code/data/sim_140.pickle and b/code/data/sim_140.pickle differ
+diff --git a/code/data/sim_141.pickle b/code/data/sim_141.pickle
+index 430297b..30e41ef 100644
+Binary files a/code/data/sim_141.pickle and b/code/data/sim_141.pickle differ
+diff --git a/code/data/sim_142.pickle b/code/data/sim_142.pickle
+index dae6072..acc439e 100644
+Binary files a/code/data/sim_142.pickle and b/code/data/sim_142.pickle differ
+diff --git a/code/data/sim_143.pickle b/code/data/sim_143.pickle
+index 839184c..9545cc3 100644
+Binary files a/code/data/sim_143.pickle and b/code/data/sim_143.pickle differ
+diff --git a/code/data/sim_144.pickle b/code/data/sim_144.pickle
+index 1d9a645..a1e2b96 100644
+Binary files a/code/data/sim_144.pickle and b/code/data/sim_144.pickle differ
+diff --git a/code/data/sim_145.pickle b/code/data/sim_145.pickle
+index 1955069..346fa90 100644
+Binary files a/code/data/sim_145.pickle and b/code/data/sim_145.pickle differ
+diff --git a/code/data/sim_146.pickle b/code/data/sim_146.pickle
+index 93d05f8..0bbb135 100644
+Binary files a/code/data/sim_146.pickle and b/code/data/sim_146.pickle differ
+diff --git a/code/data/sim_147.pickle b/code/data/sim_147.pickle
+index ff42135..ed27d77 100644
+Binary files a/code/data/sim_147.pickle and b/code/data/sim_147.pickle differ
+diff --git a/code/data/sim_148.pickle b/code/data/sim_148.pickle
+index 62b07a9..d635f55 100644
+Binary files a/code/data/sim_148.pickle and b/code/data/sim_148.pickle differ
+diff --git a/code/data/sim_149.pickle b/code/data/sim_149.pickle
+index 35ece66..474133e 100644
+Binary files a/code/data/sim_149.pickle and b/code/data/sim_149.pickle differ
+diff --git a/code/data/sim_15.pickle b/code/data/sim_15.pickle
+index 1d76005..07e1225 100644
+Binary files a/code/data/sim_15.pickle and b/code/data/sim_15.pickle differ
+diff --git a/code/data/sim_150.pickle b/code/data/sim_150.pickle
+index 514ef94..ff694f0 100644
+Binary files a/code/data/sim_150.pickle and b/code/data/sim_150.pickle differ
+diff --git a/code/data/sim_151.pickle b/code/data/sim_151.pickle
+index 2dd70d7..93223eb 100644
+Binary files a/code/data/sim_151.pickle and b/code/data/sim_151.pickle differ
+diff --git a/code/data/sim_152.pickle b/code/data/sim_152.pickle
+index e8873f3..218394c 100644
+Binary files a/code/data/sim_152.pickle and b/code/data/sim_152.pickle differ
+diff --git a/code/data/sim_153.pickle b/code/data/sim_153.pickle
+index 70d820a..a9cb65a 100644
+Binary files a/code/data/sim_153.pickle and b/code/data/sim_153.pickle differ
+diff --git a/code/data/sim_154.pickle b/code/data/sim_154.pickle
+index b65c60c..5e3fc28 100644
+Binary files a/code/data/sim_154.pickle and b/code/data/sim_154.pickle differ
+diff --git a/code/data/sim_155.pickle b/code/data/sim_155.pickle
+index 2c354f5..0063707 100644
+Binary files a/code/data/sim_155.pickle and b/code/data/sim_155.pickle differ
+diff --git a/code/data/sim_156.pickle b/code/data/sim_156.pickle
+index 8c89a3d..7cf5ce5 100644
+Binary files a/code/data/sim_156.pickle and b/code/data/sim_156.pickle differ
+diff --git a/code/data/sim_157.pickle b/code/data/sim_157.pickle
+index 07720a9..0d9d93c 100644
+Binary files a/code/data/sim_157.pickle and b/code/data/sim_157.pickle differ
+diff --git a/code/data/sim_158.pickle b/code/data/sim_158.pickle
+index f220fba..5ff3d56 100644
+Binary files a/code/data/sim_158.pickle and b/code/data/sim_158.pickle differ
+diff --git a/code/data/sim_159.pickle b/code/data/sim_159.pickle
+index 9dff9ea..72f9532 100644
+Binary files a/code/data/sim_159.pickle and b/code/data/sim_159.pickle differ
+diff --git a/code/data/sim_16.pickle b/code/data/sim_16.pickle
+index 2c247c8..041ea1f 100644
+Binary files a/code/data/sim_16.pickle and b/code/data/sim_16.pickle differ
+diff --git a/code/data/sim_160.pickle b/code/data/sim_160.pickle
+index 10ba307..fcf21de 100644
+Binary files a/code/data/sim_160.pickle and b/code/data/sim_160.pickle differ
+diff --git a/code/data/sim_161.pickle b/code/data/sim_161.pickle
+index 969a570..ff98c32 100644
+Binary files a/code/data/sim_161.pickle and b/code/data/sim_161.pickle differ
+diff --git a/code/data/sim_162.pickle b/code/data/sim_162.pickle
+index 729ec42..320452d 100644
+Binary files a/code/data/sim_162.pickle and b/code/data/sim_162.pickle differ
+diff --git a/code/data/sim_163.pickle b/code/data/sim_163.pickle
+index 8d42d5a..e523846 100644
+Binary files a/code/data/sim_163.pickle and b/code/data/sim_163.pickle differ
+diff --git a/code/data/sim_164.pickle b/code/data/sim_164.pickle
+index 291aff5..f13e422 100644
+Binary files a/code/data/sim_164.pickle and b/code/data/sim_164.pickle differ
+diff --git a/code/data/sim_165.pickle b/code/data/sim_165.pickle
+index 4f6af35..8197f2e 100644
+Binary files a/code/data/sim_165.pickle and b/code/data/sim_165.pickle differ
+diff --git a/code/data/sim_166.pickle b/code/data/sim_166.pickle
+index 11feec0..e297e1c 100644
+Binary files a/code/data/sim_166.pickle and b/code/data/sim_166.pickle differ
+diff --git a/code/data/sim_167.pickle b/code/data/sim_167.pickle
+index bedd468..008d1bc 100644
+Binary files a/code/data/sim_167.pickle and b/code/data/sim_167.pickle differ
+diff --git a/code/data/sim_168.pickle b/code/data/sim_168.pickle
+index e33d4f1..d886497 100644
+Binary files a/code/data/sim_168.pickle and b/code/data/sim_168.pickle differ
+diff --git a/code/data/sim_169.pickle b/code/data/sim_169.pickle
+index 94e0eb0..4d0c2bd 100644
+Binary files a/code/data/sim_169.pickle and b/code/data/sim_169.pickle differ
+diff --git a/code/data/sim_17.pickle b/code/data/sim_17.pickle
+index a05280d..c742524 100644
+Binary files a/code/data/sim_17.pickle and b/code/data/sim_17.pickle differ
+diff --git a/code/data/sim_170.pickle b/code/data/sim_170.pickle
+index b272e46..78d8111 100644
+Binary files a/code/data/sim_170.pickle and b/code/data/sim_170.pickle differ
+diff --git a/code/data/sim_171.pickle b/code/data/sim_171.pickle
+index 3cd1372..95c3630 100644
+Binary files a/code/data/sim_171.pickle and b/code/data/sim_171.pickle differ
+diff --git a/code/data/sim_172.pickle b/code/data/sim_172.pickle
+index a3bcb66..1f383dd 100644
+Binary files a/code/data/sim_172.pickle and b/code/data/sim_172.pickle differ
+diff --git a/code/data/sim_173.pickle b/code/data/sim_173.pickle
+index 5ec6013..f74c655 100644
+Binary files a/code/data/sim_173.pickle and b/code/data/sim_173.pickle differ
+diff --git a/code/data/sim_174.pickle b/code/data/sim_174.pickle
+index df95f2d..cc6bc23 100644
+Binary files a/code/data/sim_174.pickle and b/code/data/sim_174.pickle differ
+diff --git a/code/data/sim_175.pickle b/code/data/sim_175.pickle
+index 32c8051..c96bd4a 100644
+Binary files a/code/data/sim_175.pickle and b/code/data/sim_175.pickle differ
+diff --git a/code/data/sim_176.pickle b/code/data/sim_176.pickle
+index b6d4063..35ef37d 100644
+Binary files a/code/data/sim_176.pickle and b/code/data/sim_176.pickle differ
+diff --git a/code/data/sim_177.pickle b/code/data/sim_177.pickle
+index db77b20..e6d3395 100644
+Binary files a/code/data/sim_177.pickle and b/code/data/sim_177.pickle differ
+diff --git a/code/data/sim_178.pickle b/code/data/sim_178.pickle
+index 4bfe437..de793b3 100644
+Binary files a/code/data/sim_178.pickle and b/code/data/sim_178.pickle differ
+diff --git a/code/data/sim_179.pickle b/code/data/sim_179.pickle
+index c16fd29..a229113 100644
+Binary files a/code/data/sim_179.pickle and b/code/data/sim_179.pickle differ
+diff --git a/code/data/sim_18.pickle b/code/data/sim_18.pickle
+index 6262a15..dc0131d 100644
+Binary files a/code/data/sim_18.pickle and b/code/data/sim_18.pickle differ
+diff --git a/code/data/sim_180.pickle b/code/data/sim_180.pickle
+index 3130662..0bbd05e 100644
+Binary files a/code/data/sim_180.pickle and b/code/data/sim_180.pickle differ
+diff --git a/code/data/sim_181.pickle b/code/data/sim_181.pickle
+index 902afbd..cf81784 100644
+Binary files a/code/data/sim_181.pickle and b/code/data/sim_181.pickle differ
+diff --git a/code/data/sim_182.pickle b/code/data/sim_182.pickle
+index ef0a8b7..353fa09 100644
+Binary files a/code/data/sim_182.pickle and b/code/data/sim_182.pickle differ
+diff --git a/code/data/sim_183.pickle b/code/data/sim_183.pickle
+index 206ff7d..bfbecc4 100644
+Binary files a/code/data/sim_183.pickle and b/code/data/sim_183.pickle differ
+diff --git a/code/data/sim_184.pickle b/code/data/sim_184.pickle
+index cf5e6da..3b0f139 100644
+Binary files a/code/data/sim_184.pickle and b/code/data/sim_184.pickle differ
+diff --git a/code/data/sim_185.pickle b/code/data/sim_185.pickle
+index 14a6a9f..cdb346b 100644
+Binary files a/code/data/sim_185.pickle and b/code/data/sim_185.pickle differ
+diff --git a/code/data/sim_186.pickle b/code/data/sim_186.pickle
+index 26c22b4..9cf3f3e 100644
+Binary files a/code/data/sim_186.pickle and b/code/data/sim_186.pickle differ
+diff --git a/code/data/sim_187.pickle b/code/data/sim_187.pickle
+index 620f95b..560d551 100644
+Binary files a/code/data/sim_187.pickle and b/code/data/sim_187.pickle differ
+diff --git a/code/data/sim_188.pickle b/code/data/sim_188.pickle
+index 0830640..305ae52 100644
+Binary files a/code/data/sim_188.pickle and b/code/data/sim_188.pickle differ
+diff --git a/code/data/sim_189.pickle b/code/data/sim_189.pickle
+index 4207b08..c015222 100644
+Binary files a/code/data/sim_189.pickle and b/code/data/sim_189.pickle differ
+diff --git a/code/data/sim_19.pickle b/code/data/sim_19.pickle
+index 0234106..21da587 100644
+Binary files a/code/data/sim_19.pickle and b/code/data/sim_19.pickle differ
+diff --git a/code/data/sim_190.pickle b/code/data/sim_190.pickle
+index 3185e7c..1f61dde 100644
+Binary files a/code/data/sim_190.pickle and b/code/data/sim_190.pickle differ
+diff --git a/code/data/sim_191.pickle b/code/data/sim_191.pickle
+index b2b0e7e..3fc161b 100644
+Binary files a/code/data/sim_191.pickle and b/code/data/sim_191.pickle differ
+diff --git a/code/data/sim_192.pickle b/code/data/sim_192.pickle
+index f93f03b..c2ad329 100644
+Binary files a/code/data/sim_192.pickle and b/code/data/sim_192.pickle differ
+diff --git a/code/data/sim_193.pickle b/code/data/sim_193.pickle
+index 332ed85..385bb97 100644
+Binary files a/code/data/sim_193.pickle and b/code/data/sim_193.pickle differ
+diff --git a/code/data/sim_194.pickle b/code/data/sim_194.pickle
+index 544e0c9..1e52a29 100644
+Binary files a/code/data/sim_194.pickle and b/code/data/sim_194.pickle differ
+diff --git a/code/data/sim_195.pickle b/code/data/sim_195.pickle
+index 088b0c9..6f8de6a 100644
+Binary files a/code/data/sim_195.pickle and b/code/data/sim_195.pickle differ
+diff --git a/code/data/sim_196.pickle b/code/data/sim_196.pickle
+index dcdd50a..79c06d2 100644
+Binary files a/code/data/sim_196.pickle and b/code/data/sim_196.pickle differ
+diff --git a/code/data/sim_197.pickle b/code/data/sim_197.pickle
+index 255273a..b50538f 100644
+Binary files a/code/data/sim_197.pickle and b/code/data/sim_197.pickle differ
+diff --git a/code/data/sim_198.pickle b/code/data/sim_198.pickle
+index f3e9605..891fd64 100644
+Binary files a/code/data/sim_198.pickle and b/code/data/sim_198.pickle differ
+diff --git a/code/data/sim_199.pickle b/code/data/sim_199.pickle
+index 173cc3f..3ddea35 100644
+Binary files a/code/data/sim_199.pickle and b/code/data/sim_199.pickle differ
+diff --git a/code/data/sim_2.pickle b/code/data/sim_2.pickle
+index ec831d8..9b347bc 100644
+Binary files a/code/data/sim_2.pickle and b/code/data/sim_2.pickle differ
+diff --git a/code/data/sim_20.pickle b/code/data/sim_20.pickle
+index d80d979..209b738 100644
+Binary files a/code/data/sim_20.pickle and b/code/data/sim_20.pickle differ
+diff --git a/code/data/sim_200.pickle b/code/data/sim_200.pickle
+index 2941edd..11e03de 100644
+Binary files a/code/data/sim_200.pickle and b/code/data/sim_200.pickle differ
+diff --git a/code/data/sim_201.pickle b/code/data/sim_201.pickle
+index d69a188..1f58c2c 100644
+Binary files a/code/data/sim_201.pickle and b/code/data/sim_201.pickle differ
+diff --git a/code/data/sim_202.pickle b/code/data/sim_202.pickle
+index 24ea601..4bc7e1f 100644
+Binary files a/code/data/sim_202.pickle and b/code/data/sim_202.pickle differ
+diff --git a/code/data/sim_203.pickle b/code/data/sim_203.pickle
+index 5da71cc..5678e32 100644
+Binary files a/code/data/sim_203.pickle and b/code/data/sim_203.pickle differ
+diff --git a/code/data/sim_204.pickle b/code/data/sim_204.pickle
+index 619ecce..0d62cba 100644
+Binary files a/code/data/sim_204.pickle and b/code/data/sim_204.pickle differ
+diff --git a/code/data/sim_205.pickle b/code/data/sim_205.pickle
+index 5cb6c55..a5950d6 100644
+Binary files a/code/data/sim_205.pickle and b/code/data/sim_205.pickle differ
+diff --git a/code/data/sim_206.pickle b/code/data/sim_206.pickle
+index 513e531..e267c9f 100644
+Binary files a/code/data/sim_206.pickle and b/code/data/sim_206.pickle differ
+diff --git a/code/data/sim_207.pickle b/code/data/sim_207.pickle
+index ff40300..ed7620e 100644
+Binary files a/code/data/sim_207.pickle and b/code/data/sim_207.pickle differ
+diff --git a/code/data/sim_208.pickle b/code/data/sim_208.pickle
+index 099a403..b38cc32 100644
+Binary files a/code/data/sim_208.pickle and b/code/data/sim_208.pickle differ
+diff --git a/code/data/sim_209.pickle b/code/data/sim_209.pickle
+index 3e6a456..99c3f27 100644
+Binary files a/code/data/sim_209.pickle and b/code/data/sim_209.pickle differ
+diff --git a/code/data/sim_21.pickle b/code/data/sim_21.pickle
+index 2b01d48..1437ded 100644
+Binary files a/code/data/sim_21.pickle and b/code/data/sim_21.pickle differ
+diff --git a/code/data/sim_210.pickle b/code/data/sim_210.pickle
+index a20514d..6c82183 100644
+Binary files a/code/data/sim_210.pickle and b/code/data/sim_210.pickle differ
+diff --git a/code/data/sim_211.pickle b/code/data/sim_211.pickle
+index dc78711..dac08c4 100644
+Binary files a/code/data/sim_211.pickle and b/code/data/sim_211.pickle differ
+diff --git a/code/data/sim_212.pickle b/code/data/sim_212.pickle
+index 718bbea..1eac0f1 100644
+Binary files a/code/data/sim_212.pickle and b/code/data/sim_212.pickle differ
+diff --git a/code/data/sim_213.pickle b/code/data/sim_213.pickle
+index 295348f..480499b 100644
+Binary files a/code/data/sim_213.pickle and b/code/data/sim_213.pickle differ
+diff --git a/code/data/sim_214.pickle b/code/data/sim_214.pickle
+index 970bdf4..01fc820 100644
+Binary files a/code/data/sim_214.pickle and b/code/data/sim_214.pickle differ
+diff --git a/code/data/sim_215.pickle b/code/data/sim_215.pickle
+index ff3a180..4ec484d 100644
+Binary files a/code/data/sim_215.pickle and b/code/data/sim_215.pickle differ
+diff --git a/code/data/sim_216.pickle b/code/data/sim_216.pickle
+index 565d40c..54b2054 100644
+Binary files a/code/data/sim_216.pickle and b/code/data/sim_216.pickle differ
+diff --git a/code/data/sim_217.pickle b/code/data/sim_217.pickle
+index 8179fc0..b1ee05f 100644
+Binary files a/code/data/sim_217.pickle and b/code/data/sim_217.pickle differ
+diff --git a/code/data/sim_218.pickle b/code/data/sim_218.pickle
+index f573b37..e53b2cd 100644
+Binary files a/code/data/sim_218.pickle and b/code/data/sim_218.pickle differ
+diff --git a/code/data/sim_219.pickle b/code/data/sim_219.pickle
+index 825ae23..749ea1e 100644
+Binary files a/code/data/sim_219.pickle and b/code/data/sim_219.pickle differ
+diff --git a/code/data/sim_22.pickle b/code/data/sim_22.pickle
+index 3a83c8f..82b59fd 100644
+Binary files a/code/data/sim_22.pickle and b/code/data/sim_22.pickle differ
+diff --git a/code/data/sim_220.pickle b/code/data/sim_220.pickle
+index 22450d5..70b76cb 100644
+Binary files a/code/data/sim_220.pickle and b/code/data/sim_220.pickle differ
+diff --git a/code/data/sim_221.pickle b/code/data/sim_221.pickle
+index 13f8921..02db6e3 100644
+Binary files a/code/data/sim_221.pickle and b/code/data/sim_221.pickle differ
+diff --git a/code/data/sim_222.pickle b/code/data/sim_222.pickle
+index c55a98a..40b56ad 100644
+Binary files a/code/data/sim_222.pickle and b/code/data/sim_222.pickle differ
+diff --git a/code/data/sim_223.pickle b/code/data/sim_223.pickle
+index 5bd1941..c8a8ce0 100644
+Binary files a/code/data/sim_223.pickle and b/code/data/sim_223.pickle differ
+diff --git a/code/data/sim_224.pickle b/code/data/sim_224.pickle
+index b3c875a..fbc8d25 100644
+Binary files a/code/data/sim_224.pickle and b/code/data/sim_224.pickle differ
+diff --git a/code/data/sim_225.pickle b/code/data/sim_225.pickle
+index 4ce0076..4054c5e 100644
+Binary files a/code/data/sim_225.pickle and b/code/data/sim_225.pickle differ
+diff --git a/code/data/sim_226.pickle b/code/data/sim_226.pickle
+index e043d05..64a8faf 100644
+Binary files a/code/data/sim_226.pickle and b/code/data/sim_226.pickle differ
+diff --git a/code/data/sim_227.pickle b/code/data/sim_227.pickle
+index ab3600d..e88b297 100644
+Binary files a/code/data/sim_227.pickle and b/code/data/sim_227.pickle differ
+diff --git a/code/data/sim_228.pickle b/code/data/sim_228.pickle
+index 59c1943..c5be53e 100644
+Binary files a/code/data/sim_228.pickle and b/code/data/sim_228.pickle differ
+diff --git a/code/data/sim_229.pickle b/code/data/sim_229.pickle
+index 96669f2..266569b 100644
+Binary files a/code/data/sim_229.pickle and b/code/data/sim_229.pickle differ
+diff --git a/code/data/sim_23.pickle b/code/data/sim_23.pickle
+index a3585e0..66021b8 100644
+Binary files a/code/data/sim_23.pickle and b/code/data/sim_23.pickle differ
+diff --git a/code/data/sim_230.pickle b/code/data/sim_230.pickle
+index 039ef05..54d4d69 100644
+Binary files a/code/data/sim_230.pickle and b/code/data/sim_230.pickle differ
+diff --git a/code/data/sim_231.pickle b/code/data/sim_231.pickle
+index eafe3f1..a7ae78b 100644
+Binary files a/code/data/sim_231.pickle and b/code/data/sim_231.pickle differ
+diff --git a/code/data/sim_232.pickle b/code/data/sim_232.pickle
+index 1ead84f..8540b43 100644
+Binary files a/code/data/sim_232.pickle and b/code/data/sim_232.pickle differ
+diff --git a/code/data/sim_233.pickle b/code/data/sim_233.pickle
+index bdec2d7..d4ddaa3 100644
+Binary files a/code/data/sim_233.pickle and b/code/data/sim_233.pickle differ
+diff --git a/code/data/sim_234.pickle b/code/data/sim_234.pickle
+index 1e65c16..b608d1d 100644
+Binary files a/code/data/sim_234.pickle and b/code/data/sim_234.pickle differ
+diff --git a/code/data/sim_235.pickle b/code/data/sim_235.pickle
+index 4392c01..3f9d639 100644
+Binary files a/code/data/sim_235.pickle and b/code/data/sim_235.pickle differ
+diff --git a/code/data/sim_236.pickle b/code/data/sim_236.pickle
+index 192a74e..fe98407 100644
+Binary files a/code/data/sim_236.pickle and b/code/data/sim_236.pickle differ
+diff --git a/code/data/sim_237.pickle b/code/data/sim_237.pickle
+index 4641845..558d474 100644
+Binary files a/code/data/sim_237.pickle and b/code/data/sim_237.pickle differ
+diff --git a/code/data/sim_238.pickle b/code/data/sim_238.pickle
+index 280c2e8..c0d661e 100644
+Binary files a/code/data/sim_238.pickle and b/code/data/sim_238.pickle differ
+diff --git a/code/data/sim_239.pickle b/code/data/sim_239.pickle
+index 3f6499f..d388d81 100644
+Binary files a/code/data/sim_239.pickle and b/code/data/sim_239.pickle differ
+diff --git a/code/data/sim_24.pickle b/code/data/sim_24.pickle
+index 98eb26e..b8582df 100644
+Binary files a/code/data/sim_24.pickle and b/code/data/sim_24.pickle differ
+diff --git a/code/data/sim_240.pickle b/code/data/sim_240.pickle
+index d6b5003..2860968 100644
+Binary files a/code/data/sim_240.pickle and b/code/data/sim_240.pickle differ
+diff --git a/code/data/sim_241.pickle b/code/data/sim_241.pickle
+index f3dda2e..eacdffe 100644
+Binary files a/code/data/sim_241.pickle and b/code/data/sim_241.pickle differ
+diff --git a/code/data/sim_242.pickle b/code/data/sim_242.pickle
+index 5038707..cb581fe 100644
+Binary files a/code/data/sim_242.pickle and b/code/data/sim_242.pickle differ
+diff --git a/code/data/sim_243.pickle b/code/data/sim_243.pickle
+index f9c1cde..a8428e7 100644
+Binary files a/code/data/sim_243.pickle and b/code/data/sim_243.pickle differ
+diff --git a/code/data/sim_244.pickle b/code/data/sim_244.pickle
+index 9f71fa4..977a6ca 100644
+Binary files a/code/data/sim_244.pickle and b/code/data/sim_244.pickle differ
+diff --git a/code/data/sim_245.pickle b/code/data/sim_245.pickle
+index d26cf18..765aafd 100644
+Binary files a/code/data/sim_245.pickle and b/code/data/sim_245.pickle differ
+diff --git a/code/data/sim_246.pickle b/code/data/sim_246.pickle
+index ae2e7ab..45e95d6 100644
+Binary files a/code/data/sim_246.pickle and b/code/data/sim_246.pickle differ
+diff --git a/code/data/sim_247.pickle b/code/data/sim_247.pickle
+index a566d3b..b9fb880 100644
+Binary files a/code/data/sim_247.pickle and b/code/data/sim_247.pickle differ
+diff --git a/code/data/sim_248.pickle b/code/data/sim_248.pickle
+index 438d1bc..4ff4135 100644
+Binary files a/code/data/sim_248.pickle and b/code/data/sim_248.pickle differ
+diff --git a/code/data/sim_249.pickle b/code/data/sim_249.pickle
+index f2d1802..bf0d875 100644
+Binary files a/code/data/sim_249.pickle and b/code/data/sim_249.pickle differ
+diff --git a/code/data/sim_25.pickle b/code/data/sim_25.pickle
+index f540b22..2d6191c 100644
+Binary files a/code/data/sim_25.pickle and b/code/data/sim_25.pickle differ
+diff --git a/code/data/sim_250.pickle b/code/data/sim_250.pickle
+index d644fe0..f3dbd0a 100644
+Binary files a/code/data/sim_250.pickle and b/code/data/sim_250.pickle differ
+diff --git a/code/data/sim_251.pickle b/code/data/sim_251.pickle
+index 73f0db3..5e27ea8 100644
+Binary files a/code/data/sim_251.pickle and b/code/data/sim_251.pickle differ
+diff --git a/code/data/sim_252.pickle b/code/data/sim_252.pickle
+index 7322b6b..521c937 100644
+Binary files a/code/data/sim_252.pickle and b/code/data/sim_252.pickle differ
+diff --git a/code/data/sim_253.pickle b/code/data/sim_253.pickle
+index 4955208..c8ebe4f 100644
+Binary files a/code/data/sim_253.pickle and b/code/data/sim_253.pickle differ
+diff --git a/code/data/sim_254.pickle b/code/data/sim_254.pickle
+index a24c588..481baef 100644
+Binary files a/code/data/sim_254.pickle and b/code/data/sim_254.pickle differ
+diff --git a/code/data/sim_255.pickle b/code/data/sim_255.pickle
+index 2d36847..de392f8 100644
+Binary files a/code/data/sim_255.pickle and b/code/data/sim_255.pickle differ
+diff --git a/code/data/sim_256.pickle b/code/data/sim_256.pickle
+index b88e67f..6e39bfc 100644
+Binary files a/code/data/sim_256.pickle and b/code/data/sim_256.pickle differ
+diff --git a/code/data/sim_257.pickle b/code/data/sim_257.pickle
+index 0cf2f1c..0b28fdf 100644
+Binary files a/code/data/sim_257.pickle and b/code/data/sim_257.pickle differ
+diff --git a/code/data/sim_258.pickle b/code/data/sim_258.pickle
+index 7dd00f6..74c171c 100644
+Binary files a/code/data/sim_258.pickle and b/code/data/sim_258.pickle differ
+diff --git a/code/data/sim_259.pickle b/code/data/sim_259.pickle
+index 4c818f7..ce72fbe 100644
+Binary files a/code/data/sim_259.pickle and b/code/data/sim_259.pickle differ
+diff --git a/code/data/sim_26.pickle b/code/data/sim_26.pickle
+index dc5a383..fe20aa7 100644
+Binary files a/code/data/sim_26.pickle and b/code/data/sim_26.pickle differ
+diff --git a/code/data/sim_260.pickle b/code/data/sim_260.pickle
+index 8bbcae1..621e45a 100644
+Binary files a/code/data/sim_260.pickle and b/code/data/sim_260.pickle differ
+diff --git a/code/data/sim_261.pickle b/code/data/sim_261.pickle
+index e6c06ea..1798d40 100644
+Binary files a/code/data/sim_261.pickle and b/code/data/sim_261.pickle differ
+diff --git a/code/data/sim_262.pickle b/code/data/sim_262.pickle
+index f07c9ec..bb46dd6 100644
+Binary files a/code/data/sim_262.pickle and b/code/data/sim_262.pickle differ
+diff --git a/code/data/sim_263.pickle b/code/data/sim_263.pickle
+index 5f828ce..1ef44a8 100644
+Binary files a/code/data/sim_263.pickle and b/code/data/sim_263.pickle differ
+diff --git a/code/data/sim_264.pickle b/code/data/sim_264.pickle
+index 9ec663e..f88b3e5 100644
+Binary files a/code/data/sim_264.pickle and b/code/data/sim_264.pickle differ
+diff --git a/code/data/sim_265.pickle b/code/data/sim_265.pickle
+index db42d90..68d2f4d 100644
+Binary files a/code/data/sim_265.pickle and b/code/data/sim_265.pickle differ
+diff --git a/code/data/sim_266.pickle b/code/data/sim_266.pickle
+index 902a611..78b229a 100644
+Binary files a/code/data/sim_266.pickle and b/code/data/sim_266.pickle differ
+diff --git a/code/data/sim_267.pickle b/code/data/sim_267.pickle
+index 0b547e9..8fef169 100644
+Binary files a/code/data/sim_267.pickle and b/code/data/sim_267.pickle differ
+diff --git a/code/data/sim_268.pickle b/code/data/sim_268.pickle
+index c9e285b..d48e62d 100644
+Binary files a/code/data/sim_268.pickle and b/code/data/sim_268.pickle differ
+diff --git a/code/data/sim_269.pickle b/code/data/sim_269.pickle
+index 3b4c83f..ee29a1e 100644
+Binary files a/code/data/sim_269.pickle and b/code/data/sim_269.pickle differ
+diff --git a/code/data/sim_27.pickle b/code/data/sim_27.pickle
+index e6c2d72..521c5fc 100644
+Binary files a/code/data/sim_27.pickle and b/code/data/sim_27.pickle differ
+diff --git a/code/data/sim_270.pickle b/code/data/sim_270.pickle
+index 7c2234b..df75a31 100644
+Binary files a/code/data/sim_270.pickle and b/code/data/sim_270.pickle differ
+diff --git a/code/data/sim_271.pickle b/code/data/sim_271.pickle
+index fb10a05..55b6815 100644
+Binary files a/code/data/sim_271.pickle and b/code/data/sim_271.pickle differ
+diff --git a/code/data/sim_272.pickle b/code/data/sim_272.pickle
+index 353f66f..a5666c4 100644
+Binary files a/code/data/sim_272.pickle and b/code/data/sim_272.pickle differ
+diff --git a/code/data/sim_273.pickle b/code/data/sim_273.pickle
+index 3725dc0..6cf32cc 100644
+Binary files a/code/data/sim_273.pickle and b/code/data/sim_273.pickle differ
+diff --git a/code/data/sim_274.pickle b/code/data/sim_274.pickle
+index 9c3c477..081516a 100644
+Binary files a/code/data/sim_274.pickle and b/code/data/sim_274.pickle differ
+diff --git a/code/data/sim_275.pickle b/code/data/sim_275.pickle
+index 5c3791e..f15415a 100644
+Binary files a/code/data/sim_275.pickle and b/code/data/sim_275.pickle differ
+diff --git a/code/data/sim_276.pickle b/code/data/sim_276.pickle
+index d5c2929..5e15ff8 100644
+Binary files a/code/data/sim_276.pickle and b/code/data/sim_276.pickle differ
+diff --git a/code/data/sim_277.pickle b/code/data/sim_277.pickle
+index a47eccf..7cf48e6 100644
+Binary files a/code/data/sim_277.pickle and b/code/data/sim_277.pickle differ
+diff --git a/code/data/sim_278.pickle b/code/data/sim_278.pickle
+index ab643ab..7d6a6dc 100644
+Binary files a/code/data/sim_278.pickle and b/code/data/sim_278.pickle differ
+diff --git a/code/data/sim_279.pickle b/code/data/sim_279.pickle
+index cb14231..108b85d 100644
+Binary files a/code/data/sim_279.pickle and b/code/data/sim_279.pickle differ
+diff --git a/code/data/sim_28.pickle b/code/data/sim_28.pickle
+index 1b38c39..2e190d2 100644
+Binary files a/code/data/sim_28.pickle and b/code/data/sim_28.pickle differ
+diff --git a/code/data/sim_280.pickle b/code/data/sim_280.pickle
+index 2295389..ece6eca 100644
+Binary files a/code/data/sim_280.pickle and b/code/data/sim_280.pickle differ
+diff --git a/code/data/sim_281.pickle b/code/data/sim_281.pickle
+index c759d96..182b576 100644
+Binary files a/code/data/sim_281.pickle and b/code/data/sim_281.pickle differ
+diff --git a/code/data/sim_282.pickle b/code/data/sim_282.pickle
+index 91636d1..05fb9c9 100644
+Binary files a/code/data/sim_282.pickle and b/code/data/sim_282.pickle differ
+diff --git a/code/data/sim_283.pickle b/code/data/sim_283.pickle
+index 1e0f434..4f202f8 100644
+Binary files a/code/data/sim_283.pickle and b/code/data/sim_283.pickle differ
+diff --git a/code/data/sim_284.pickle b/code/data/sim_284.pickle
+index 160eae3..ba18b89 100644
+Binary files a/code/data/sim_284.pickle and b/code/data/sim_284.pickle differ
+diff --git a/code/data/sim_285.pickle b/code/data/sim_285.pickle
+index 49da5b3..c0614b8 100644
+Binary files a/code/data/sim_285.pickle and b/code/data/sim_285.pickle differ
+diff --git a/code/data/sim_286.pickle b/code/data/sim_286.pickle
+index f2f4602..6ef0411 100644
+Binary files a/code/data/sim_286.pickle and b/code/data/sim_286.pickle differ
+diff --git a/code/data/sim_287.pickle b/code/data/sim_287.pickle
+index 07c2ba6..ea5edc4 100644
+Binary files a/code/data/sim_287.pickle and b/code/data/sim_287.pickle differ
+diff --git a/code/data/sim_288.pickle b/code/data/sim_288.pickle
+index 0df21ac..6111d82 100644
+Binary files a/code/data/sim_288.pickle and b/code/data/sim_288.pickle differ
+diff --git a/code/data/sim_289.pickle b/code/data/sim_289.pickle
+index 0e835e6..237c1ed 100644
+Binary files a/code/data/sim_289.pickle and b/code/data/sim_289.pickle differ
+diff --git a/code/data/sim_29.pickle b/code/data/sim_29.pickle
+index 92ddb08..5dccbe1 100644
+Binary files a/code/data/sim_29.pickle and b/code/data/sim_29.pickle differ
+diff --git a/code/data/sim_290.pickle b/code/data/sim_290.pickle
+index 935964f..5505064 100644
+Binary files a/code/data/sim_290.pickle and b/code/data/sim_290.pickle differ
+diff --git a/code/data/sim_291.pickle b/code/data/sim_291.pickle
+index ab3f2ca..05df979 100644
+Binary files a/code/data/sim_291.pickle and b/code/data/sim_291.pickle differ
+diff --git a/code/data/sim_292.pickle b/code/data/sim_292.pickle
+index ccfdc46..15488f6 100644
+Binary files a/code/data/sim_292.pickle and b/code/data/sim_292.pickle differ
+diff --git a/code/data/sim_293.pickle b/code/data/sim_293.pickle
+index 018cb02..c3925b2 100644
+Binary files a/code/data/sim_293.pickle and b/code/data/sim_293.pickle differ
+diff --git a/code/data/sim_294.pickle b/code/data/sim_294.pickle
+index d60d1bb..2ff4591 100644
+Binary files a/code/data/sim_294.pickle and b/code/data/sim_294.pickle differ
+diff --git a/code/data/sim_295.pickle b/code/data/sim_295.pickle
+index 8574619..ace40e8 100644
+Binary files a/code/data/sim_295.pickle and b/code/data/sim_295.pickle differ
+diff --git a/code/data/sim_296.pickle b/code/data/sim_296.pickle
+index 099df62..2b750ad 100644
+Binary files a/code/data/sim_296.pickle and b/code/data/sim_296.pickle differ
+diff --git a/code/data/sim_297.pickle b/code/data/sim_297.pickle
+index b9feeac..d730a35 100644
+Binary files a/code/data/sim_297.pickle and b/code/data/sim_297.pickle differ
+diff --git a/code/data/sim_298.pickle b/code/data/sim_298.pickle
+index a6dde31..26b80a5 100644
+Binary files a/code/data/sim_298.pickle and b/code/data/sim_298.pickle differ
+diff --git a/code/data/sim_299.pickle b/code/data/sim_299.pickle
+index bfa47cd..29e129e 100644
+Binary files a/code/data/sim_299.pickle and b/code/data/sim_299.pickle differ
+diff --git a/code/data/sim_3.pickle b/code/data/sim_3.pickle
+index 65a5bb9..2f0980e 100644
+Binary files a/code/data/sim_3.pickle and b/code/data/sim_3.pickle differ
+diff --git a/code/data/sim_30.pickle b/code/data/sim_30.pickle
+index 18e8e7d..784924e 100644
+Binary files a/code/data/sim_30.pickle and b/code/data/sim_30.pickle differ
+diff --git a/code/data/sim_300.pickle b/code/data/sim_300.pickle
+index f5513f7..69bccc9 100644
+Binary files a/code/data/sim_300.pickle and b/code/data/sim_300.pickle differ
+diff --git a/code/data/sim_301.pickle b/code/data/sim_301.pickle
+index bc434ed..5743734 100644
+Binary files a/code/data/sim_301.pickle and b/code/data/sim_301.pickle differ
+diff --git a/code/data/sim_302.pickle b/code/data/sim_302.pickle
+index 738e4db..71484c1 100644
+Binary files a/code/data/sim_302.pickle and b/code/data/sim_302.pickle differ
+diff --git a/code/data/sim_303.pickle b/code/data/sim_303.pickle
+index 46b44e3..2952bbe 100644
+Binary files a/code/data/sim_303.pickle and b/code/data/sim_303.pickle differ
+diff --git a/code/data/sim_304.pickle b/code/data/sim_304.pickle
+index 13a724b..5ceed21 100644
+Binary files a/code/data/sim_304.pickle and b/code/data/sim_304.pickle differ
+diff --git a/code/data/sim_305.pickle b/code/data/sim_305.pickle
+index 2c6cda8..234bc24 100644
+Binary files a/code/data/sim_305.pickle and b/code/data/sim_305.pickle differ
+diff --git a/code/data/sim_306.pickle b/code/data/sim_306.pickle
+index 4e0202c..9a79435 100644
+Binary files a/code/data/sim_306.pickle and b/code/data/sim_306.pickle differ
+diff --git a/code/data/sim_307.pickle b/code/data/sim_307.pickle
+index b3b1b7d..0865073 100644
+Binary files a/code/data/sim_307.pickle and b/code/data/sim_307.pickle differ
+diff --git a/code/data/sim_308.pickle b/code/data/sim_308.pickle
+index ca9cdc6..5ba89b2 100644
+Binary files a/code/data/sim_308.pickle and b/code/data/sim_308.pickle differ
+diff --git a/code/data/sim_309.pickle b/code/data/sim_309.pickle
+index 82dfd43..18f44a9 100644
+Binary files a/code/data/sim_309.pickle and b/code/data/sim_309.pickle differ
+diff --git a/code/data/sim_31.pickle b/code/data/sim_31.pickle
+index 56169a1..cfb2a16 100644
+Binary files a/code/data/sim_31.pickle and b/code/data/sim_31.pickle differ
+diff --git a/code/data/sim_310.pickle b/code/data/sim_310.pickle
+index 7352be5..9af2d0d 100644
+Binary files a/code/data/sim_310.pickle and b/code/data/sim_310.pickle differ
+diff --git a/code/data/sim_311.pickle b/code/data/sim_311.pickle
+index b30a0ff..c6f7a70 100644
+Binary files a/code/data/sim_311.pickle and b/code/data/sim_311.pickle differ
+diff --git a/code/data/sim_312.pickle b/code/data/sim_312.pickle
+index 89710e9..f7b720f 100644
+Binary files a/code/data/sim_312.pickle and b/code/data/sim_312.pickle differ
+diff --git a/code/data/sim_313.pickle b/code/data/sim_313.pickle
+index 3d1a369..5702b59 100644
+Binary files a/code/data/sim_313.pickle and b/code/data/sim_313.pickle differ
+diff --git a/code/data/sim_314.pickle b/code/data/sim_314.pickle
+index 751edf7..7fa91d1 100644
+Binary files a/code/data/sim_314.pickle and b/code/data/sim_314.pickle differ
+diff --git a/code/data/sim_315.pickle b/code/data/sim_315.pickle
+index 1fb8cad..ef21253 100644
+Binary files a/code/data/sim_315.pickle and b/code/data/sim_315.pickle differ
+diff --git a/code/data/sim_316.pickle b/code/data/sim_316.pickle
+index 54606b0..2b140af 100644
+Binary files a/code/data/sim_316.pickle and b/code/data/sim_316.pickle differ
+diff --git a/code/data/sim_317.pickle b/code/data/sim_317.pickle
+index 877760f..ff4a346 100644
+Binary files a/code/data/sim_317.pickle and b/code/data/sim_317.pickle differ
+diff --git a/code/data/sim_318.pickle b/code/data/sim_318.pickle
+index 1171888..496ee59 100644
+Binary files a/code/data/sim_318.pickle and b/code/data/sim_318.pickle differ
+diff --git a/code/data/sim_319.pickle b/code/data/sim_319.pickle
+index c562aa3..57124b8 100644
+Binary files a/code/data/sim_319.pickle and b/code/data/sim_319.pickle differ
+diff --git a/code/data/sim_32.pickle b/code/data/sim_32.pickle
+index 1cce6dc..25fcd8f 100644
+Binary files a/code/data/sim_32.pickle and b/code/data/sim_32.pickle differ
+diff --git a/code/data/sim_320.pickle b/code/data/sim_320.pickle
+index 1569780..70e03b3 100644
+Binary files a/code/data/sim_320.pickle and b/code/data/sim_320.pickle differ
+diff --git a/code/data/sim_321.pickle b/code/data/sim_321.pickle
+index 68f65f2..7727e2c 100644
+Binary files a/code/data/sim_321.pickle and b/code/data/sim_321.pickle differ
+diff --git a/code/data/sim_322.pickle b/code/data/sim_322.pickle
+index d21882f..91ddacd 100644
+Binary files a/code/data/sim_322.pickle and b/code/data/sim_322.pickle differ
+diff --git a/code/data/sim_323.pickle b/code/data/sim_323.pickle
+index 7ec685a..690fed6 100644
+Binary files a/code/data/sim_323.pickle and b/code/data/sim_323.pickle differ
+diff --git a/code/data/sim_324.pickle b/code/data/sim_324.pickle
+index 887fd11..664b8a3 100644
+Binary files a/code/data/sim_324.pickle and b/code/data/sim_324.pickle differ
+diff --git a/code/data/sim_325.pickle b/code/data/sim_325.pickle
+index 92919ef..6064b9f 100644
+Binary files a/code/data/sim_325.pickle and b/code/data/sim_325.pickle differ
+diff --git a/code/data/sim_326.pickle b/code/data/sim_326.pickle
+index a2fff5e..95b2074 100644
+Binary files a/code/data/sim_326.pickle and b/code/data/sim_326.pickle differ
+diff --git a/code/data/sim_327.pickle b/code/data/sim_327.pickle
+index 988cdce..af8468c 100644
+Binary files a/code/data/sim_327.pickle and b/code/data/sim_327.pickle differ
+diff --git a/code/data/sim_328.pickle b/code/data/sim_328.pickle
+index 2e79e68..1f82d5a 100644
+Binary files a/code/data/sim_328.pickle and b/code/data/sim_328.pickle differ
+diff --git a/code/data/sim_329.pickle b/code/data/sim_329.pickle
+index 664ff46..e90517b 100644
+Binary files a/code/data/sim_329.pickle and b/code/data/sim_329.pickle differ
+diff --git a/code/data/sim_33.pickle b/code/data/sim_33.pickle
+index 5129f26..0b743e7 100644
+Binary files a/code/data/sim_33.pickle and b/code/data/sim_33.pickle differ
+diff --git a/code/data/sim_330.pickle b/code/data/sim_330.pickle
+index 86a7fc2..34a840c 100644
+Binary files a/code/data/sim_330.pickle and b/code/data/sim_330.pickle differ
+diff --git a/code/data/sim_331.pickle b/code/data/sim_331.pickle
+index 1ae7874..d0d7799 100644
+Binary files a/code/data/sim_331.pickle and b/code/data/sim_331.pickle differ
+diff --git a/code/data/sim_332.pickle b/code/data/sim_332.pickle
+index 1f34f87..650da72 100644
+Binary files a/code/data/sim_332.pickle and b/code/data/sim_332.pickle differ
+diff --git a/code/data/sim_333.pickle b/code/data/sim_333.pickle
+index 91477c4..e401fda 100644
+Binary files a/code/data/sim_333.pickle and b/code/data/sim_333.pickle differ
+diff --git a/code/data/sim_334.pickle b/code/data/sim_334.pickle
+index 1f9dcdb..e54bcef 100644
+Binary files a/code/data/sim_334.pickle and b/code/data/sim_334.pickle differ
+diff --git a/code/data/sim_335.pickle b/code/data/sim_335.pickle
+index 03ee4d5..dc27c11 100644
+Binary files a/code/data/sim_335.pickle and b/code/data/sim_335.pickle differ
+diff --git a/code/data/sim_336.pickle b/code/data/sim_336.pickle
+index c27568c..19accf1 100644
+Binary files a/code/data/sim_336.pickle and b/code/data/sim_336.pickle differ
+diff --git a/code/data/sim_337.pickle b/code/data/sim_337.pickle
+index 4b6c793..612304d 100644
+Binary files a/code/data/sim_337.pickle and b/code/data/sim_337.pickle differ
+diff --git a/code/data/sim_338.pickle b/code/data/sim_338.pickle
+index 3e587d6..585a9d2 100644
+Binary files a/code/data/sim_338.pickle and b/code/data/sim_338.pickle differ
+diff --git a/code/data/sim_339.pickle b/code/data/sim_339.pickle
+index 99ad124..ae46084 100644
+Binary files a/code/data/sim_339.pickle and b/code/data/sim_339.pickle differ
+diff --git a/code/data/sim_34.pickle b/code/data/sim_34.pickle
+index 9c56079..7ab01a0 100644
+Binary files a/code/data/sim_34.pickle and b/code/data/sim_34.pickle differ
+diff --git a/code/data/sim_340.pickle b/code/data/sim_340.pickle
+index 307e748..0996db7 100644
+Binary files a/code/data/sim_340.pickle and b/code/data/sim_340.pickle differ
+diff --git a/code/data/sim_341.pickle b/code/data/sim_341.pickle
+index e2c462c..c6a2c4a 100644
+Binary files a/code/data/sim_341.pickle and b/code/data/sim_341.pickle differ
+diff --git a/code/data/sim_342.pickle b/code/data/sim_342.pickle
+index 3242bf3..e397a89 100644
+Binary files a/code/data/sim_342.pickle and b/code/data/sim_342.pickle differ
+diff --git a/code/data/sim_343.pickle b/code/data/sim_343.pickle
+index 3f1ad7d..bb88ca6 100644
+Binary files a/code/data/sim_343.pickle and b/code/data/sim_343.pickle differ
+diff --git a/code/data/sim_344.pickle b/code/data/sim_344.pickle
+index 48c111d..49c50cd 100644
+Binary files a/code/data/sim_344.pickle and b/code/data/sim_344.pickle differ
+diff --git a/code/data/sim_345.pickle b/code/data/sim_345.pickle
+index 1368392..c648703 100644
+Binary files a/code/data/sim_345.pickle and b/code/data/sim_345.pickle differ
+diff --git a/code/data/sim_346.pickle b/code/data/sim_346.pickle
+index 779034d..698bd76 100644
+Binary files a/code/data/sim_346.pickle and b/code/data/sim_346.pickle differ
+diff --git a/code/data/sim_347.pickle b/code/data/sim_347.pickle
+index e9b31f3..30f298a 100644
+Binary files a/code/data/sim_347.pickle and b/code/data/sim_347.pickle differ
+diff --git a/code/data/sim_348.pickle b/code/data/sim_348.pickle
+index 661c764..2de941e 100644
+Binary files a/code/data/sim_348.pickle and b/code/data/sim_348.pickle differ
+diff --git a/code/data/sim_349.pickle b/code/data/sim_349.pickle
+index 38042a2..2db58b5 100644
+Binary files a/code/data/sim_349.pickle and b/code/data/sim_349.pickle differ
+diff --git a/code/data/sim_35.pickle b/code/data/sim_35.pickle
+index b93834d..c4bcf80 100644
+Binary files a/code/data/sim_35.pickle and b/code/data/sim_35.pickle differ
+diff --git a/code/data/sim_350.pickle b/code/data/sim_350.pickle
+index 6c1e2ca..b743ae3 100644
+Binary files a/code/data/sim_350.pickle and b/code/data/sim_350.pickle differ
+diff --git a/code/data/sim_351.pickle b/code/data/sim_351.pickle
+index 417480e..34167c1 100644
+Binary files a/code/data/sim_351.pickle and b/code/data/sim_351.pickle differ
+diff --git a/code/data/sim_352.pickle b/code/data/sim_352.pickle
+index 5307fa9..924e309 100644
+Binary files a/code/data/sim_352.pickle and b/code/data/sim_352.pickle differ
+diff --git a/code/data/sim_353.pickle b/code/data/sim_353.pickle
+index 8828c54..2a985eb 100644
+Binary files a/code/data/sim_353.pickle and b/code/data/sim_353.pickle differ
+diff --git a/code/data/sim_354.pickle b/code/data/sim_354.pickle
+index 8b318e2..cc1bd5b 100644
+Binary files a/code/data/sim_354.pickle and b/code/data/sim_354.pickle differ
+diff --git a/code/data/sim_355.pickle b/code/data/sim_355.pickle
+index f6deaea..70d7a02 100644
+Binary files a/code/data/sim_355.pickle and b/code/data/sim_355.pickle differ
+diff --git a/code/data/sim_356.pickle b/code/data/sim_356.pickle
+index fb34dfb..c382cf7 100644
+Binary files a/code/data/sim_356.pickle and b/code/data/sim_356.pickle differ
+diff --git a/code/data/sim_357.pickle b/code/data/sim_357.pickle
+index 0738db0..3e678e2 100644
+Binary files a/code/data/sim_357.pickle and b/code/data/sim_357.pickle differ
+diff --git a/code/data/sim_358.pickle b/code/data/sim_358.pickle
+index 8cb9878..bda9ca2 100644
+Binary files a/code/data/sim_358.pickle and b/code/data/sim_358.pickle differ
+diff --git a/code/data/sim_359.pickle b/code/data/sim_359.pickle
+index 66b8adf..f53f9a9 100644
+Binary files a/code/data/sim_359.pickle and b/code/data/sim_359.pickle differ
+diff --git a/code/data/sim_36.pickle b/code/data/sim_36.pickle
+index bae3d8e..34c943d 100644
+Binary files a/code/data/sim_36.pickle and b/code/data/sim_36.pickle differ
+diff --git a/code/data/sim_360.pickle b/code/data/sim_360.pickle
+index 44b44a9..9183392 100644
+Binary files a/code/data/sim_360.pickle and b/code/data/sim_360.pickle differ
+diff --git a/code/data/sim_361.pickle b/code/data/sim_361.pickle
+index 6c94867..2b58af1 100644
+Binary files a/code/data/sim_361.pickle and b/code/data/sim_361.pickle differ
+diff --git a/code/data/sim_362.pickle b/code/data/sim_362.pickle
+index 5630470..3ae3c72 100644
+Binary files a/code/data/sim_362.pickle and b/code/data/sim_362.pickle differ
+diff --git a/code/data/sim_363.pickle b/code/data/sim_363.pickle
+index 6e501c0..60bc611 100644
+Binary files a/code/data/sim_363.pickle and b/code/data/sim_363.pickle differ
+diff --git a/code/data/sim_364.pickle b/code/data/sim_364.pickle
+index d80b0e1..bb30faf 100644
+Binary files a/code/data/sim_364.pickle and b/code/data/sim_364.pickle differ
+diff --git a/code/data/sim_365.pickle b/code/data/sim_365.pickle
+index 931a705..fb1c2ef 100644
+Binary files a/code/data/sim_365.pickle and b/code/data/sim_365.pickle differ
+diff --git a/code/data/sim_366.pickle b/code/data/sim_366.pickle
+index 400c960..0871324 100644
+Binary files a/code/data/sim_366.pickle and b/code/data/sim_366.pickle differ
+diff --git a/code/data/sim_367.pickle b/code/data/sim_367.pickle
+index fb1472e..7f8c2de 100644
+Binary files a/code/data/sim_367.pickle and b/code/data/sim_367.pickle differ
+diff --git a/code/data/sim_368.pickle b/code/data/sim_368.pickle
+index 378f37c..6bb0623 100644
+Binary files a/code/data/sim_368.pickle and b/code/data/sim_368.pickle differ
+diff --git a/code/data/sim_369.pickle b/code/data/sim_369.pickle
+index 6198cd7..22497f0 100644
+Binary files a/code/data/sim_369.pickle and b/code/data/sim_369.pickle differ
+diff --git a/code/data/sim_37.pickle b/code/data/sim_37.pickle
+index 96b3617..a11428d 100644
+Binary files a/code/data/sim_37.pickle and b/code/data/sim_37.pickle differ
+diff --git a/code/data/sim_370.pickle b/code/data/sim_370.pickle
+index 1a5f233..ce4defa 100644
+Binary files a/code/data/sim_370.pickle and b/code/data/sim_370.pickle differ
+diff --git a/code/data/sim_371.pickle b/code/data/sim_371.pickle
+index 86aa934..a448b51 100644
+Binary files a/code/data/sim_371.pickle and b/code/data/sim_371.pickle differ
+diff --git a/code/data/sim_372.pickle b/code/data/sim_372.pickle
+index fc1819d..bb08fce 100644
+Binary files a/code/data/sim_372.pickle and b/code/data/sim_372.pickle differ
+diff --git a/code/data/sim_373.pickle b/code/data/sim_373.pickle
+index ebdbdf8..b6d3162 100644
+Binary files a/code/data/sim_373.pickle and b/code/data/sim_373.pickle differ
+diff --git a/code/data/sim_374.pickle b/code/data/sim_374.pickle
+index 6a6c312..c0884dc 100644
+Binary files a/code/data/sim_374.pickle and b/code/data/sim_374.pickle differ
+diff --git a/code/data/sim_375.pickle b/code/data/sim_375.pickle
+index d6f8b98..c4ae68e 100644
+Binary files a/code/data/sim_375.pickle and b/code/data/sim_375.pickle differ
+diff --git a/code/data/sim_376.pickle b/code/data/sim_376.pickle
+index cdab4d8..3365652 100644
+Binary files a/code/data/sim_376.pickle and b/code/data/sim_376.pickle differ
+diff --git a/code/data/sim_377.pickle b/code/data/sim_377.pickle
+index ba29ee8..a121e27 100644
+Binary files a/code/data/sim_377.pickle and b/code/data/sim_377.pickle differ
+diff --git a/code/data/sim_378.pickle b/code/data/sim_378.pickle
+index 73ea0cb..c8c49b6 100644
+Binary files a/code/data/sim_378.pickle and b/code/data/sim_378.pickle differ
+diff --git a/code/data/sim_379.pickle b/code/data/sim_379.pickle
+index 4635c53..a1e3117 100644
+Binary files a/code/data/sim_379.pickle and b/code/data/sim_379.pickle differ
+diff --git a/code/data/sim_38.pickle b/code/data/sim_38.pickle
+index 141e43c..0bc10ad 100644
+Binary files a/code/data/sim_38.pickle and b/code/data/sim_38.pickle differ
+diff --git a/code/data/sim_380.pickle b/code/data/sim_380.pickle
+index 68b7725..b6992c7 100644
+Binary files a/code/data/sim_380.pickle and b/code/data/sim_380.pickle differ
+diff --git a/code/data/sim_381.pickle b/code/data/sim_381.pickle
+index 71b8f4d..68671db 100644
+Binary files a/code/data/sim_381.pickle and b/code/data/sim_381.pickle differ
+diff --git a/code/data/sim_382.pickle b/code/data/sim_382.pickle
+index 771c0b4..2ef0cc9 100644
+Binary files a/code/data/sim_382.pickle and b/code/data/sim_382.pickle differ
+diff --git a/code/data/sim_383.pickle b/code/data/sim_383.pickle
+index 2e666a2..1fce2d5 100644
+Binary files a/code/data/sim_383.pickle and b/code/data/sim_383.pickle differ
+diff --git a/code/data/sim_384.pickle b/code/data/sim_384.pickle
+index 119cbce..80301e4 100644
+Binary files a/code/data/sim_384.pickle and b/code/data/sim_384.pickle differ
+diff --git a/code/data/sim_385.pickle b/code/data/sim_385.pickle
+index e234956..01de263 100644
+Binary files a/code/data/sim_385.pickle and b/code/data/sim_385.pickle differ
+diff --git a/code/data/sim_386.pickle b/code/data/sim_386.pickle
+index 2441191..6b50afd 100644
+Binary files a/code/data/sim_386.pickle and b/code/data/sim_386.pickle differ
+diff --git a/code/data/sim_387.pickle b/code/data/sim_387.pickle
+index cf3be22..eac0f7e 100644
+Binary files a/code/data/sim_387.pickle and b/code/data/sim_387.pickle differ
+diff --git a/code/data/sim_388.pickle b/code/data/sim_388.pickle
+index 63fc475..981d821 100644
+Binary files a/code/data/sim_388.pickle and b/code/data/sim_388.pickle differ
+diff --git a/code/data/sim_389.pickle b/code/data/sim_389.pickle
+index 85a226e..300110b 100644
+Binary files a/code/data/sim_389.pickle and b/code/data/sim_389.pickle differ
+diff --git a/code/data/sim_39.pickle b/code/data/sim_39.pickle
+index bab1cf8..76b1866 100644
+Binary files a/code/data/sim_39.pickle and b/code/data/sim_39.pickle differ
+diff --git a/code/data/sim_390.pickle b/code/data/sim_390.pickle
+index 79d5c77..df381cb 100644
+Binary files a/code/data/sim_390.pickle and b/code/data/sim_390.pickle differ
+diff --git a/code/data/sim_391.pickle b/code/data/sim_391.pickle
+index 1b332fa..bc7aa22 100644
+Binary files a/code/data/sim_391.pickle and b/code/data/sim_391.pickle differ
+diff --git a/code/data/sim_392.pickle b/code/data/sim_392.pickle
+index cd79ef2..b935275 100644
+Binary files a/code/data/sim_392.pickle and b/code/data/sim_392.pickle differ
+diff --git a/code/data/sim_393.pickle b/code/data/sim_393.pickle
+index 9078c63..dfa3f14 100644
+Binary files a/code/data/sim_393.pickle and b/code/data/sim_393.pickle differ
+diff --git a/code/data/sim_394.pickle b/code/data/sim_394.pickle
+index 8d3aaf9..645c091 100644
+Binary files a/code/data/sim_394.pickle and b/code/data/sim_394.pickle differ
+diff --git a/code/data/sim_395.pickle b/code/data/sim_395.pickle
+index 246205c..c70f173 100644
+Binary files a/code/data/sim_395.pickle and b/code/data/sim_395.pickle differ
+diff --git a/code/data/sim_396.pickle b/code/data/sim_396.pickle
+index e82c92f..1c94f8c 100644
+Binary files a/code/data/sim_396.pickle and b/code/data/sim_396.pickle differ
+diff --git a/code/data/sim_397.pickle b/code/data/sim_397.pickle
+index c08e9d9..c90838e 100644
+Binary files a/code/data/sim_397.pickle and b/code/data/sim_397.pickle differ
+diff --git a/code/data/sim_398.pickle b/code/data/sim_398.pickle
+index 7c976f8..d055367 100644
+Binary files a/code/data/sim_398.pickle and b/code/data/sim_398.pickle differ
+diff --git a/code/data/sim_399.pickle b/code/data/sim_399.pickle
+index def0af3..c7881c0 100644
+Binary files a/code/data/sim_399.pickle and b/code/data/sim_399.pickle differ
+diff --git a/code/data/sim_4.pickle b/code/data/sim_4.pickle
+index b65b828..cbd75bb 100644
+Binary files a/code/data/sim_4.pickle and b/code/data/sim_4.pickle differ
+diff --git a/code/data/sim_40.pickle b/code/data/sim_40.pickle
+index 70451be..9475429 100644
+Binary files a/code/data/sim_40.pickle and b/code/data/sim_40.pickle differ
+diff --git a/code/data/sim_400.pickle b/code/data/sim_400.pickle
+index 4a6cb99..df04803 100644
+Binary files a/code/data/sim_400.pickle and b/code/data/sim_400.pickle differ
+diff --git a/code/data/sim_401.pickle b/code/data/sim_401.pickle
+index 887ca5d..ad4d030 100644
+Binary files a/code/data/sim_401.pickle and b/code/data/sim_401.pickle differ
+diff --git a/code/data/sim_402.pickle b/code/data/sim_402.pickle
+index bc652b3..1644fdf 100644
+Binary files a/code/data/sim_402.pickle and b/code/data/sim_402.pickle differ
+diff --git a/code/data/sim_403.pickle b/code/data/sim_403.pickle
+index bd0b5cd..368a2bd 100644
+Binary files a/code/data/sim_403.pickle and b/code/data/sim_403.pickle differ
+diff --git a/code/data/sim_404.pickle b/code/data/sim_404.pickle
+index 01a5de4..3e5a53f 100644
+Binary files a/code/data/sim_404.pickle and b/code/data/sim_404.pickle differ
+diff --git a/code/data/sim_405.pickle b/code/data/sim_405.pickle
+index b78d075..9fb1520 100644
+Binary files a/code/data/sim_405.pickle and b/code/data/sim_405.pickle differ
+diff --git a/code/data/sim_406.pickle b/code/data/sim_406.pickle
+index fb4d373..4df3c27 100644
+Binary files a/code/data/sim_406.pickle and b/code/data/sim_406.pickle differ
+diff --git a/code/data/sim_407.pickle b/code/data/sim_407.pickle
+index dda9792..91ab86b 100644
+Binary files a/code/data/sim_407.pickle and b/code/data/sim_407.pickle differ
+diff --git a/code/data/sim_408.pickle b/code/data/sim_408.pickle
+index 40db86c..940418a 100644
+Binary files a/code/data/sim_408.pickle and b/code/data/sim_408.pickle differ
+diff --git a/code/data/sim_409.pickle b/code/data/sim_409.pickle
+index 53ea278..5372e88 100644
+Binary files a/code/data/sim_409.pickle and b/code/data/sim_409.pickle differ
+diff --git a/code/data/sim_41.pickle b/code/data/sim_41.pickle
+index 0b9d58d..fc670de 100644
+Binary files a/code/data/sim_41.pickle and b/code/data/sim_41.pickle differ
+diff --git a/code/data/sim_410.pickle b/code/data/sim_410.pickle
+index 06a681a..0b3e414 100644
+Binary files a/code/data/sim_410.pickle and b/code/data/sim_410.pickle differ
+diff --git a/code/data/sim_411.pickle b/code/data/sim_411.pickle
+index 2b9d96c..26fde98 100644
+Binary files a/code/data/sim_411.pickle and b/code/data/sim_411.pickle differ
+diff --git a/code/data/sim_412.pickle b/code/data/sim_412.pickle
+index 90d38d1..0987446 100644
+Binary files a/code/data/sim_412.pickle and b/code/data/sim_412.pickle differ
+diff --git a/code/data/sim_413.pickle b/code/data/sim_413.pickle
+index c82a0b3..3f6cade 100644
+Binary files a/code/data/sim_413.pickle and b/code/data/sim_413.pickle differ
+diff --git a/code/data/sim_414.pickle b/code/data/sim_414.pickle
+index 1ed57fd..316e5ed 100644
+Binary files a/code/data/sim_414.pickle and b/code/data/sim_414.pickle differ
+diff --git a/code/data/sim_415.pickle b/code/data/sim_415.pickle
+index 456d992..fad32ee 100644
+Binary files a/code/data/sim_415.pickle and b/code/data/sim_415.pickle differ
+diff --git a/code/data/sim_416.pickle b/code/data/sim_416.pickle
+index 4d2adb2..47abc5c 100644
+Binary files a/code/data/sim_416.pickle and b/code/data/sim_416.pickle differ
+diff --git a/code/data/sim_417.pickle b/code/data/sim_417.pickle
+index 428f037..585d21f 100644
+Binary files a/code/data/sim_417.pickle and b/code/data/sim_417.pickle differ
+diff --git a/code/data/sim_418.pickle b/code/data/sim_418.pickle
+index f5765c5..7be71ea 100644
+Binary files a/code/data/sim_418.pickle and b/code/data/sim_418.pickle differ
+diff --git a/code/data/sim_419.pickle b/code/data/sim_419.pickle
+index bd33ed0..49329dc 100644
+Binary files a/code/data/sim_419.pickle and b/code/data/sim_419.pickle differ
+diff --git a/code/data/sim_42.pickle b/code/data/sim_42.pickle
+index a608c46..4f01d9a 100644
+Binary files a/code/data/sim_42.pickle and b/code/data/sim_42.pickle differ
+diff --git a/code/data/sim_420.pickle b/code/data/sim_420.pickle
+index 8b26e5b..b07ecac 100644
+Binary files a/code/data/sim_420.pickle and b/code/data/sim_420.pickle differ
+diff --git a/code/data/sim_421.pickle b/code/data/sim_421.pickle
+index 91a9090..b17dd6b 100644
+Binary files a/code/data/sim_421.pickle and b/code/data/sim_421.pickle differ
+diff --git a/code/data/sim_422.pickle b/code/data/sim_422.pickle
+index 5bd6c4a..3c94f54 100644
+Binary files a/code/data/sim_422.pickle and b/code/data/sim_422.pickle differ
+diff --git a/code/data/sim_423.pickle b/code/data/sim_423.pickle
+index 58b5d92..8c0cd90 100644
+Binary files a/code/data/sim_423.pickle and b/code/data/sim_423.pickle differ
+diff --git a/code/data/sim_424.pickle b/code/data/sim_424.pickle
+index 45ac7d2..0344f2b 100644
+Binary files a/code/data/sim_424.pickle and b/code/data/sim_424.pickle differ
+diff --git a/code/data/sim_425.pickle b/code/data/sim_425.pickle
+index 73d3b70..be709e1 100644
+Binary files a/code/data/sim_425.pickle and b/code/data/sim_425.pickle differ
+diff --git a/code/data/sim_426.pickle b/code/data/sim_426.pickle
+index 6d9694b..9b6a8c1 100644
+Binary files a/code/data/sim_426.pickle and b/code/data/sim_426.pickle differ
+diff --git a/code/data/sim_427.pickle b/code/data/sim_427.pickle
+index 1dd23ba..1561998 100644
+Binary files a/code/data/sim_427.pickle and b/code/data/sim_427.pickle differ
+diff --git a/code/data/sim_428.pickle b/code/data/sim_428.pickle
+index 6307332..c44dee3 100644
+Binary files a/code/data/sim_428.pickle and b/code/data/sim_428.pickle differ
+diff --git a/code/data/sim_429.pickle b/code/data/sim_429.pickle
+index 2fa18bb..127b115 100644
+Binary files a/code/data/sim_429.pickle and b/code/data/sim_429.pickle differ
+diff --git a/code/data/sim_43.pickle b/code/data/sim_43.pickle
+index e09cadb..95d8ceb 100644
+Binary files a/code/data/sim_43.pickle and b/code/data/sim_43.pickle differ
+diff --git a/code/data/sim_430.pickle b/code/data/sim_430.pickle
+index 1e8c2cc..555cc20 100644
+Binary files a/code/data/sim_430.pickle and b/code/data/sim_430.pickle differ
+diff --git a/code/data/sim_431.pickle b/code/data/sim_431.pickle
+index 5faf791..8258e01 100644
+Binary files a/code/data/sim_431.pickle and b/code/data/sim_431.pickle differ
+diff --git a/code/data/sim_432.pickle b/code/data/sim_432.pickle
+index 83f37ef..3b4d419 100644
+Binary files a/code/data/sim_432.pickle and b/code/data/sim_432.pickle differ
+diff --git a/code/data/sim_433.pickle b/code/data/sim_433.pickle
+index d8d6153..42294a7 100644
+Binary files a/code/data/sim_433.pickle and b/code/data/sim_433.pickle differ
+diff --git a/code/data/sim_434.pickle b/code/data/sim_434.pickle
+index 032bdff..0dee81e 100644
+Binary files a/code/data/sim_434.pickle and b/code/data/sim_434.pickle differ
+diff --git a/code/data/sim_435.pickle b/code/data/sim_435.pickle
+index 4db8d0a..771c69c 100644
+Binary files a/code/data/sim_435.pickle and b/code/data/sim_435.pickle differ
+diff --git a/code/data/sim_436.pickle b/code/data/sim_436.pickle
+index 32eb553..7812f08 100644
+Binary files a/code/data/sim_436.pickle and b/code/data/sim_436.pickle differ
+diff --git a/code/data/sim_437.pickle b/code/data/sim_437.pickle
+index 8b8c593..826c997 100644
+Binary files a/code/data/sim_437.pickle and b/code/data/sim_437.pickle differ
+diff --git a/code/data/sim_438.pickle b/code/data/sim_438.pickle
+index ea39495..5c6f082 100644
+Binary files a/code/data/sim_438.pickle and b/code/data/sim_438.pickle differ
+diff --git a/code/data/sim_439.pickle b/code/data/sim_439.pickle
+index 994521c..2524f49 100644
+Binary files a/code/data/sim_439.pickle and b/code/data/sim_439.pickle differ
+diff --git a/code/data/sim_44.pickle b/code/data/sim_44.pickle
+index bd6d6b0..f4680ae 100644
+Binary files a/code/data/sim_44.pickle and b/code/data/sim_44.pickle differ
+diff --git a/code/data/sim_440.pickle b/code/data/sim_440.pickle
+index 79c6e87..c9f3d2a 100644
+Binary files a/code/data/sim_440.pickle and b/code/data/sim_440.pickle differ
+diff --git a/code/data/sim_441.pickle b/code/data/sim_441.pickle
+index d418291..240e5dd 100644
+Binary files a/code/data/sim_441.pickle and b/code/data/sim_441.pickle differ
+diff --git a/code/data/sim_442.pickle b/code/data/sim_442.pickle
+index 21d2624..e60400b 100644
+Binary files a/code/data/sim_442.pickle and b/code/data/sim_442.pickle differ
+diff --git a/code/data/sim_443.pickle b/code/data/sim_443.pickle
+index e83c9b4..bc218ba 100644
+Binary files a/code/data/sim_443.pickle and b/code/data/sim_443.pickle differ
+diff --git a/code/data/sim_444.pickle b/code/data/sim_444.pickle
+index 3c403ab..55869a4 100644
+Binary files a/code/data/sim_444.pickle and b/code/data/sim_444.pickle differ
+diff --git a/code/data/sim_445.pickle b/code/data/sim_445.pickle
+index f9b6a53..818b3b6 100644
+Binary files a/code/data/sim_445.pickle and b/code/data/sim_445.pickle differ
+diff --git a/code/data/sim_446.pickle b/code/data/sim_446.pickle
+index a5224c6..ef1d69b 100644
+Binary files a/code/data/sim_446.pickle and b/code/data/sim_446.pickle differ
+diff --git a/code/data/sim_447.pickle b/code/data/sim_447.pickle
+index 8c5b08b..9add5e0 100644
+Binary files a/code/data/sim_447.pickle and b/code/data/sim_447.pickle differ
+diff --git a/code/data/sim_448.pickle b/code/data/sim_448.pickle
+index 2e2c07b..3eefb71 100644
+Binary files a/code/data/sim_448.pickle and b/code/data/sim_448.pickle differ
+diff --git a/code/data/sim_449.pickle b/code/data/sim_449.pickle
+index 486276e..1a8e5e6 100644
+Binary files a/code/data/sim_449.pickle and b/code/data/sim_449.pickle differ
+diff --git a/code/data/sim_45.pickle b/code/data/sim_45.pickle
+index e775128..1117050 100644
+Binary files a/code/data/sim_45.pickle and b/code/data/sim_45.pickle differ
+diff --git a/code/data/sim_450.pickle b/code/data/sim_450.pickle
+index 354d4d3..8f1702a 100644
+Binary files a/code/data/sim_450.pickle and b/code/data/sim_450.pickle differ
+diff --git a/code/data/sim_451.pickle b/code/data/sim_451.pickle
+index bbf21b9..9c62210 100644
+Binary files a/code/data/sim_451.pickle and b/code/data/sim_451.pickle differ
+diff --git a/code/data/sim_452.pickle b/code/data/sim_452.pickle
+index 971948e..ff2e014 100644
+Binary files a/code/data/sim_452.pickle and b/code/data/sim_452.pickle differ
+diff --git a/code/data/sim_453.pickle b/code/data/sim_453.pickle
+index e1e4249..8f8717f 100644
+Binary files a/code/data/sim_453.pickle and b/code/data/sim_453.pickle differ
+diff --git a/code/data/sim_454.pickle b/code/data/sim_454.pickle
+index 7bc6a32..316867f 100644
+Binary files a/code/data/sim_454.pickle and b/code/data/sim_454.pickle differ
+diff --git a/code/data/sim_455.pickle b/code/data/sim_455.pickle
+index 1293bff..d9dfdd6 100644
+Binary files a/code/data/sim_455.pickle and b/code/data/sim_455.pickle differ
+diff --git a/code/data/sim_456.pickle b/code/data/sim_456.pickle
+index 9152511..83d1288 100644
+Binary files a/code/data/sim_456.pickle and b/code/data/sim_456.pickle differ
+diff --git a/code/data/sim_457.pickle b/code/data/sim_457.pickle
+index c41d83f..882d070 100644
+Binary files a/code/data/sim_457.pickle and b/code/data/sim_457.pickle differ
+diff --git a/code/data/sim_458.pickle b/code/data/sim_458.pickle
+index cdf423e..f4bb115 100644
+Binary files a/code/data/sim_458.pickle and b/code/data/sim_458.pickle differ
+diff --git a/code/data/sim_459.pickle b/code/data/sim_459.pickle
+index 4e63351..ffa1dd0 100644
+Binary files a/code/data/sim_459.pickle and b/code/data/sim_459.pickle differ
+diff --git a/code/data/sim_46.pickle b/code/data/sim_46.pickle
+index 43f9c69..34a3f00 100644
+Binary files a/code/data/sim_46.pickle and b/code/data/sim_46.pickle differ
+diff --git a/code/data/sim_460.pickle b/code/data/sim_460.pickle
+index d3b8402..3506a0a 100644
+Binary files a/code/data/sim_460.pickle and b/code/data/sim_460.pickle differ
+diff --git a/code/data/sim_461.pickle b/code/data/sim_461.pickle
+index 25aae39..3124f46 100644
+Binary files a/code/data/sim_461.pickle and b/code/data/sim_461.pickle differ
+diff --git a/code/data/sim_462.pickle b/code/data/sim_462.pickle
+index 3b38c14..09fe2a0 100644
+Binary files a/code/data/sim_462.pickle and b/code/data/sim_462.pickle differ
+diff --git a/code/data/sim_463.pickle b/code/data/sim_463.pickle
+index 0592fa2..4152e42 100644
+Binary files a/code/data/sim_463.pickle and b/code/data/sim_463.pickle differ
+diff --git a/code/data/sim_464.pickle b/code/data/sim_464.pickle
+index c06ede9..45d73c3 100644
+Binary files a/code/data/sim_464.pickle and b/code/data/sim_464.pickle differ
+diff --git a/code/data/sim_465.pickle b/code/data/sim_465.pickle
+index 4ef05de..31ee6b7 100644
+Binary files a/code/data/sim_465.pickle and b/code/data/sim_465.pickle differ
+diff --git a/code/data/sim_466.pickle b/code/data/sim_466.pickle
+index 37677b5..c80ae4b 100644
+Binary files a/code/data/sim_466.pickle and b/code/data/sim_466.pickle differ
+diff --git a/code/data/sim_467.pickle b/code/data/sim_467.pickle
+index 1367018..f25502f 100644
+Binary files a/code/data/sim_467.pickle and b/code/data/sim_467.pickle differ
+diff --git a/code/data/sim_468.pickle b/code/data/sim_468.pickle
+index 0eb3f73..1bcdeeb 100644
+Binary files a/code/data/sim_468.pickle and b/code/data/sim_468.pickle differ
+diff --git a/code/data/sim_469.pickle b/code/data/sim_469.pickle
+index 02f66c2..7382588 100644
+Binary files a/code/data/sim_469.pickle and b/code/data/sim_469.pickle differ
+diff --git a/code/data/sim_47.pickle b/code/data/sim_47.pickle
+index 9135b1a..1a11fda 100644
+Binary files a/code/data/sim_47.pickle and b/code/data/sim_47.pickle differ
+diff --git a/code/data/sim_470.pickle b/code/data/sim_470.pickle
+index 869dc86..01731b9 100644
+Binary files a/code/data/sim_470.pickle and b/code/data/sim_470.pickle differ
+diff --git a/code/data/sim_471.pickle b/code/data/sim_471.pickle
+index 308659f..9c2e2ca 100644
+Binary files a/code/data/sim_471.pickle and b/code/data/sim_471.pickle differ
+diff --git a/code/data/sim_472.pickle b/code/data/sim_472.pickle
+index 7a94388..c8ba939 100644
+Binary files a/code/data/sim_472.pickle and b/code/data/sim_472.pickle differ
+diff --git a/code/data/sim_473.pickle b/code/data/sim_473.pickle
+index 2fd768b..070a814 100644
+Binary files a/code/data/sim_473.pickle and b/code/data/sim_473.pickle differ
+diff --git a/code/data/sim_474.pickle b/code/data/sim_474.pickle
+index 9144ce7..e3af1c9 100644
+Binary files a/code/data/sim_474.pickle and b/code/data/sim_474.pickle differ
+diff --git a/code/data/sim_475.pickle b/code/data/sim_475.pickle
+index 6ba22e9..e9d6bc0 100644
+Binary files a/code/data/sim_475.pickle and b/code/data/sim_475.pickle differ
+diff --git a/code/data/sim_476.pickle b/code/data/sim_476.pickle
+index c2a3e24..6e59df6 100644
+Binary files a/code/data/sim_476.pickle and b/code/data/sim_476.pickle differ
+diff --git a/code/data/sim_477.pickle b/code/data/sim_477.pickle
+index 7580ca3..82eb3d7 100644
+Binary files a/code/data/sim_477.pickle and b/code/data/sim_477.pickle differ
+diff --git a/code/data/sim_478.pickle b/code/data/sim_478.pickle
+index 377aa41..4136919 100644
+Binary files a/code/data/sim_478.pickle and b/code/data/sim_478.pickle differ
+diff --git a/code/data/sim_479.pickle b/code/data/sim_479.pickle
+index 718ea5b..f6695a3 100644
+Binary files a/code/data/sim_479.pickle and b/code/data/sim_479.pickle differ
+diff --git a/code/data/sim_48.pickle b/code/data/sim_48.pickle
+index e2aad6c..8ee4cf7 100644
+Binary files a/code/data/sim_48.pickle and b/code/data/sim_48.pickle differ
+diff --git a/code/data/sim_480.pickle b/code/data/sim_480.pickle
+index 54cbf31..401c8c8 100644
+Binary files a/code/data/sim_480.pickle and b/code/data/sim_480.pickle differ
+diff --git a/code/data/sim_481.pickle b/code/data/sim_481.pickle
+index 451dd6b..1086735 100644
+Binary files a/code/data/sim_481.pickle and b/code/data/sim_481.pickle differ
+diff --git a/code/data/sim_482.pickle b/code/data/sim_482.pickle
+index b89e53d..19e3b13 100644
+Binary files a/code/data/sim_482.pickle and b/code/data/sim_482.pickle differ
+diff --git a/code/data/sim_483.pickle b/code/data/sim_483.pickle
+index 639144f..f140f76 100644
+Binary files a/code/data/sim_483.pickle and b/code/data/sim_483.pickle differ
+diff --git a/code/data/sim_484.pickle b/code/data/sim_484.pickle
+index 48bb123..fa4c68e 100644
+Binary files a/code/data/sim_484.pickle and b/code/data/sim_484.pickle differ
+diff --git a/code/data/sim_485.pickle b/code/data/sim_485.pickle
+index 4013f93..bba4a3c 100644
+Binary files a/code/data/sim_485.pickle and b/code/data/sim_485.pickle differ
+diff --git a/code/data/sim_486.pickle b/code/data/sim_486.pickle
+index d68e0ea..8aa589a 100644
+Binary files a/code/data/sim_486.pickle and b/code/data/sim_486.pickle differ
+diff --git a/code/data/sim_487.pickle b/code/data/sim_487.pickle
+index 31c2cbc..f95d225 100644
+Binary files a/code/data/sim_487.pickle and b/code/data/sim_487.pickle differ
+diff --git a/code/data/sim_488.pickle b/code/data/sim_488.pickle
+index bff76c5..be67b87 100644
+Binary files a/code/data/sim_488.pickle and b/code/data/sim_488.pickle differ
+diff --git a/code/data/sim_489.pickle b/code/data/sim_489.pickle
+index 5519edd..ad5f47c 100644
+Binary files a/code/data/sim_489.pickle and b/code/data/sim_489.pickle differ
+diff --git a/code/data/sim_49.pickle b/code/data/sim_49.pickle
+index d8c22f3..403c87b 100644
+Binary files a/code/data/sim_49.pickle and b/code/data/sim_49.pickle differ
+diff --git a/code/data/sim_490.pickle b/code/data/sim_490.pickle
+index e37590b..9ed3cae 100644
+Binary files a/code/data/sim_490.pickle and b/code/data/sim_490.pickle differ
+diff --git a/code/data/sim_491.pickle b/code/data/sim_491.pickle
+index ef27e6d..5c59547 100644
+Binary files a/code/data/sim_491.pickle and b/code/data/sim_491.pickle differ
+diff --git a/code/data/sim_492.pickle b/code/data/sim_492.pickle
+index 099e2c7..3b3d1cc 100644
+Binary files a/code/data/sim_492.pickle and b/code/data/sim_492.pickle differ
+diff --git a/code/data/sim_493.pickle b/code/data/sim_493.pickle
+index 1cf0e1f..c0fe8f3 100644
+Binary files a/code/data/sim_493.pickle and b/code/data/sim_493.pickle differ
+diff --git a/code/data/sim_494.pickle b/code/data/sim_494.pickle
+index 4c7d4f1..7f3a6e8 100644
+Binary files a/code/data/sim_494.pickle and b/code/data/sim_494.pickle differ
+diff --git a/code/data/sim_495.pickle b/code/data/sim_495.pickle
+index 5160ca1..2a75615 100644
+Binary files a/code/data/sim_495.pickle and b/code/data/sim_495.pickle differ
+diff --git a/code/data/sim_496.pickle b/code/data/sim_496.pickle
+index e7d9170..0a8d4a7 100644
+Binary files a/code/data/sim_496.pickle and b/code/data/sim_496.pickle differ
+diff --git a/code/data/sim_497.pickle b/code/data/sim_497.pickle
+index 775b87a..a91c913 100644
+Binary files a/code/data/sim_497.pickle and b/code/data/sim_497.pickle differ
+diff --git a/code/data/sim_498.pickle b/code/data/sim_498.pickle
+index f116b37..5eca563 100644
+Binary files a/code/data/sim_498.pickle and b/code/data/sim_498.pickle differ
+diff --git a/code/data/sim_499.pickle b/code/data/sim_499.pickle
+index e539c96..b53ef78 100644
+Binary files a/code/data/sim_499.pickle and b/code/data/sim_499.pickle differ
+diff --git a/code/data/sim_5.pickle b/code/data/sim_5.pickle
+index f02d894..0c8ecb2 100644
+Binary files a/code/data/sim_5.pickle and b/code/data/sim_5.pickle differ
+diff --git a/code/data/sim_50.pickle b/code/data/sim_50.pickle
+index cf5adb3..d236931 100644
+Binary files a/code/data/sim_50.pickle and b/code/data/sim_50.pickle differ
+diff --git a/code/data/sim_51.pickle b/code/data/sim_51.pickle
+index c64a058..7a118c6 100644
+Binary files a/code/data/sim_51.pickle and b/code/data/sim_51.pickle differ
+diff --git a/code/data/sim_52.pickle b/code/data/sim_52.pickle
+index a9bb7d2..b94fa0b 100644
+Binary files a/code/data/sim_52.pickle and b/code/data/sim_52.pickle differ
+diff --git a/code/data/sim_53.pickle b/code/data/sim_53.pickle
+index be451d0..b028d6f 100644
+Binary files a/code/data/sim_53.pickle and b/code/data/sim_53.pickle differ
+diff --git a/code/data/sim_54.pickle b/code/data/sim_54.pickle
+index cb625d8..f9fd761 100644
+Binary files a/code/data/sim_54.pickle and b/code/data/sim_54.pickle differ
+diff --git a/code/data/sim_55.pickle b/code/data/sim_55.pickle
+index 8659792..e44ac52 100644
+Binary files a/code/data/sim_55.pickle and b/code/data/sim_55.pickle differ
+diff --git a/code/data/sim_56.pickle b/code/data/sim_56.pickle
+index f0a6d50..8d5c548 100644
+Binary files a/code/data/sim_56.pickle and b/code/data/sim_56.pickle differ
+diff --git a/code/data/sim_57.pickle b/code/data/sim_57.pickle
+index f64caa0..9cf61dd 100644
+Binary files a/code/data/sim_57.pickle and b/code/data/sim_57.pickle differ
+diff --git a/code/data/sim_58.pickle b/code/data/sim_58.pickle
+index 30f8002..49bce2e 100644
+Binary files a/code/data/sim_58.pickle and b/code/data/sim_58.pickle differ
+diff --git a/code/data/sim_59.pickle b/code/data/sim_59.pickle
+index 10df099..4341051 100644
+Binary files a/code/data/sim_59.pickle and b/code/data/sim_59.pickle differ
+diff --git a/code/data/sim_6.pickle b/code/data/sim_6.pickle
+index 659ce32..12ae3e3 100644
+Binary files a/code/data/sim_6.pickle and b/code/data/sim_6.pickle differ
+diff --git a/code/data/sim_60.pickle b/code/data/sim_60.pickle
+index 87a0c15..36ad44a 100644
+Binary files a/code/data/sim_60.pickle and b/code/data/sim_60.pickle differ
+diff --git a/code/data/sim_61.pickle b/code/data/sim_61.pickle
+index e9eb070..cb5b3b4 100644
+Binary files a/code/data/sim_61.pickle and b/code/data/sim_61.pickle differ
+diff --git a/code/data/sim_62.pickle b/code/data/sim_62.pickle
+index 2e79c8f..7563bef 100644
+Binary files a/code/data/sim_62.pickle and b/code/data/sim_62.pickle differ
+diff --git a/code/data/sim_63.pickle b/code/data/sim_63.pickle
+index 24f8d68..10856a5 100644
+Binary files a/code/data/sim_63.pickle and b/code/data/sim_63.pickle differ
+diff --git a/code/data/sim_64.pickle b/code/data/sim_64.pickle
+index a516175..2520319 100644
+Binary files a/code/data/sim_64.pickle and b/code/data/sim_64.pickle differ
+diff --git a/code/data/sim_65.pickle b/code/data/sim_65.pickle
+index f913828..decec39 100644
+Binary files a/code/data/sim_65.pickle and b/code/data/sim_65.pickle differ
+diff --git a/code/data/sim_66.pickle b/code/data/sim_66.pickle
+index 8b68a4a..ce765c4 100644
+Binary files a/code/data/sim_66.pickle and b/code/data/sim_66.pickle differ
+diff --git a/code/data/sim_67.pickle b/code/data/sim_67.pickle
+index 1b122e6..73273c2 100644
+Binary files a/code/data/sim_67.pickle and b/code/data/sim_67.pickle differ
+diff --git a/code/data/sim_68.pickle b/code/data/sim_68.pickle
+index 3659fcc..a23972c 100644
+Binary files a/code/data/sim_68.pickle and b/code/data/sim_68.pickle differ
+diff --git a/code/data/sim_69.pickle b/code/data/sim_69.pickle
+index 576f2ee..f598ea8 100644
+Binary files a/code/data/sim_69.pickle and b/code/data/sim_69.pickle differ
+diff --git a/code/data/sim_7.pickle b/code/data/sim_7.pickle
+index e4cb550..e076d72 100644
+Binary files a/code/data/sim_7.pickle and b/code/data/sim_7.pickle differ
+diff --git a/code/data/sim_70.pickle b/code/data/sim_70.pickle
+index 699a080..9b9276c 100644
+Binary files a/code/data/sim_70.pickle and b/code/data/sim_70.pickle differ
+diff --git a/code/data/sim_71.pickle b/code/data/sim_71.pickle
+index 2c9e894..84a864a 100644
+Binary files a/code/data/sim_71.pickle and b/code/data/sim_71.pickle differ
+diff --git a/code/data/sim_72.pickle b/code/data/sim_72.pickle
+index 50c539b..5bd37ef 100644
+Binary files a/code/data/sim_72.pickle and b/code/data/sim_72.pickle differ
+diff --git a/code/data/sim_73.pickle b/code/data/sim_73.pickle
+index d176872..fc3f8db 100644
+Binary files a/code/data/sim_73.pickle and b/code/data/sim_73.pickle differ
+diff --git a/code/data/sim_74.pickle b/code/data/sim_74.pickle
+index bc116f3..edbd27b 100644
+Binary files a/code/data/sim_74.pickle and b/code/data/sim_74.pickle differ
+diff --git a/code/data/sim_75.pickle b/code/data/sim_75.pickle
+index 7871679..127dc6b 100644
+Binary files a/code/data/sim_75.pickle and b/code/data/sim_75.pickle differ
+diff --git a/code/data/sim_76.pickle b/code/data/sim_76.pickle
+index 6eb5b73..4715bdb 100644
+Binary files a/code/data/sim_76.pickle and b/code/data/sim_76.pickle differ
+diff --git a/code/data/sim_77.pickle b/code/data/sim_77.pickle
+index b73f0dd..d5f8aa4 100644
+Binary files a/code/data/sim_77.pickle and b/code/data/sim_77.pickle differ
+diff --git a/code/data/sim_78.pickle b/code/data/sim_78.pickle
+index e77667a..76a2351 100644
+Binary files a/code/data/sim_78.pickle and b/code/data/sim_78.pickle differ
+diff --git a/code/data/sim_79.pickle b/code/data/sim_79.pickle
+index 910d7da..c1d7cb6 100644
+Binary files a/code/data/sim_79.pickle and b/code/data/sim_79.pickle differ
+diff --git a/code/data/sim_8.pickle b/code/data/sim_8.pickle
+index f93d7f8..ff58ec1 100644
+Binary files a/code/data/sim_8.pickle and b/code/data/sim_8.pickle differ
+diff --git a/code/data/sim_80.pickle b/code/data/sim_80.pickle
+index 5e9edac..def32b0 100644
+Binary files a/code/data/sim_80.pickle and b/code/data/sim_80.pickle differ
+diff --git a/code/data/sim_81.pickle b/code/data/sim_81.pickle
+index 3f51e5b..640b933 100644
+Binary files a/code/data/sim_81.pickle and b/code/data/sim_81.pickle differ
+diff --git a/code/data/sim_82.pickle b/code/data/sim_82.pickle
+index ef848d9..d4371aa 100644
+Binary files a/code/data/sim_82.pickle and b/code/data/sim_82.pickle differ
+diff --git a/code/data/sim_83.pickle b/code/data/sim_83.pickle
+index c964918..fb8a911 100644
+Binary files a/code/data/sim_83.pickle and b/code/data/sim_83.pickle differ
+diff --git a/code/data/sim_84.pickle b/code/data/sim_84.pickle
+index bda7be0..f57aa37 100644
+Binary files a/code/data/sim_84.pickle and b/code/data/sim_84.pickle differ
+diff --git a/code/data/sim_85.pickle b/code/data/sim_85.pickle
+index cce4473..d9c1792 100644
+Binary files a/code/data/sim_85.pickle and b/code/data/sim_85.pickle differ
+diff --git a/code/data/sim_86.pickle b/code/data/sim_86.pickle
+index d28ea36..28cc206 100644
+Binary files a/code/data/sim_86.pickle and b/code/data/sim_86.pickle differ
+diff --git a/code/data/sim_87.pickle b/code/data/sim_87.pickle
+index da578b6..2346b82 100644
+Binary files a/code/data/sim_87.pickle and b/code/data/sim_87.pickle differ
+diff --git a/code/data/sim_88.pickle b/code/data/sim_88.pickle
+index f8f6354..da4fa4f 100644
+Binary files a/code/data/sim_88.pickle and b/code/data/sim_88.pickle differ
+diff --git a/code/data/sim_89.pickle b/code/data/sim_89.pickle
+index 024f528..c8ca3b9 100644
+Binary files a/code/data/sim_89.pickle and b/code/data/sim_89.pickle differ
+diff --git a/code/data/sim_9.pickle b/code/data/sim_9.pickle
+index 1508a7e..b1e52fa 100644
+Binary files a/code/data/sim_9.pickle and b/code/data/sim_9.pickle differ
+diff --git a/code/data/sim_90.pickle b/code/data/sim_90.pickle
+index 85f90a0..485178d 100644
+Binary files a/code/data/sim_90.pickle and b/code/data/sim_90.pickle differ
+diff --git a/code/data/sim_91.pickle b/code/data/sim_91.pickle
+index 560ea10..7a3d92e 100644
+Binary files a/code/data/sim_91.pickle and b/code/data/sim_91.pickle differ
+diff --git a/code/data/sim_92.pickle b/code/data/sim_92.pickle
+index eb10737..33fc3a2 100644
+Binary files a/code/data/sim_92.pickle and b/code/data/sim_92.pickle differ
+diff --git a/code/data/sim_93.pickle b/code/data/sim_93.pickle
+index 718fa5d..ebf5b89 100644
+Binary files a/code/data/sim_93.pickle and b/code/data/sim_93.pickle differ
+diff --git a/code/data/sim_94.pickle b/code/data/sim_94.pickle
+index 8954cb7..f212201 100644
+Binary files a/code/data/sim_94.pickle and b/code/data/sim_94.pickle differ
+diff --git a/code/data/sim_95.pickle b/code/data/sim_95.pickle
+index 217cf24..4235940 100644
+Binary files a/code/data/sim_95.pickle and b/code/data/sim_95.pickle differ
+diff --git a/code/data/sim_96.pickle b/code/data/sim_96.pickle
+index 2e636ce..e5c4d25 100644
+Binary files a/code/data/sim_96.pickle and b/code/data/sim_96.pickle differ
+diff --git a/code/data/sim_97.pickle b/code/data/sim_97.pickle
+index 0f2fde1..5e3f03d 100644
+Binary files a/code/data/sim_97.pickle and b/code/data/sim_97.pickle differ
+diff --git a/code/data/sim_98.pickle b/code/data/sim_98.pickle
+index 67ecd01..84e758e 100644
+Binary files a/code/data/sim_98.pickle and b/code/data/sim_98.pickle differ
+diff --git a/code/data/sim_99.pickle b/code/data/sim_99.pickle
+index ab6a534..fe67a36 100644
+Binary files a/code/data/sim_99.pickle and b/code/data/sim_99.pickle differ
+diff --git a/code/wandb/latest-run b/code/wandb/latest-run
+index 9e5d79d..cd8c88c 120000
+--- a/code/wandb/latest-run
++++ b/code/wandb/latest-run
+@@ -1 +1 @@
+-run-20220913_145719-8chtqm30
+\ No newline at end of file
++run-20220913_163834-vmdnxqq6
+\ No newline at end of file

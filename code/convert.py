@@ -102,53 +102,44 @@ def log_quat2pos(log_quat, start_pos):
 
     # np.append(magn * np.cos(v_norm), magn * np.sin(v_norm) * vec)
 
-
-
-    # print(len(log_quat.shape))
     if len(log_quat.shape) == 2:
-        print(log_quat[:, 1:4].shape)
+        v = log_quat[:, 1:4]
+        v_norm = torch.linalg.norm(v, dim=1)
 
-        v_norm = torch.linalg.norm(log_quat[:, 1:4], dim=1)[:, None].repeat(1, 3)
-        print("vnorm", v_norm.shape)
+        vec = torch.div(v.T, v_norm).T
 
+        magn = torch.exp(log_quat[:, 0])
 
-        vec = log_quat[:, 1:4] / v_norm
-        print("vec", vec.shape)
+        vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.T).T
 
-        magn = torch.exp(log_quat[:, 0])[:, None].repeat(1, 3)
-        print("magn", magn.shape)
+        scalar = (magn * torch.cos(v_norm))[:, None]
 
-        vector = magn * torch.sin(v_norm) * vec
-        print("vector", vector.shape)
+        quat = torch.hstack((scalar, vector))
 
+        full_quat = torch.hstack((quat, log_quat[:, 4:]))
 
-        scalar = magn * torch.cos(v_norm)
-        print("scalar", scalar[:,0])
-
-        # scalar = scalar.repeat(vector.shape[0], 1)
-        # print("scalar2", scalar.shape)
-
-        quat = torch.hstack((scalar[:, 0], vector))
-
-        print("quat", quat.shape)
-
-        return quat2pos(quat, start_pos)
+        return quat2pos(full_quat, start_pos)
 
     else:
-        rot_vec = log_quat[:, :, :3]
-        angle = log_quat[:, :, 3]
-        trans = log_quat[:, :, 4:]
+        v = log_quat[:, :, 1:4]
+        v_norm = torch.linalg.norm(v, dim=2)
+        # print("norm", v_norm.shape)
+        # print("v.T", v.permute((2, 0, 1)).shape)
 
-        cos = torch.cos(angle/2)
-        sin = torch.sin(angle/2)
+        vec = torch.div(v.permute((2, 0, 1)), v_norm).permute((1, 2, 0))
+        # print("vec", vec.shape)
 
-        quat = torch.empty(log_quat.shape)
-        quat[:, :, 0] = cos
-        quat[:, :, 1:4] = rot_vec * sin.unsqueeze(2).repeat(1, 1, 3)
-        quat[:, :, 4:] = trans
+        magn = torch.exp(log_quat[:, :, 0])
 
-        return quat2pos(quat, start_pos)
+        vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.T).T
 
+        scalar = (magn * torch.cos(v_norm))[:, :, None]
+
+        quat = torch.hstack((scalar, vector))
+
+        full_quat = torch.hstack((quat, log_quat[:, :, 4:]))
+
+        return quat2pos(full_quat, start_pos)
 
 # start = [[[1,0,0],[2,0,0],[0.5,0,0]],
 #             [[0,1,0],[0,2,0],[0,0.5,0]]]
