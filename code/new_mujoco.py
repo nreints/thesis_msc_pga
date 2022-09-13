@@ -132,6 +132,7 @@ def calculate_log_quat(quat):
     Calculate the log quaternion based on the quaternion according
         to https://en.wikipedia.org/wiki/Quaternion#Exponential,_logarithm,_and_power_functions
     """
+
     norm = np.linalg.norm(quat)
     log_norm = np.log(norm)
 
@@ -139,16 +140,10 @@ def calculate_log_quat(quat):
     arccos = np.arccos(quat[0]/norm)
     part2 = inv_norm * arccos * quat[1:]
 
-    result = np.append(log_norm, part2)
+    logQuat = np.append(log_norm, part2)
 
-    return result
+    return logQuat
 
-    # rot_vec_unit = quat[1:] / np.linalg.norm(quat[1:])
-    # sin_vec = quat[1:] / rot_vec_unit
-    # sin = sin_vec[0]
-    # cos = quat[0]
-    # angle = 2 * np.arctan(cos/sin)
-    return np.append(rot_vec_unit, angle)
 
 def generate_data(string, n_steps):
     """

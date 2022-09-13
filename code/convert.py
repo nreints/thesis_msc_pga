@@ -94,27 +94,43 @@ def log_quat2pos(log_quat, start_pos):
     Output:
         Converted log quaternion to current xyz position
     """
+
+    # Voor 1 log quat
+    # v_norm = np.linalg.norm(logQuat[1:])
+    # vec = logQuat[1:] / v_norm
+    # magn = np.exp(logQuat[0])
+
+    # np.append(magn * np.cos(v_norm), magn * np.sin(v_norm) * vec)
+
+
+
     # print(len(log_quat.shape))
     if len(log_quat.shape) == 2:
-        rot_vec = log_quat[:, :3]
-        # print(rot_vec)
+        print(log_quat[:, 1:4].shape)
 
-        angle = log_quat[:, 3]
-        # print(angle)
-        trans = log_quat[:, 4:]
-        # print(trans)
-
-        cos = torch.cos(angle/2).reshape(-1, 1)
-        sin = torch.sin(angle/2)
+        v_norm = torch.linalg.norm(log_quat[:, 1:4], dim=1)[:, None].repeat(1, 3)
+        print("vnorm", v_norm.shape)
 
 
-        quat = torch.empty(log_quat.shape)
-        quat[:, 0] = cos.squeeze()
-        part1_1 = rot_vec * torch.vstack([sin]*3).T
-        quat[:, 1:4] = part1_1
-        quat[:, 4:] = trans
-        # print("dhwie",quat)
-        # exit()
+        vec = log_quat[:, 1:4] / v_norm
+        print("vec", vec.shape)
+
+        magn = torch.exp(log_quat[:, 0])[:, None].repeat(1, 3)
+        print("magn", magn.shape)
+
+        vector = magn * torch.sin(v_norm) * vec
+        print("vector", vector.shape)
+
+
+        scalar = magn * torch.cos(v_norm)
+        print("scalar", scalar[:,0])
+
+        # scalar = scalar.repeat(vector.shape[0], 1)
+        # print("scalar2", scalar.shape)
+
+        quat = torch.hstack((scalar[:, 0], vector))
+
+        print("quat", quat.shape)
 
         return quat2pos(quat, start_pos)
 
