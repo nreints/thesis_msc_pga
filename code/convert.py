@@ -127,17 +127,25 @@ def log_quat2pos(log_quat, start_pos):
         # print("v.T", v.permute((2, 0, 1)).shape)
 
         vec = torch.div(v.permute((2, 0, 1)), v_norm).permute((1, 2, 0))
-        # print("vec", vec.shape)
+        # print("vec", vec.shape) !!! CORRECT
 
         magn = torch.exp(log_quat[:, :, 0])
+        # print("magn", magn.shape)
 
-        vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.T).T
+
+        # print(torch.mul(magn, torch.sin(v_norm)).shape)
+        vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.permute((2, 0, 1))).permute((1, 2, 0))
+        # print(vector.shape)
 
         scalar = (magn * torch.cos(v_norm))[:, :, None]
+        # print("scalar", scalar.shape)
+        # # print("vector", vector.shape)
 
-        quat = torch.hstack((scalar, vector))
+        quat = torch.cat((scalar, vector), dim=2)
+        # print("quat",quat.shape)
 
-        full_quat = torch.hstack((quat, log_quat[:, :, 4:]))
+        full_quat = torch.cat((quat, log_quat[:, :, 4:]), dim=2)
+        # print(full_quat.shape)
 
         return quat2pos(full_quat, start_pos)
 
