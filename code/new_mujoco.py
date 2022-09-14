@@ -199,5 +199,5 @@ def write_data_nsim(num_sims, n_steps, obj_type):
             pickle.dump(sim_data, f)
         f.close()
 
-obj_type = "box"
-write_data_nsim(500, 30, obj_type)
+# obj_type = "box"
+# write_data_nsim(750, 300, obj_type)

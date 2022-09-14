@@ -57,7 +57,6 @@ def quat2pos(quat, start_pos):
         Converted quaternion to current xyz position
     """
 
-
     if len(quat.shape) == 2:
 
         batch, vert_num, dim = start_pos.shape
@@ -94,14 +93,6 @@ def log_quat2pos(log_quat, start_pos):
     Output:
         Converted log quaternion to current xyz position
     """
-
-    # Voor 1 log quat
-    # v_norm = np.linalg.norm(logQuat[1:])
-    # vec = logQuat[1:] / v_norm
-    # magn = np.exp(logQuat[0])
-
-    # np.append(magn * np.cos(v_norm), magn * np.sin(v_norm) * vec)
-
     if len(log_quat.shape) == 2:
         v = log_quat[:, 1:4]
         v_norm = torch.linalg.norm(v, dim=1)
@@ -123,48 +114,18 @@ def log_quat2pos(log_quat, start_pos):
     else:
         v = log_quat[:, :, 1:4]
         v_norm = torch.linalg.norm(v, dim=2)
-        # print("norm", v_norm.shape)
-        # print("v.T", v.permute((2, 0, 1)).shape)
 
         vec = torch.div(v.permute((2, 0, 1)), v_norm).permute((1, 2, 0))
-        # print("vec", vec.shape) !!! CORRECT
 
         magn = torch.exp(log_quat[:, :, 0])
-        # print("magn", magn.shape)
 
-
-        # print(torch.mul(magn, torch.sin(v_norm)).shape)
         vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.permute((2, 0, 1))).permute((1, 2, 0))
-        # print(vector.shape)
 
         scalar = (magn * torch.cos(v_norm))[:, :, None]
-        # print("scalar", scalar.shape)
-        # # print("vector", vector.shape)
-
         quat = torch.cat((scalar, vector), dim=2)
-        # print("quat",quat.shape)
-
         full_quat = torch.cat((quat, log_quat[:, :, 4:]), dim=2)
-        # print(full_quat.shape)
 
         return quat2pos(full_quat, start_pos)
-
-# start = [[[1,0,0],[2,0,0],[0.5,0,0]],
-#             [[0,1,0],[0,2,0],[0,0.5,0]]]
-
-# start_nn = torch.tensor([[[1,0,0],[2,0,0],[0.5,0,0]]])
-
-# log_quat = [[[1,0,0.7,0.4,0,0,-0.2]],
-#             [[0.3,0,0.7,0.4,0,0,-0.3]]]
-# log_quat_nn = [[[1,0,0.7,0.4,0,0,-0.2]]]
-
-# lq = torch.tensor([[0.304, 0.397 , 0.616, 0.609]])
-# # q =  Quaternion.random()
-# # print(q)
-# # print(Quaternion.exp(q))
-
-# print(log_quat2pos(lq, start_nn))
-
 
 def diff_pos_start2pos(true_preds, start_pos):
     """
@@ -183,7 +144,6 @@ def diff_pos_start2pos(true_preds, start_pos):
         start_pos = start_pos[:, None, :]
 
     start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(-1, true_preds.shape[1], -1)
-    # start_pos = start_pos.astype('float64')
     return start_pos + true_preds
 
 
