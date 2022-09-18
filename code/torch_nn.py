@@ -123,13 +123,14 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             ## Step 1: Move input data to device (only strictly necessary if we use GPU)
             data_inputs = data_inputs.to(device)
             data_labels = data_labels.to(device)
+            start_pos = start_pos.to(device)
 
             ## Step 2: Run the model on the input data
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
 
             ## Step 3: Calculate the loss
-
+            
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
             alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
             loss = loss_module(alt_preds, alt_labels)
@@ -223,7 +224,6 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
     data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
 
-    print(data_set_test.data.shape)
     train_data_loader = data.DataLoader(data_set_train, batch_size=config.batch_size, shuffle=True)
     test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
 
@@ -244,7 +244,7 @@ config = dict(
     loss_type = "L1",
     loss_reduction_type = "mean",
     optimizer = "Adam",
-    data_type = "log_quat",
+    data_type = "pos_diff_start",
     architecture = "fcnn",
     train_sims = list(train_sims),
     test_sims = list(test_sims),
@@ -254,7 +254,7 @@ config = dict(
     activation_func = ["Tanh", "Tanh", "ReLU"],
     dropout = [0.4, 0.2, 0.3],
     batch_norm = [True, True, True]
-    )
+)
 
 loss_dict = {'L1': nn.L1Loss,
                 'L2': nn.MSELoss}

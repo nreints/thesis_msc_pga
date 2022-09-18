@@ -18,12 +18,13 @@ def eucl2pos(eucl_motion, start_pos):
     Output:
         Converted eucledian motion to current xyz position
     """
-    # print(start_pos.shape, eucl_motion.shape)
+    # In case of fcnn
     if len(eucl_motion.shape) == 2:
         out = torch.empty_like(start_pos)
         for batch in range(out.shape[0]):
             out[batch] =  (eucl_motion[batch, :9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
-
+            
+    # In case of LSTM
     else:
         out = torch.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-2], start_pos.shape[-1]))
 
@@ -57,23 +58,31 @@ def quat2pos(quat, start_pos):
         Converted quaternion to current xyz position
     """
 
+    device = quat.device
+
+    # In case of fcnn
     if len(quat.shape) == 2:
 
         batch, vert_num, dim = start_pos.shape
-        out = torch.empty_like(start_pos)
+        out = torch.empty_like(start_pos).to(device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
         repeated_trans = torch.repeat_interleave(quat[:, 4:], repeats=8, dim=0)
         out = rotated_start + repeated_trans
+
         return out.reshape((batch, vert_num, dim))
 
+    # In case of LSTM
     else:
         batch, vert_num, dim = start_pos.shape
-        out = torch.empty((quat.shape[1], batch, vert_num, dim))
+        out = torch.empty((quat.shape[1], batch, vert_num, dim)).to(device)
+        
         for frame in range(quat.shape[1]):
             rotated_start = fast_rotVecQuat(start_pos, quat[:,frame,:4])
             repeated_trans = torch.repeat_interleave(quat[:,frame,4:], repeats=8, dim=0)
             out[frame] = (rotated_start + repeated_trans).reshape((batch, vert_num, dim))
+
+        # Batch first
         out = torch.permute(out, (1, 0, 2, 3))
         return out
 
@@ -93,10 +102,14 @@ def log_quat2pos(log_quat, start_pos):
     Output:
         Converted log quaternion to current xyz position
     """
+
+    # In case of fcnn
     if len(log_quat.shape) == 2:
+
         v = log_quat[:, 1:4]
         v_norm = torch.linalg.norm(v, dim=1)
 
+        # Normalize v
         vec = torch.div(v.T, v_norm).T
 
         magn = torch.exp(log_quat[:, 0])
@@ -107,14 +120,17 @@ def log_quat2pos(log_quat, start_pos):
 
         quat = torch.hstack((scalar, vector))
 
+        # Stack translation to quaternion
         full_quat = torch.hstack((quat, log_quat[:, 4:]))
 
         return quat2pos(full_quat, start_pos)
 
+    # In case of LSTM
     else:
         v = log_quat[:, :, 1:4]
         v_norm = torch.linalg.norm(v, dim=2)
 
+        # Normalize v
         vec = torch.div(v.permute((2, 0, 1)), v_norm).permute((1, 2, 0))
 
         magn = torch.exp(log_quat[:, :, 0])
@@ -122,7 +138,10 @@ def log_quat2pos(log_quat, start_pos):
         vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.permute((2, 0, 1))).permute((1, 2, 0))
 
         scalar = (magn * torch.cos(v_norm))[:, :, None]
+
         quat = torch.cat((scalar, vector), dim=2)
+        
+        # Stack translation to quaternion
         full_quat = torch.cat((quat, log_quat[:, :, 4:]), dim=2)
 
         return quat2pos(full_quat, start_pos)

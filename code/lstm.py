@@ -105,6 +105,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
         for data_inputs, data_labels, start_pos in data_loader:
             data_inputs = data_inputs.to(device)
             data_labels = data_labels.to(device)
+            start_pos = start_pos.to(device)
             # print(data_inputs.shape)
             # print("labels", data_labels.shape)
             # print(data_inputs[0].shape)
@@ -225,7 +226,7 @@ config = dict(
     loss_type = "L1",
     loss_reduction_type = "mean",
     optimizer = "Adam",
-    data_type = "log_quat",
+    data_type = "pos_diff_start",
     architecture = "lstm",
     train_sims = list(train_sims),
     test_sims = list(test_sims),
