@@ -16,12 +16,9 @@ class Network(nn.Module):
 
     def __init__(self, n_data, config):
         super().__init__()
-
-        # Add first layes
+        # Initialize the modules we need to build the network
         self.layers = [nn.Linear(config.n_frames * n_data, config.hidden_sizes[0])]
 
-        # Add consecuative layers with batch_norm / activation funct / dropout
-            # As defined in config
         for i in range(len(config.hidden_sizes)):
 
             if config.batch_norm[i]:
@@ -74,13 +71,12 @@ class MyDataset(data.Dataset):
         for i in self.sims:
             with open(f'data/sim_{i}.pickle', 'rb') as f:
                 data_all = pickle.load(f)["data"]
-                # Collect data from data_type
                 data = data_all[self.data_type]
-                # Add data and targets
+                print(data.shape)
+                # print(len(data))## HIER
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    # Always save the start_position for converting
+                    print("dwoeibuyd")
                     self.start_pos.append(data_all["pos"][0])
-                    # 
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end+1].flatten())
@@ -103,9 +99,6 @@ class MyDataset(data.Dataset):
 
 
 def train_log(loss, epoch):
-    """
-    Log the train loss to Weights and Biases
-    """
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
     print(f"Loss after " + f" examples: {loss:.3f}")
 
@@ -137,27 +130,25 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # loss = loss_module(preds, data_labels)
             loss_epoch += loss
 
-            # Perform backpropagation
+            ## Step 4: Perform backpropagation
+            # Before calculating the gradients, we need to ensure that they are all zero.
+            # The gradients would not be overwritten, but actually added to the existing ones.
             optimizer.zero_grad()
+            # Perform backpropagation
             loss.backward()
 
-            # Update the parameters
+            ## Step 5: Update the parameters
             optimizer.step()
 
-        # Log and print epoch every 10 epochs
+
+
         if epoch % 10 == 0:
-            # Log to W&B
             train_log(loss_epoch/len(data_loader), epoch)
 
-            # Evaluate model
             true_loss, convert_loss = eval_model(model, test_loader, loss_module)
-
-            # Set model to train mode
             model.train()
-
             print(epoch, round(loss_epoch.item()/len(data_loader), 10), "\t", round(convert_loss, 10))
 
-            # Write to file
             f = open(f"results/{config.data_type}/{num_epochs}_{config.learning_rate}_{loss_type}.txt", "a")
             f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
             f.write("\n")
@@ -184,15 +175,12 @@ def eval_model(model, data_loader, loss_module):
             total_loss += loss_module(preds, data_labels)
             total_convert_loss += loss_module(alt_preds, alt_labels)
 
-        # Log loss to Weights and Biases
         wandb.log({"Converted test loss": total_convert_loss/len(data_loader)})
 
-    # Return the average loss
     return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
 
 
 n_sims = 750
-# Divide the train en test dataset
 sims = {i for i in range(n_sims)}
 train_sims = set(random.sample(sims, int(0.8 * n_sims)))
 test_sims = sims - train_sims
@@ -200,25 +188,28 @@ test_sims = sims - train_sims
 
 
 def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
+    # print("hyperparams", hyperparameters)
     # tell wandb to get started
     with wandb.init(project="thesis", config=hyperparameters):
-        # access all HPs through wandb.config, so logging matches execution!
-        config = wandb.config
+      # access all HPs through wandb.config, so logging matches execution!
+      config = wandb.config
+    #   print("model_pipeline", config)
 
-        # make the model, data, and optimization problem
-        model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
-        print(model)
+      # make the model, data, and optimization problem
+      model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
+      print(model)
 
-        # and use them to train the model
-            #   model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
-        train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config)
+      # and use them to train the model
+    #   model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
+      train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config)
 
-        # and test its final performance
-        eval_model(model, test_loader, criterion)
+      # and test its final performance
+      eval_model(model, test_loader, criterion)
 
     return model
 
 def make(config, ndata_dict, loss_dict, optimizer_dict):
+    # print("make", config)
     # Make the data
     data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
     data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
@@ -248,7 +239,7 @@ config = dict(
     architecture = "fcnn",
     train_sims = list(train_sims),
     test_sims = list(test_sims),
-    n_frames = 20,
+    n_frames = 30,
     n_sims = n_sims,
     hidden_sizes = [128, 256, 128],
     activation_func = ["Tanh", "Tanh", "ReLU"],
