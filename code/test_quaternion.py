@@ -1,3 +1,0 @@
-from pyquaternion import Quaternion
-
-

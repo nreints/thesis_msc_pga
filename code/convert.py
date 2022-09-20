@@ -179,7 +179,7 @@ def convert(true_preds, start_pos, data_type):
         Converted true predictions.
 
     """
-    if data_type == "pos":
+    if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type == "eucl_motion":
         return eucl2pos(true_preds, start_pos)

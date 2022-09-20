@@ -4,7 +4,7 @@ import itertools
 from create_strings import create_string
 import pickle
 import torch
-from pyquaternion import Quaternion
+# from pyquaternion import Quaternion
 import roma
 
 
@@ -135,7 +135,7 @@ def calculate_log_quat(quat):
     return logQuat
 
 
-def generate_data(string, n_steps):
+def generate_data(string, n_steps, visualize):
     """
     Create the dataset of data_type
     """
@@ -146,18 +146,22 @@ def generate_data(string, n_steps):
 
     object_id = model.geom_names.index(geom_name)
     xyz_local = get_vert_local(sim, object_id)
-    # viewer = mujoco_py.MjViewer(sim)
+    if visualize:
+        viewer = mujoco_py.MjViewer(sim)
 
     dataset = {"pos": np.empty((n_steps//10, 8, 3)),
                 "eucl_motion" : np.empty((n_steps//10, 1, 12)),
                 "quat": np.empty((n_steps//10, 1, 7)),
                 "log_quat": np.empty((n_steps//10, 1, 7)),
                 "pos_diff": np.empty((n_steps//10, 8, 3)),
-                "pos_diff_start": np.empty((n_steps//10, 8, 3))
+                "pos_diff_start": np.empty((n_steps//10, 8, 3)),
+                "pos_norm": np.empty((n_steps//10, 8, 3))
               }
 
     for i in range(n_steps):
         sim.step()
+        if visualize:
+            viewer.render()
         if i == 0:
             prev = get_vert_coords(sim, object_id-1, xyz_local).T
             start = prev
@@ -172,22 +176,30 @@ def generate_data(string, n_steps):
                 dataset["pos_diff"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - prev
                 prev = get_vert_coords(sim, object_id-1, xyz_local).T
                 dataset["pos_diff_start"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - start
+
+    dataset["pos_norm"] = (dataset["pos"] - np.mean(dataset["pos"], axis=(0,1))) / np.std(dataset["pos"], axis=(0,1))
+    # print(np.mean(dataset["pos"], axis=(0,1)), np.std(dataset["pos"], axis=(0,1)))
     return dataset
 
 
-def write_data_nsim(num_sims, n_steps, obj_type):
+def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
         euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
-        pos = f"{np.random.uniform(-100, 100)} {np.random.uniform(-100, 100)} {np.random.uniform(40, 300)}"
+        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(4, 30)}"
         size = f"{np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)}"
 
         string = create_string(euler, pos, obj_type, size)
-        dataset = generate_data(string, n_steps)
+        dataset = generate_data(string, n_steps, visualize)
 
         sim_data = {"vars" : [euler, pos, obj_type, size], "data" : dataset}
         with open(f'data/sim_{sim_id}.pickle', 'wb') as f:
             pickle.dump(sim_data, f)
         f.close()
 
-# obj_type = "box"
-# write_data_nsim(750, 300, obj_type)
+if __name__ == "__main__":
+    ## Uncomment to create random data
+    n_sims = 750
+    n_steps = 2250
+    obj_type = "box"
+
+    write_data_nsim(n_sims, n_steps, obj_type, visualize=True)

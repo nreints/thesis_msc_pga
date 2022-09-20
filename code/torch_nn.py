@@ -8,6 +8,9 @@ import random
 from convert import *
 import wandb
 
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -18,28 +21,28 @@ class Network(nn.Module):
         super().__init__()
 
         # Add first layes
-        self.layers = [nn.Linear(config.n_frames * n_data, config.hidden_sizes[0])]
+        self.layers = [nn.Linear(config["n_frames"] * n_data, config["hidden_sizes"][0])]
 
         # Add consecuative layers with batch_norm / activation funct / dropout
             # As defined in config
-        for i in range(len(config.hidden_sizes)):
+        for i in range(len(config["hidden_sizes"])):
 
-            if config.batch_norm[i]:
-                self.layers += [nn.BatchNorm1d(config.hidden_sizes[i])]
+            if config["batch_norm"][i]:
+                self.layers += [nn.BatchNorm1d(config["hidden_sizes"][i])]
 
-            if config.activation_func[i] == "Tanh":
+            if config['activation_func'][i] == "Tanh":
                 self.layers += [nn.Tanh()]
-            elif config.activation_func[i] == "ReLU":
+            elif config["activation_func"][i] == "ReLU":
                 self.layers += [nn.ReLU()]
             else:
                 raise ValueError('Wrong activation func')
 
-            self.layers += [nn.Dropout(p=config.dropout[i])]
+            self.layers += [nn.Dropout(p=config["dropout"][i])]
 
-            if i < len(config.hidden_sizes) - 1:
-                self.layers += [nn.Linear(config.hidden_sizes[i], config.hidden_sizes[i+1])]
+            if i < len(config["hidden_sizes"]) - 1:
+                self.layers += [nn.Linear(config["hidden_sizes"][i], config["hidden_sizes"][i+1])]
 
-        self.layers += [nn.Linear(config.hidden_sizes[-1], n_data)]
+        self.layers += [nn.Linear(config["hidden_sizes"][-1], n_data)]
 
         self.linears = nn.Sequential(*self.layers)
 
@@ -80,7 +83,6 @@ class MyDataset(data.Dataset):
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     # Always save the start_position for converting
                     self.start_pos.append(data_all["pos"][0])
-                    # 
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end+1].flatten())
@@ -119,23 +121,25 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     for epoch in range(num_epochs):
         loss_epoch = 0
         for data_inputs, data_labels, start_pos in data_loader:
-
             ## Step 1: Move input data to device (only strictly necessary if we use GPU)
             data_inputs = data_inputs.to(device)
+
             data_labels = data_labels.to(device)
+            # print(data_labels)
             start_pos = start_pos.to(device)
 
             ## Step 2: Run the model on the input data
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
+            # print(preds[0])
 
             ## Step 3: Calculate the loss
-            
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
             alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
-            loss = loss_module(alt_preds, alt_labels)
 
+            loss = loss_module(alt_preds, alt_labels)
             # loss = loss_module(preds, data_labels)
+
             loss_epoch += loss
 
             # Perform backpropagation
@@ -178,6 +182,7 @@ def eval_model(model, data_loader, loss_module):
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
+            print(preds[0])
 
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
@@ -190,13 +195,6 @@ def eval_model(model, data_loader, loss_module):
 
     # Return the average loss
     return total_loss.item()/len(data_loader), total_convert_loss.item()/len(data_loader)
-
-
-n_sims = 750
-# Divide the train en test dataset
-sims = {i for i in range(n_sims)}
-train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-test_sims = sims - train_sims
 
 
 
@@ -237,36 +235,50 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
     return model, train_data_loader, test_data_loader, criterion, optimizer
 
-config = dict(
-    learning_rate = 0.1,
-    epochs = 400,
-    batch_size = 128,
-    loss_type = "L1",
-    loss_reduction_type = "mean",
-    optimizer = "Adam",
-    data_type = "pos_diff_start",
-    architecture = "fcnn",
-    train_sims = list(train_sims),
-    test_sims = list(test_sims),
-    n_frames = 20,
-    n_sims = n_sims,
-    hidden_sizes = [128, 256, 128],
-    activation_func = ["Tanh", "Tanh", "ReLU"],
-    dropout = [0.4, 0.2, 0.3],
-    batch_norm = [True, True, True]
-)
+if __name__ == "__main__":
+    n_sims = 750
+    # Divide the train en test dataset
+    sims = {i for i in range(n_sims)}
+    train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+    test_sims = sims - train_sims
 
-loss_dict = {'L1': nn.L1Loss,
-                'L2': nn.MSELoss}
 
-optimizer_dict = {'Adam': torch.optim.Adam}
+    config = dict(
+        learning_rate = 0.1,
+        epochs = 250,
+        batch_size = 128,
+        loss_type = "L1",
+        loss_reduction_type = "mean",
+        optimizer = "Adam",
+        data_type = "pos",
+        architecture = "fcnn",
+        train_sims = list(train_sims),
+        test_sims = list(test_sims),
+        n_frames = 20,
+        n_sims = n_sims,
+        hidden_sizes = [128, 256, 128],
+        activation_func = ["ReLU", "ReLU", "ReLU"],
+        dropout = [0.4, 0.2, 0.3],
+        batch_norm = [True, True, True]
+    )
 
-ndata_dict = {"pos": 24,
-                "eucl_motion": 12,
-                "quat": 7,
-                "log_quat": 7,
-                "pos_diff": 24,
-                "pos_diff_start": 24,
-            }
+    loss_dict = {'L1': nn.L1Loss,
+                    'L2': nn.MSELoss}
 
-model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
+    optimizer_dict = {'Adam': torch.optim.Adam}
+
+    ndata_dict = {"pos": 24,
+                    "eucl_motion": 12,
+                    "quat": 7,
+                    "log_quat": 7,
+                    "pos_diff": 24,
+                    "pos_diff_start": 24,
+                    "pos_norm": 24
+                }
+
+    model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
+    model_dict = {'config': config,
+                'data_dict':ndata_dict,
+                'model': model.state_dict()}
+
+    torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")
