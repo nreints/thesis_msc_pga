@@ -1,0 +1,219 @@
+diff --git a/code/plot_data.py b/code/plot_data.py
+index 9520062..d6b5c04 100644
+--- a/code/plot_data.py
++++ b/code/plot_data.py
+@@ -9,89 +9,98 @@ from random import randint
+ import matplotlib.pyplot as plt
+ import matplotlib.animation as animation
+ 
+-# model = torch.load(f"models/pos_fcnn.pickle")
+-# print(model)
+-
+-data_type = "pos"
+-architecture = "fcnn"
+-
+-model_dict = torch.load(f"models/{data_type}_{architecture}.pickle")
+-config = model_dict['config']
+-ndata_dict = model_dict['data_dict']
+-model = Network(ndata_dict[config['data_type']], config)
+-model.load_state_dict(model_dict['model'])
+-model.eval()
+-print(model)
+-# exit()
+-
+-i = randint(0, 749)
+-print(i)
+-with open(f'data/sim_{i}.pickle', 'rb') as f:
+-    data = torch.FloatTensor(pickle.load(f)["data"][data_type])
+-
+-result = torch.zeros_like(data)
+-for frame_id in range(20, data.shape[0]):
+-    # Get 20 frames (1, 480)
+-    input_data = data[frame_id - 20 : frame_id]
+-    input_data = input_data.flatten()[None, :]
+-
+-    # Save the prediction in result
+-    print(input_data)
+-    with torch.no_grad(): # Deactivate gradients for the following code
+-        result[frame_id] = model(input_data).reshape(8, 3)
+-
+-# result = result.detach(
+-print("data_shape ", data.shape)
+-print("result_shape ", result.shape)
+-
+-
+-fig = plt.figure()
+-ax = fig.add_subplot(111, projection='3d')
+-
+-
+-first_cube = data[0]
+-cube_result = result[0]
+-X, Y, Z = first_cube[:, 0], first_cube[:, 1], first_cube[:, 2]
+-X_result, Y_result, Z_result = cube_result[:, 0], cube_result[:, 1], cube_result[:, 2]
+-# print(X)
+-# print(Y)
+-# print(Z)
+-# exit()
+-# print(X.shape, Y.shape, Z.shape)
+-
+-# Set the axis limits
+-ax.set_xlim3d(-15, 15)
+-ax.set_ylim(-15, 15)
+-ax.set_zlim(0, 50)
+-
+-# Begin plotting.
+-ax.scatter(X, Y, Z, color='b', linewidth=0.5)
+-ax.scatter(X_result, Y_result, Z_result, color='r', linewidth=0.5)
+-
+-ax.set_xlabel('$X$', fontsize=20)
+-ax.set_ylabel('$Y$')
+-
+-# plt.show()
+-
+-def update(idx):
++
++def load_model(data_type, architecture):
++    # Load model
++    model_dict = torch.load(f"models/{data_type}_{architecture}.pickle")
++    config = model_dict['config']
++    ndata_dict = model_dict['data_dict']
++    model = Network(ndata_dict[config['data_type']], config)
++    model.load_state_dict(model_dict['model'])
++    model.eval()
++    print("Current model: \n", model)
++    return model
++
++def get_random_sim_data():
++    # Select random simulation
++    i = randint(0, 749)
++    print("Using simulation number ", i)
++    with open(f'data/sim_{i}.pickle', 'rb') as f:
++        data = torch.FloatTensor(pickle.load(f)["data"][data_type])
++
++    return data
++
++def get_prediction(data):
++    # Collect prediction of model given simulation
++    result = torch.zeros_like(data)
++    for frame_id in range(20, data.shape[0]):
++        # Get 20 frames shape: (1, 480)
++        input_data = data[frame_id - 20 : frame_id]
++        input_data = input_data.flatten()[None, :]
++
++        # Save the prediction in result
++        with torch.no_grad(): # Deactivate gradients for the following code
++            result[frame_id] = model(input_data).reshape(8, 3)
++
++    return result
++
++def plot_3D_animation(data, result):
++    # Open figure
++    fig = plt.figure()
++    ax = fig.add_subplot(111, projection='3d')
+     # Set the axis limits
+-    print(idx)
+-    # Remove the previous scatter plot
+-    if idx != 0:
+-        ax.cla()
+-
+-    # Plot the new wireframe and pause briefly before continuing.
+-    cube = data[idx]
+-    result_cube = result[idx]
+-    print(f'prediction: {result_cube[:,0]}')
+-    print(f'true: {cube[:,0]}')
+-    ax.scatter(cube[:, 0], cube[:, 1], cube[:, 2], color='b', linewidth=0.5)
+-    ax.scatter(result_cube[:, 0], result_cube[:, 1], result_cube[:, 2], color='r', linewidth=0.5)
+-    if idx == 224:
+-        print(torch.min(result_cube[:, 2]))
+-
+-# Interval : Delay between frames in milliseconds.
+-
+-ani = animation.FuncAnimation(fig, update, 225, interval=100, repeat=False)
+-
+-plt.show()
+\ No newline at end of file
++    ax.set_xlim3d(-15, 15)
++    ax.set_ylim(-15, 15)
++    ax.set_zlim(0, 50)
++    ax.set_xlabel('$X$', fontsize=20)
++    ax.set_ylabel('$Y$')
++
++
++
++    # Initial plot
++    first_cube = data[0]
++    cube_result = result[0]
++    X, Y, Z = first_cube[:, 0], first_cube[:, 1], first_cube[:, 2]
++    X_pred, Y_pred, Z_pred = cube_result[:, 0], cube_result[:, 1], cube_result[:, 2]
++
++    # Begin plotting.
++    ax.scatter(X, Y, Z, color='b', linewidth=0.5)
++    ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5)
++
++
++    def update(idx):
++
++        # Remove the previous scatter plot
++        if idx != 0:
++            ax.cla()
++
++        # Get original cube data
++        cube = data[idx]
++        # Get predicted cube date
++        predicted_cube = result[idx]
++
++        # Scatter original data
++        ax.scatter(cube[:, 0], cube[:, 1], cube[:, 2], color='b', linewidth=0.5)
++        # Scatter prediction data
++        ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', linewidth=0.5)
++        # if idx == 224:
++        #     print(torch.min(predicted_cube[:, 2]))
++
++    # Interval : Delay between frames in milliseconds.
++    ani = animation.FuncAnimation(fig, update, 225, interval=100, repeat=False)
++
++    plt.show()
++
++
++if __name__ == "__main__":
++    data_type = "pos_diff_start"
++    architecture = "fcnn"
++
++    model = load_model(data_type, architecture)
++
++    data = get_random_sim_data()
++
++    prediction = get_prediction(data)
++
++    plot_3D_animation(data, prediction)
++
+diff --git a/code/torch_nn.py b/code/torch_nn.py
+index db0b44b..169f759 100644
+--- a/code/torch_nn.py
++++ b/code/torch_nn.py
+@@ -182,7 +182,6 @@ def eval_model(model, data_loader, loss_module):
+             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
+             preds = model(data_inputs)
+             preds = preds.squeeze(dim=1)
+-            print(preds[0])
+ 
+             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
+             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
+@@ -250,7 +249,7 @@ if __name__ == "__main__":
+         loss_type = "L1",
+         loss_reduction_type = "mean",
+         optimizer = "Adam",
+-        data_type = "pos",
++        data_type = "pos_diff_start",
+         architecture = "fcnn",
+         train_sims = list(train_sims),
+         test_sims = list(test_sims),
+diff --git a/code/wandb/latest-run b/code/wandb/latest-run
+index 0a7bc9c..a9747b1 120000
+--- a/code/wandb/latest-run
++++ b/code/wandb/latest-run
+@@ -1 +1 @@
+-run-20220920_133124-1633qjkf
+\ No newline at end of file
++run-20220927_141921-2noo3x5m
+\ No newline at end of file

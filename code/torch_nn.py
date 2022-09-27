@@ -182,7 +182,6 @@ def eval_model(model, data_loader, loss_module):
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
-            print(preds[0])
 
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
@@ -250,7 +249,7 @@ if __name__ == "__main__":
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "pos",
+        data_type = "log_quat",
         architecture = "fcnn",
         train_sims = list(train_sims),
         test_sims = list(test_sims),

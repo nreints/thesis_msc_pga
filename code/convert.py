@@ -67,6 +67,7 @@ def quat2pos(quat, start_pos):
         out = torch.empty_like(start_pos).to(device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
+        print(rotated_start)
         repeated_trans = torch.repeat_interleave(quat[:, 4:], repeats=8, dim=0)
         out = rotated_start + repeated_trans
 
@@ -122,7 +123,7 @@ def log_quat2pos(log_quat, start_pos):
 
         # Stack translation to quaternion
         full_quat = torch.hstack((quat, log_quat[:, 4:]))
-
+        print("conv", full_quat)
         return quat2pos(full_quat, start_pos)
 
     # In case of LSTM
@@ -140,7 +141,7 @@ def log_quat2pos(log_quat, start_pos):
         scalar = (magn * torch.cos(v_norm))[:, :, None]
 
         quat = torch.cat((scalar, vector), dim=2)
-        
+
         # Stack translation to quaternion
         full_quat = torch.cat((quat, log_quat[:, :, 4:]), dim=2)
 
@@ -158,12 +159,14 @@ def diff_pos_start2pos(true_preds, start_pos):
         Converted difference to current position
 
     """
+    start_pos = start_pos.reshape(start_pos.shape[0], 8, 3)
     if len(true_preds.shape) == 2:
         true_preds = true_preds[:, None, :]
         start_pos = start_pos[:, None, :]
 
     start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(-1, true_preds.shape[1], -1)
-    return start_pos + true_preds
+    result = start_pos + true_preds
+    return result.reshape(result.shape[0], 8, 3)
 
 
 
@@ -180,7 +183,7 @@ def convert(true_preds, start_pos, data_type):
 
     """
     if data_type == "pos" or data_type == "pos_norm":
-        return true_preds
+        return true_preds.reshape(true_preds.shape[0], 8,3)
     elif data_type == "eucl_motion":
         return eucl2pos(true_preds, start_pos)
     elif data_type == "quat":
