@@ -1,7 +1,6 @@
-from tracemalloc import start
 import torch
 import numpy as np
-from new_mujoco import fast_rotVecQuat, own_rotVecQuat
+from new_mujoco import fast_rotVecQuat
 from pyquaternion import Quaternion
 from rotation_Thijs import quat2mat
 
@@ -63,18 +62,16 @@ def quat2pos(quat, start_pos):
 
     # In case of fcnn
     if len(quat.shape) == 2:
-        print("---- CONVERT -----")
+
         batch, vert_num, dim = start_pos.shape
-        print(quat[0])
+
         out = torch.empty_like(start_pos).to(device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
 
-        repeated_trans = quat[:, 4:][:,None,:].repeat(1,8,1)
+        repeated_trans = quat[:, 4:][:, None, :].repeat(1,8,1)
 
         out = rotated_start + repeated_trans
-
-        print(out[0])
 
         return out
 
@@ -115,11 +112,18 @@ def log_quat2pos(log_quat, start_pos):
         v = log_quat[:, 1:4]
         v_norm = torch.linalg.norm(v, dim=1)
 
+        # TODO v_norm = 0 --> volgende regel wordt NaN
+
         # Normalize v
         vec = torch.div(v.T, v_norm).T
 
+        ################### Maybe correct
+        vec = torch.nan_to_num(vec)
+        ######
+
         magn = torch.exp(log_quat[:, 0])
 
+        # --> sin(0) = 0 --> vector = torch.zeros if v_norm = 0
         vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.T).T
 
         scalar = (magn * torch.cos(v_norm))[:, None]
@@ -128,7 +132,7 @@ def log_quat2pos(log_quat, start_pos):
 
         # Stack translation to quaternion
         full_quat = torch.hstack((quat, log_quat[:, 4:]))
-        print("conv", full_quat)
+
         return quat2pos(full_quat, start_pos)
 
     # In case of LSTM

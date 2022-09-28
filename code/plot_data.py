@@ -44,11 +44,12 @@ def get_random_sim_data(data_type, nr_frames):
         # Convert to pos data for plotting
         plot_data = convert(data_tensor.flatten(start_dim=1), start_pos, data_type).reshape(nr_frames, 8, 3)
 
-        print("--- PLOT ----")
-        # Check if converting went correctly
-        print(start_pos[0])
-        print(plot_data[0])
-    exit()
+    #     print("--- PLOT ----")
+    #     # Check if converting went correctly
+    #     print("logQuat", original_data[0])
+    #     print("start", start_pos[0])
+    #     print("xyz", plot_data[0])
+    # exit()
     return plot_data, original_data
 
 def get_prediction(original_data, data_type, xyz_data):
@@ -62,14 +63,20 @@ def get_prediction(original_data, data_type, xyz_data):
     for frame_id in range(20, xyz_data.shape[0]):
         # Get 20 frames shape: (1, 480)
         input_data = original_data[frame_id - 20 : frame_id]
+
         input_data = input_data.flatten()[None, :]
 
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
             prediction = model(input_data)
+            print(convert(prediction, start_pos, data_type))
+            # print(xyz_data[frame_id])
+
 
             result[frame_id] = convert(prediction, start_pos, data_type)
 
+        # if frame_id == 35:
+        #     exit()
 
     return result
 
@@ -146,7 +153,7 @@ def plot_3D_animation(data, result):
 
 if __name__ == "__main__":
     nr_frames = 225
-    data_type = "quat"
+    data_type = "log_quat"
     architecture = "fcnn"
 
     model = load_model(data_type, architecture)

@@ -84,15 +84,15 @@ def fast_rotVecQuat(v, q):
 #     return res
 
 
-def get_vert_coords_quat(sim, obj_id, xyz_local):
-    """
-    Returns the locations of the vertices during simulation
-        using quaternion
-    """
-    obj_xquat = sim.data.body_xquat[obj_id]
-    trans = sim.data.body_xpos[obj_id]
-    # FIX Geeft nu alleen de geroteerde eerste vertice terug [:,??]
-    return rotVecQuat(xyz_local[:,VERT_NUM], obj_xquat) + trans
+# def get_vert_coords_quat(sim, obj_id, xyz_local):
+#     """
+#     Returns the locations of the vertices during simulation
+#         using quaternion
+#     """
+#     obj_xquat = sim.data.body_xquat[obj_id]
+#     trans = sim.data.body_xpos[obj_id]
+#     # FIX Geeft nu alleen de geroteerde eerste vertice terug [:,??]
+#     return rotVecQuat(xyz_local[:,VERT_NUM], obj_xquat) + trans
 
 def get_quat(sim, obj_id):
     return sim.data.body_xquat[obj_id]
@@ -126,7 +126,13 @@ def calculate_log_quat(quat):
     norm = np.linalg.norm(quat)
     log_norm = np.log(norm)
 
-    inv_norm = 1 / np.linalg.norm(quat[1:])
+    # TODO np.linalg.norm(quat[1:]) = 0
+    if np.linalg.norm(quat[1:]) == 0:
+        inv_norm = 0
+    else:
+        inv_norm = 1 / np.linalg.norm(quat[1:])
+
+
     arccos = np.arccos(quat[0]/norm)
     part2 = inv_norm * arccos * quat[1:]
 
@@ -165,22 +171,28 @@ def generate_data(string, n_steps, visualize):
         if i == 0:
             prev = get_vert_coords(sim, object_id-1, xyz_local).T
             start = prev
-            dataset["pos_diff"][i] = np.zeros((8,3))
-            dataset["pos_diff_start"][i] = np.zeros((8,3))
-        if i % 10 == 0:
-            print(i)
+            # First quaternion should be a identity quaternion with no translation
+            dataset["quat"][i] = np.array([1, 0, 0, 0, 0, 0, 0])
+            # TODO identity log quaternion
+            dataset["log_quat"][i] = np.append(calculate_log_quat(np.array([1, 0, 0, 0])), np.zeros(3))
+            # First euclidean motion is identity rotation and no translation
+            dataset["eucl_motion"][i] = np.append(np.eye(3).flatten(), np.zeros((3)))
+            # First difference should be zero
+            dataset["pos_diff"][i] = np.zeros((8, 3))
+            dataset["pos_diff_start"][i] = np.zeros((8, 3))
+            # First position should be the position
+            dataset["pos"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T
+        if i % 10 == 0 and i != 0:
             dataset["pos"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T
             dataset["eucl_motion"][i//10] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
             dataset["quat"][i//10] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-            if i == 0:
-                print(dataset["quat"][0])
-                exit()
             dataset["log_quat"][i//10] = np.append(calculate_log_quat(get_quat(sim, object_id-1)), sim.data.body_xpos[object_id-1])
             if i != 0:
                 dataset["pos_diff"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - prev
                 prev = get_vert_coords(sim, object_id-1, xyz_local).T
                 dataset["pos_diff_start"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - start
 
+    print(len(dataset["quat"]) == len(dataset["pos"]))
     dataset["pos_norm"] = (dataset["pos"] - np.mean(dataset["pos"], axis=(0,1))) / np.std(dataset["pos"], axis=(0,1))
     # print(np.mean(dataset["pos"], axis=(0,1)), np.std(dataset["pos"], axis=(0,1)))
     return dataset
@@ -188,6 +200,7 @@ def generate_data(string, n_steps, visualize):
 
 def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
+        print("sim: ", sim_id)
         euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(4, 30)}"
         size = f"{np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)}"
@@ -206,4 +219,4 @@ if __name__ == "__main__":
     n_steps = 2250
     obj_type = "box"
 
-    write_data_nsim(n_sims, n_steps, obj_type, visualize=True)
+    write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
