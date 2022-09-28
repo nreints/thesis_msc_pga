@@ -16,46 +16,58 @@ def load_model(data_type, architecture):
     model_dict = torch.load(f"models/{data_type}_{architecture}.pickle")
     config = model_dict['config']
     ndata_dict = model_dict['data_dict']
+
     model = Network(ndata_dict[config['data_type']], config)
     model.load_state_dict(model_dict['model'])
     model.eval()
     print("Current model: \n", model)
+
     return model
 
-def get_random_sim_data():
+def get_random_sim_data(data_type, nr_frames):
     # Select random simulation
     i = randint(0, 749)
 
+    i=10
     print("Using simulation number ", i)
     with open(f'data/sim_{i}.pickle', 'rb') as f:
         file = pickle.load(f)
+
         start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32)
-        start_pos = start_pos[None, :].repeat(225, 1, 1)
+        start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
         data_tensor = torch.tensor(file["data"][data_type], dtype=torch.float32)
+
+        # Get data as data_type
         original_data = data_tensor.flatten(start_dim=1)
 
-        plot_data = convert(data_tensor.flatten(start_dim=1), start_pos, data_type).reshape(225, 8, 3)
+        # Convert to pos data for plotting
+        plot_data = convert(data_tensor.flatten(start_dim=1), start_pos, data_type).reshape(nr_frames, 8, 3)
 
+        print("--- PLOT ----")
+        # Check if converting went correctly
+        print(start_pos[0])
+        print(plot_data[0])
+    exit()
     return plot_data, original_data
 
-def get_prediction(data, data_type, original_data):
+def get_prediction(original_data, data_type, xyz_data):
     # Collect prediction of model given simulation
-    result = torch.zeros_like(original_data)
-    start_pos = original_data[0][None, :]
+    # Result should be xyz data for plot
+    result = torch.zeros_like(xyz_data)
 
-    for frame_id in range(20, data.shape[0]):
+    # Get first position
+    start_pos = xyz_data[0][None, :]
+
+    for frame_id in range(20, xyz_data.shape[0]):
         # Get 20 frames shape: (1, 480)
-        input_data = data[frame_id - 20 : frame_id]
+        input_data = original_data[frame_id - 20 : frame_id]
         input_data = input_data.flatten()[None, :]
 
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
             prediction = model(input_data)
-            print("start",start_pos)
-            print(prediction)
-            print(convert(prediction, start_pos, data_type))
-            exit()
+
             result[frame_id] = convert(prediction, start_pos, data_type)
 
 
@@ -82,7 +94,7 @@ def plot_3D_animation(data, result):
 
     cube_result = result[0]
     cube_result = cube_result[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
-    
+
     X, Y, Z = first_cube[:, 0], first_cube[:, 1], first_cube[:, 2]
     X_pred, Y_pred, Z_pred = cube_result[:, 0], cube_result[:, 1], cube_result[:, 2]
 
@@ -133,13 +145,14 @@ def plot_3D_animation(data, result):
 
 
 if __name__ == "__main__":
+    nr_frames = 225
     data_type = "quat"
     architecture = "fcnn"
 
     model = load_model(data_type, architecture)
 
-    plot_data, data = get_random_sim_data()
+    plot_data, ori_data = get_random_sim_data(data_type, nr_frames)
 
-    prediction = get_prediction(data, data_type, plot_data)
+    prediction = get_prediction(ori_data, data_type, plot_data)
 
     plot_3D_animation(plot_data, prediction)

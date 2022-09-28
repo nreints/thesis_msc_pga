@@ -30,25 +30,21 @@ VERT_NUM = 1
 
 def fast_rotVecQuat(v, q):
     """
-    Returns the rotated batch of vectors v by a batch quaternion (+ translation) q.
+    Returns the rotated batch of vectors v by a batch quaternion q.
     v shape: batchx8x3
     q shape: batchx4
     """
-
     device = v.device
+
     v_reshaped = v.reshape((v.shape[0]*v.shape[1], -1))
+
 
     # Swap columns for roma calculations (bi, cj, dk, a)
     q_new = torch.index_select(q, 1, torch.tensor([1, 2, 3, 0]).to(device))
-    # print('select', torch.index_select(q, 1, torch.tensor([1, 2, 3, 0]).to(device))[0])
-
-    # q_new = torch.empty_like(q)
-    # q_new[:, 0:3] = q[:, 1:4]
-    # q_new[:, 3] = q[:, 0]
-    # print("old", q_new[0])
-    # exit()
+    # print("q swapped", q_new.shape, "\n", q_new[80])
 
     q_new = torch.repeat_interleave(q_new, repeats=8, dim=0)
+    # print("q repeated", q_new.shape, "\n", q_new[640:660])
     v_new = torch.hstack((v_reshaped, torch.zeros(v_reshaped.shape[0],1).to(device)))
 
     # Calculate q* v q
@@ -56,32 +52,36 @@ def fast_rotVecQuat(v, q):
     q_conj = roma.quat_conjugation(q_new)
     mult2 = roma.quat_product(q_conj, mult)
 
-    return mult2[:, :3]
-
-def rot_quaternions(q1, q2):
-    # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
-    w0, x0, y0, z0 = q1
-    w1, x1, y1, z1 = q2
-    return torch.tensor([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
-                     x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
-                     -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
-                     x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
-
-def own_rotVecQuat(v, q):
-    # According to mujoco? Ask Steven/Leo
-    v_new = torch.zeros(4)
-    v_new[1:] = v
-    part1 = rot_quaternions(q, v_new)
-    q_prime = q
-    q_prime[1:] = -q_prime[1:]
-    return rot_quaternions(part1, q_prime)[1:]
+    # Remove zeros, reshape to v shape
+    rotated_vec = mult2[:,:-1].reshape(v.shape[0], v.shape[1], -1)
 
 
-def rotVecQuat(v, q):
-    # From internet MuJoCo
-    res = np.zeros(3)
-    mujoco_py.functions.mju_rotVecQuat(res, v, q)
-    return res
+    return rotated_vec
+
+# def rot_quaternions(q1, q2):
+#     # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
+#     w0, x0, y0, z0 = q1
+#     w1, x1, y1, z1 = q2
+#     return torch.tensor([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+#                      x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+#                      -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+#                      x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
+
+# def own_rotVecQuat(v, q):
+#     # According to mujoco? Ask Steven/Leo
+#     v_new = torch.zeros(4)
+#     v_new[1:] = v
+#     part1 = rot_quaternions(q, v_new)
+#     q_prime = q
+#     q_prime[1:] = -q_prime[1:]
+#     return rot_quaternions(part1, q_prime)[1:]
+
+
+# def rotVecQuat(v, q):
+#     # From internet MuJoCo
+#     res = np.zeros(3)
+#     mujoco_py.functions.mju_rotVecQuat(res, v, q)
+#     return res
 
 
 def get_vert_coords_quat(sim, obj_id, xyz_local):
@@ -168,9 +168,13 @@ def generate_data(string, n_steps, visualize):
             dataset["pos_diff"][i] = np.zeros((8,3))
             dataset["pos_diff_start"][i] = np.zeros((8,3))
         if i % 10 == 0:
+            print(i)
             dataset["pos"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T
             dataset["eucl_motion"][i//10] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
             dataset["quat"][i//10] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
+            if i == 0:
+                print(dataset["quat"][0])
+                exit()
             dataset["log_quat"][i//10] = np.append(calculate_log_quat(get_quat(sim, object_id-1)), sim.data.body_xpos[object_id-1])
             if i != 0:
                 dataset["pos_diff"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - prev

@@ -1,3 +1,4 @@
+from tracemalloc import start
 import torch
 import numpy as np
 from new_mujoco import fast_rotVecQuat, own_rotVecQuat
@@ -23,7 +24,7 @@ def eucl2pos(eucl_motion, start_pos):
         out = torch.empty_like(start_pos)
         for batch in range(out.shape[0]):
             out[batch] =  (eucl_motion[batch, :9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
-            
+
     # In case of LSTM
     else:
         out = torch.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-2], start_pos.shape[-1]))
@@ -62,22 +63,26 @@ def quat2pos(quat, start_pos):
 
     # In case of fcnn
     if len(quat.shape) == 2:
-
+        print("---- CONVERT -----")
         batch, vert_num, dim = start_pos.shape
+        print(quat[0])
         out = torch.empty_like(start_pos).to(device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
-        print(rotated_start)
-        repeated_trans = torch.repeat_interleave(quat[:, 4:], repeats=8, dim=0)
+
+        repeated_trans = quat[:, 4:][:,None,:].repeat(1,8,1)
+
         out = rotated_start + repeated_trans
 
-        return out.reshape((batch, vert_num, dim))
+        print(out[0])
+
+        return out
 
     # In case of LSTM
     else:
         batch, vert_num, dim = start_pos.shape
         out = torch.empty((quat.shape[1], batch, vert_num, dim)).to(device)
-        
+
         for frame in range(quat.shape[1]):
             rotated_start = fast_rotVecQuat(start_pos, quat[:,frame,:4])
             repeated_trans = torch.repeat_interleave(quat[:,frame,4:], repeats=8, dim=0)
@@ -165,6 +170,7 @@ def diff_pos_start2pos(true_preds, start_pos):
         start_pos = start_pos[:, None, :]
 
     start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(-1, true_preds.shape[1], -1)
+    print(true_preds[0])
     result = start_pos + true_preds
     return result.reshape(result.shape[0], 8, 3)
 
