@@ -117,7 +117,7 @@ def log_quat2pos(log_quat, start_pos):
         # Normalize v
         vec = torch.div(v.T, v_norm).T
 
-        ################### Maybe correct
+        ################### Maybe correct#
         vec = torch.nan_to_num(vec)
         ######
 
