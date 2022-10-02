@@ -68,10 +68,12 @@ def quat2pos(quat, start_pos):
         out = torch.empty_like(start_pos).to(device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
+        print("rot start", rotated_start[0])
 
-        repeated_trans = quat[:, 4:][:, None, :].repeat(1,8,1)
+        # repeated_trans = quat[:, 4:][:, None, :].repeat(1,8,1)
 
-        out = rotated_start + repeated_trans
+        out = rotated_start# + repeated_trans
+        print("out", out[0])
 
         return out
 
@@ -104,27 +106,33 @@ def log_quat2pos(log_quat, start_pos):
 
     Output:
         Converted log quaternion to current xyz position
-    """
 
+        a bi cj dk = a vec{v}
+    """
     # In case of fcnn
     if len(log_quat.shape) == 2:
 
         v = log_quat[:, 1:4]
+        print("V", v.shape)
         v_norm = torch.linalg.norm(v, dim=1)
-
-        # TODO v_norm = 0 --> volgende regel wordt NaN
+        print("v_norm", v_norm.shape)
 
         # Normalize v
         vec = torch.div(v.T, v_norm).T
+        print("vec", vec.shape)
 
+        # TODO v_norm = 0 --> div regel wordt NaN
         ################### Maybe correct#
         vec = torch.nan_to_num(vec)
         ######
 
         magn = torch.exp(log_quat[:, 0])
+        print("m", magn.shape)
 
         # --> sin(0) = 0 --> vector = torch.zeros if v_norm = 0
+        print("part1", torch.mul(magn, torch.sin(v_norm)).shape)
         vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.T).T
+        print("vector", vector.shape)
 
         scalar = (magn * torch.cos(v_norm))[:, None]
 
@@ -132,6 +140,10 @@ def log_quat2pos(log_quat, start_pos):
 
         # Stack translation to quaternion
         full_quat = torch.hstack((quat, log_quat[:, 4:]))
+        print("log", log_quat[0])
+        print("quat", full_quat[0])
+
+        print("start", start_pos[0])
 
         return quat2pos(full_quat, start_pos)
 

@@ -4,9 +4,10 @@ import itertools
 from create_strings import create_string
 import pickle
 import torch
-# from pyquaternion import Quaternion
+from pyquaternion import Quaternion
 import roma
-
+from convert import *
+import copy
 
 # q = torch.randn(4) # Random unnormalized quaternion
 # qconv = roma.quat_conjugation(q) # Quaternion conjugation
@@ -41,15 +42,15 @@ def fast_rotVecQuat(v, q):
 
     # Swap columns for roma calculations (bi, cj, dk, a)
     q_new = torch.index_select(q, 1, torch.tensor([1, 2, 3, 0]).to(device))
-    # print("q swapped", q_new.shape, "\n", q_new[80])
+
 
     q_new = torch.repeat_interleave(q_new, repeats=8, dim=0)
-    # print("q repeated", q_new.shape, "\n", q_new[640:660])
-    v_new = torch.hstack((v_reshaped, torch.zeros(v_reshaped.shape[0],1).to(device)))
+
+    v_new = torch.hstack((v_reshaped, torch.zeros(v_reshaped.shape[0], 1).to(device)))
 
     # Calculate q* v q
-    mult = roma.quat_product(v_new, q_new)
     q_conj = roma.quat_conjugation(q_new)
+    mult = roma.quat_product(v_new, q_new)
     mult2 = roma.quat_product(q_conj, mult)
 
     # Remove zeros, reshape to v shape
@@ -77,11 +78,11 @@ def fast_rotVecQuat(v, q):
 #     return rot_quaternions(part1, q_prime)[1:]
 
 
-# def rotVecQuat(v, q):
-#     # From internet MuJoCo
-#     res = np.zeros(3)
-#     mujoco_py.functions.mju_rotVecQuat(res, v, q)
-#     return res
+def rotVecQuat(v, q):
+    # From internet MuJoCo
+    res = np.zeros(3)
+    mujoco_py.functions.mju_rotVecQuat(res, v, q)
+    return res
 
 
 # def get_vert_coords_quat(sim, obj_id, xyz_local):
@@ -113,7 +114,9 @@ def get_vert_coords(sim, obj_id, xyz_local):
     """
     Returns the locations of the vertices during simulation
     """
+    # Translation Vector
     obj_pos = sim.data.geom_xpos[obj_id]
+    # Rotation Matrix
     obj_mat = sim.data.geom_xmat[obj_id].reshape(3, 3)
     return obj_pos[:, None] + obj_mat @ xyz_local
 
@@ -140,59 +143,75 @@ def calculate_log_quat(quat):
 
     return logQuat
 
+def create_empty_dataset(local_start):
+    """
+    Returns empyt data dictionary.
+    """
+    return {
+            "start": local_start.T,
+            "pos": np.empty((n_steps//10, 8, 3)),
+            "eucl_motion" : np.empty((n_steps//10, 1, 12)),
+            "quat": np.empty((n_steps//10, 1, 7)),
+            "log_quat": np.empty((n_steps//10, 1, 7)),
+            "pos_diff": np.empty((n_steps//10, 8, 3)),
+            "pos_diff_start": np.empty((n_steps//10, 8, 3)),
+            "pos_norm": np.empty((n_steps//10, 8, 3))
+            }
 
 def generate_data(string, n_steps, visualize):
     """
-    Create the dataset of data_type
+    Create the dataset of data_type for n//10 steps.
     """
+
     geom_name = 'object_geom'
 
     model = mujoco_py.load_model_from_xml(string)
     sim = mujoco_py.MjSim(model)
 
-    object_id = model.geom_names.index(geom_name)
-    xyz_local = get_vert_local(sim, object_id)
+    geom_id = model.geom_names.index(geom_name) + 1
+    xyz_local = get_vert_local(sim, geom_id)
+
+    dataset = create_empty_dataset(xyz_local)
+
     if visualize:
         viewer = mujoco_py.MjViewer(sim)
 
-    dataset = {"pos": np.empty((n_steps//10, 8, 3)),
-                "eucl_motion" : np.empty((n_steps//10, 1, 12)),
-                "quat": np.empty((n_steps//10, 1, 7)),
-                "log_quat": np.empty((n_steps//10, 1, 7)),
-                "pos_diff": np.empty((n_steps//10, 8, 3)),
-                "pos_diff_start": np.empty((n_steps//10, 8, 3)),
-                "pos_norm": np.empty((n_steps//10, 8, 3))
-              }
-
     for i in range(n_steps):
         sim.step()
+
         if visualize:
             viewer.render()
+
         if i == 0:
-            prev = get_vert_coords(sim, object_id-1, xyz_local).T
+            prev = get_vert_coords(sim, geom_id, xyz_local).T
             start = prev
-            # First quaternion should be a identity quaternion with no translation
-            dataset["quat"][i] = np.array([1, 0, 0, 0, 0, 0, 0])
-            # TODO identity log quaternion
-            dataset["log_quat"][i] = np.append(calculate_log_quat(np.array([1, 0, 0, 0])), np.zeros(3))
-            # First euclidean motion is identity rotation and no translation
-            dataset["eucl_motion"][i] = np.append(np.eye(3).flatten(), np.zeros((3)))
+            start_x_pos = copy.deepcopy(sim.data.body_xpos[geom_id])
+
             # First difference should be zero
-            dataset["pos_diff"][i] = np.zeros((8, 3))
             dataset["pos_diff_start"][i] = np.zeros((8, 3))
-            # First position should be the position
-            dataset["pos"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T
-        if i % 10 == 0 and i != 0:
-            dataset["pos"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T
-            dataset["eucl_motion"][i//10] = np.append(get_mat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-            dataset["quat"][i//10] = np.append(get_quat(sim, object_id-1), sim.data.body_xpos[object_id-1])
-            dataset["log_quat"][i//10] = np.append(calculate_log_quat(get_quat(sim, object_id-1)), sim.data.body_xpos[object_id-1])
+
+        if i % 10 == 0:
+            # Collect position data
+            dataset["pos"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T
+
+            # Collect euclidean motion data
+            dataset["eucl_motion"][i//10] = np.append(get_mat(sim, geom_id), sim.data.body_xpos[geom_id])
+
+            # Collect quaternion data
+            dataset["quat"][i//10] = np.append(get_quat(sim, geom_id), sim.data.body_xpos[geom_id])
+
+            # Collect Log Quaternion data
+            dataset["log_quat"][i//10] = np.append(calculate_log_quat(get_quat(sim, geom_id)), sim.data.body_xpos[geom_id])
+
             if i != 0:
-                dataset["pos_diff"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - prev
-                prev = get_vert_coords(sim, object_id-1, xyz_local).T
-                dataset["pos_diff_start"][i//10] = get_vert_coords(sim, object_id-1, xyz_local).T - start
+                dataset["pos_diff"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T - prev
+
+                prev = get_vert_coords(sim, geom_id, xyz_local).T
+                dataset["pos_diff_start"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T - start
+
 
     print(len(dataset["quat"]) == len(dataset["pos"]))
+
     dataset["pos_norm"] = (dataset["pos"] - np.mean(dataset["pos"], axis=(0,1))) / np.std(dataset["pos"], axis=(0,1))
     # print(np.mean(dataset["pos"], axis=(0,1)), np.std(dataset["pos"], axis=(0,1)))
     return dataset
@@ -202,8 +221,10 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
         print("sim: ", sim_id)
         euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
+        # euler = f"{0.0} {0.0} {0.0}"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(4, 30)}"
         size = f"{np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)}"
+        # print("size object", size)
 
         string = create_string(euler, pos, obj_type, size)
         dataset = generate_data(string, n_steps, visualize)

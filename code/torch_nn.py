@@ -82,7 +82,10 @@ class MyDataset(data.Dataset):
                 # Add data and targets
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     # Always save the start_position for converting
-                    self.start_pos.append(data_all["pos"][0])
+                    if self.data_type == "pos_diff_start":
+                        self.start_pos.append(data_all["pos"][0])
+                    else:
+                        self.start_pos.append(data_all["start"])
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end+1].flatten())
@@ -121,21 +124,28 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     for epoch in range(num_epochs):
         loss_epoch = 0
         for data_inputs, data_labels, start_pos in data_loader:
+            # print("----------------------")
             ## Step 1: Move input data to device (only strictly necessary if we use GPU)
             data_inputs = data_inputs.to(device)
 
             data_labels = data_labels.to(device)
-            # print(data_labels)
+            # print("true labels", data_labels[0])
             start_pos = start_pos.to(device)
 
             ## Step 2: Run the model on the input data
             preds = model(data_inputs)
-            preds = preds.squeeze(dim=1) # Output is [Batch size, 1], but we want [Batch size]
-            # print(preds[0])
+            preds = preds.squeeze(dim=1)
+            # print("true predictions\n", preds[0])
+
 
             ## Step 3: Calculate the loss
+            # print("--- PREDS ------")
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+            # print("alt predictions\n", alt_preds[0])
+            # print("----- LABELS -------")
             alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
+            # print("alt labels\n", alt_labels[0])
+
 
             loss = loss_module(alt_preds, alt_labels)
             # loss = loss_module(preds, data_labels)
@@ -169,7 +179,6 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             f.close()
 
 
-
 def eval_model(model, data_loader, loss_module):
     model.eval() # Set model to eval mode
 
@@ -183,7 +192,12 @@ def eval_model(model, data_loader, loss_module):
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
 
+
+            # print("----- TEST PREDS -------")
+
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
+            # print("----- TEST LABELS -------")
+
             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
             total_loss += loss_module(preds, data_labels)
@@ -243,13 +257,13 @@ if __name__ == "__main__":
 
 
     config = dict(
-        learning_rate = 0.1,
-        epochs = 250,
+        learning_rate = 0.01,
+        epochs = 100,
         batch_size = 128,
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "log_quat",
+        data_type = "pos",
         architecture = "fcnn",
         train_sims = list(train_sims),
         test_sims = list(test_sims),

@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from convert import *
 
+from pyquaternion import Quaternion
+
 
 def load_model(data_type, architecture):
     # Load model
@@ -28,13 +30,21 @@ def get_random_sim_data(data_type, nr_frames):
     # Select random simulation
     i = randint(0, 749)
 
-    i=10
     print("Using simulation number ", i)
     with open(f'data/sim_{i}.pickle', 'rb') as f:
         file = pickle.load(f)
+        if data_type == "pos_diff_start":
+            start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32)
+            start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
+        else:
+            start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32)
+            print(start_pos.shape)
+            start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
+            print(start_pos.shape)
 
-        start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32)
-        start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
+        # exit()
+
+        # start_zeros = torch.ones_like(start_pos)
 
         data_tensor = torch.tensor(file["data"][data_type], dtype=torch.float32)
 
@@ -43,14 +53,19 @@ def get_random_sim_data(data_type, nr_frames):
 
         # Convert to pos data for plotting
         plot_data = convert(data_tensor.flatten(start_dim=1), start_pos, data_type).reshape(nr_frames, 8, 3)
+        plot_data2 = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
-    #     print("--- PLOT ----")
-    #     # Check if converting went correctly
-    #     print("logQuat", original_data[0])
-    #     print("start", start_pos[0])
-    #     print("xyz", plot_data[0])
-    # exit()
-    return plot_data, original_data
+
+        # print("--- PLOT ----")
+        # # Check if converting went correctly
+        # print(data_type, original_data[0])
+        # # print("start", start_pos[1])
+        # print("xyz converted\n", plot_data[0])
+        # print("start ori pos\n", plot_data2[0])
+        # print("ori pos\n", plot_data2[1])
+
+
+    return plot_data, original_data, plot_data2
 
 def get_prediction(original_data, data_type, xyz_data):
     # Collect prediction of model given simulation
@@ -58,7 +73,11 @@ def get_prediction(original_data, data_type, xyz_data):
     result = torch.zeros_like(xyz_data)
 
     # Get first position
-    start_pos = xyz_data[0][None, :]
+    if data_type == "pos_diff_start":
+        start_pos = xyz_data[0][None, :]
+    else:
+        print("get correct start pos data[start]")
+        start_pos = xyz_data[0][None, :]
 
     for frame_id in range(20, xyz_data.shape[0]):
         # Get 20 frames shape: (1, 480)
@@ -69,20 +88,14 @@ def get_prediction(original_data, data_type, xyz_data):
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
             prediction = model(input_data)
-            print(convert(prediction, start_pos, data_type))
-            # print(xyz_data[frame_id])
-
 
             result[frame_id] = convert(prediction, start_pos, data_type)
 
-        # if frame_id == 35:
-        #     exit()
-
     return result
 
-def plot_3D_animation(data, result):
-    data = data.numpy()
-    result = result.numpy()
+def plot_3D_animation(data, result, plot_data2):
+    data = data
+    result = result
 
     # Open figure
     fig = plt.figure()
@@ -96,21 +109,30 @@ def plot_3D_animation(data, result):
     ax.set_xlabel('$Z$')
 
     # Initial plot
+    # Converted data
     first_cube = data[0]
     first_cube = first_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
 
+    # Predicted data
     cube_result = result[0]
     cube_result = cube_result[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
 
+    # Original xyz data
+    check_cube = plot_data2[0]
+    check_cube = check_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+
     X, Y, Z = first_cube[:, 0], first_cube[:, 1], first_cube[:, 2]
     X_pred, Y_pred, Z_pred = cube_result[:, 0], cube_result[:, 1], cube_result[:, 2]
+    X_check, Y_check, Z_check = check_cube[:, 0], check_cube[:, 1], check_cube[:, 2]
 
     # Begin plotting.
     ax.scatter(X, Y, Z, linewidth=0.5, color='b')
     ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5)
+    ax.scatter(X_check, Y_check, Z_check, c="black")
+
     ax.plot(X, Y, Z)
     ax.plot(X_pred, Y_pred, Z_pred, c="r")
-
+    ax.plot(X_check, Y_check, Z_check, c="black")
 
     def update(idx):
         ax.set_xlabel('$X$')
@@ -134,6 +156,8 @@ def plot_3D_animation(data, result):
         predicted_cube = result[idx]
         predicted_cube = predicted_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
 
+        check_cube = plot_data2[idx]
+        check_cube = check_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
 
         # Scatter original data
         ax.scatter(cube[:, 0], cube[:, 1], cube[:, 2], color='b', linewidth=0.5)
@@ -141,8 +165,11 @@ def plot_3D_animation(data, result):
         # Scatter prediction data
         ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', linewidth=0.5)
 
+        ax.scatter(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], color='black', linewidth=0.5)
+
         ax.plot(cube[:, 0], cube[:, 1], cube[:, 2])
         ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r")
+        ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black")
 
 
     # Interval : Delay between frames in milliseconds.
@@ -153,13 +180,13 @@ def plot_3D_animation(data, result):
 
 if __name__ == "__main__":
     nr_frames = 225
-    data_type = "log_quat"
+    data_type = "pos"
     architecture = "fcnn"
 
     model = load_model(data_type, architecture)
 
-    plot_data, ori_data = get_random_sim_data(data_type, nr_frames)
+    plot_data, ori_data, pos_data = get_random_sim_data(data_type, nr_frames)
 
     prediction = get_prediction(ori_data, data_type, plot_data)
 
-    plot_3D_animation(plot_data, prediction)
+    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data))
