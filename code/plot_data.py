@@ -38,7 +38,6 @@ def get_random_sim_data(data_type, nr_frames):
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
         else:
             start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32)
-            print(start_pos)
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
         # start_zeros = torch.ones_like(start_pos)
@@ -58,9 +57,6 @@ def get_random_sim_data(data_type, nr_frames):
         # # print("start", start_pos[1])
         # print("xyz converted\n", plot_data[0])
         # print("ori pos\n", plot_data2[0])
-
-    print("--- Collected random simulation data ---")
-
 
     return plot_data, original_data, plot_data2, start_pos[0]
 
@@ -118,13 +114,18 @@ def plot_3D_animation(data, result, plot_data2):
     X_pred, Y_pred, Z_pred = cube_result[:, 0], cube_result[:, 1], cube_result[:, 2]
     X_check, Y_check, Z_check = check_cube[:, 0], check_cube[:, 1], check_cube[:, 2]
 
+    distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
+
+    distance = ((X_pred[0] - X_pred[1])**2 + (Y_pred[0] - Y_pred[1])**2 + (Z_pred[0] - Z_pred[1])**2)**0.5
+    print(distance_check)
+
     # Begin plotting.
     ax.scatter(X, Y, Z, linewidth=0.5, color='b')
-    # ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5)
+    ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5)
     ax.scatter(X_check, Y_check, Z_check, c="black")
 
     ax.plot(X, Y, Z)
-    # ax.plot(X_pred, Y_pred, Z_pred, c="r")
+    ax.plot(X_pred, Y_pred, Z_pred, c="r")
     ax.plot(X_check, Y_check, Z_check, c="black")
 
     def update(idx):
@@ -148,9 +149,16 @@ def plot_3D_animation(data, result, plot_data2):
         # Get predicted cube date
         predicted_cube = result[idx]
         predicted_cube = predicted_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+        X_pred, Y_pred, Z_pred = predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2]
 
         check_cube = plot_data2[idx]
         check_cube = check_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+        X_check, Y_check, Z_check = check_cube[:, 0], check_cube[:, 1], check_cube[:, 2]
+
+        distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
+
+        distance = ((X_pred[0] - X_pred[1])**2 + (Y_pred[0] - Y_pred[1])**2 + (Z_pred[0] - Z_pred[1])**2)**0.5
+        print(distance_check)
 
         # Scatter original data
         ax.scatter(cube[:, 0], cube[:, 1], cube[:, 2], color='b', linewidth=0.5)
@@ -173,7 +181,7 @@ def plot_3D_animation(data, result, plot_data2):
 
 if __name__ == "__main__":
     nr_frames = 225
-    data_type = "quat"
+    data_type = "pos"
     architecture = "fcnn"
 
     model = load_model(data_type, architecture)

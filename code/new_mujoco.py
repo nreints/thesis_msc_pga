@@ -37,30 +37,18 @@ def fast_rotVecQuat(v, q):
     """
     device = v.device
 
-    # v_reshaped = v.reshape((v.shape[0]*v.shape[1], -1))
+    q_norm = torch.div(q.T, torch.norm(q, dim=-1)).T
 
+    # print(Quaternion(np.array(q_norm[0].detach())).norm)
 
     # Swap columns for roma calculations (bi, cj, dk, a)
-    q_new1 = torch.index_select(q, 1, torch.tensor([1, 2, 3, 0]).to(device))
+    q_new1 = torch.index_select(q_norm, 1, torch.tensor([1, 2, 3, 0]).to(device))
 
-    # q_new = torch.repeat_interleave(q_new1, repeats=8, dim=0)
-
-    # v_new = torch.hstack((v_reshaped, torch.zeros(v_reshaped.shape[0], 1).to(device)))
-
-    # # Calculate q* v q
-    # q_conj = roma.quat_conjugation(q_new)
-    # mult = roma.quat_product(v_new, q_new)
-    # mult2 = roma.quat_product(q_conj, mult)
-
-    # # Remove zeros, reshape to v shape
-    # rotated_vec = mult2[:,:-1].reshape(v.shape[0], v.shape[1], -1)
-
+    # return roma.quat_action(q_new1, v, is_normalized=False)
 
     v_test = v.mT
-    # print(v_test.shape)
-    rot_mat = (roma.unitquat_to_rotmat(q_new1) @ v_test).mT
-    # print("rotation matrix", rot_mat)
 
+    rot_mat = (roma.unitquat_to_rotmat(q_new1) @ v_test).mT.to(device)
 
     return rot_mat
 
@@ -232,7 +220,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
         # euler = f"{0.0} {0.0} {0.0}"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(4, 30)}"
-        size = f"{np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)} {np.random.uniform(0.1, 1)}"
+        size = f"{np.random.uniform(5, 10)} {np.random.uniform(5, 10)} {np.random.uniform(5, 10)}"
         # print("size object", size)
 
         string = create_string(euler, pos, obj_type, size)

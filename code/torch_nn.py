@@ -145,6 +145,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             ## Step 3: Calculate the loss
             # print("--- PREDS ------")
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+
             # print("alt predictions\n", alt_preds[0])
             # print("----- LABELS -------")
             alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
@@ -164,7 +165,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             optimizer.step()
 
         # Log and print epoch every 10 epochs
-        if epoch % 10 == 0:
+        if epoch % 1 == 0:
             # Log to W&B
             train_log(loss_epoch/len(data_loader), epoch)
 
@@ -184,6 +185,8 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
 
 def eval_model(model, data_loader, loss_module):
+    print("-- TEST ---")
+
     model.eval() # Set model to eval mode
 
     with torch.no_grad(): # Deactivate gradients for the following code
@@ -249,7 +252,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     return model, train_data_loader, test_data_loader, criterion, optimizer
 
 if __name__ == "__main__":
-    n_sims = 750
+    n_sims = 2000
     # Divide the train en test dataset
     sims = {i for i in range(n_sims)}
     train_sims = set(random.sample(sims, int(0.8 * n_sims)))
@@ -257,8 +260,8 @@ if __name__ == "__main__":
 
 
     config = dict(
-        learning_rate = 0.01,
-        epochs = 100,
+        learning_rate = 0.001,
+        epochs = 50,
         batch_size = 128,
         loss_type = "L1",
         loss_reduction_type = "mean",
@@ -271,7 +274,7 @@ if __name__ == "__main__":
         n_sims = n_sims,
         hidden_sizes = [128, 256, 128],
         activation_func = ["ReLU", "ReLU", "ReLU"],
-        dropout = [0.4, 0.2, 0.3],
+        dropout = [0.6, 0.4, 0.4],
         batch_norm = [True, True, True]
     )
 

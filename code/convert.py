@@ -68,12 +68,22 @@ def quat2pos(quat, start_pos):
         out = torch.empty_like(start_pos).to(device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
-        # print("rot start", rotated_start[0])
+
+        X_start, Y_start, Z_start = start_pos[0][:, 0], start_pos[0][:, 1], start_pos[0][:, 2]
+        X_rot, Y_rot, Z_rot = rotated_start[0][:, 0], rotated_start[0][:, 1], rotated_start[0][:, 2]
+
+        distance_start = ((X_start[0] - X_start[1])**2 + (Y_start[0] - Y_start[1])**2 + (Z_start[0] - Z_start[1])**2)**0.5
+        distance_rot = ((X_rot[0] - X_rot[1])**2 + (Y_rot[0] - Y_rot[1])**2 + (Z_rot[0] - Z_rot[1])**2)**0.5
+
+        # print(distance_start)
+        # print(distance_rot)
+
+        # print(quat[0][4:])
+        # print()
 
         repeated_trans = quat[:, 4:][:, None, :].repeat(1,8,1)
 
         out = rotated_start + repeated_trans
-        # print("out", out[0])
 
         return out
 
@@ -114,14 +124,14 @@ def log_quat2pos(log_quat, start_pos):
 
         v = log_quat[:, 1:4]
         # print("V", v.shape)
+
         v_norm = torch.linalg.norm(v, dim=1)
         # print("v_norm", v_norm.shape)
 
         # Normalize v
         vec = torch.div(v.T, v_norm).T
-        # print("vec", vec.shape)
 
-        # TODO v_norm = 0 --> div regel wordt NaN
+        # v_norm = 0 --> div regel wordt NaN
         ################### Maybe correct#
         vec = torch.nan_to_num(vec)
         ######
@@ -137,6 +147,8 @@ def log_quat2pos(log_quat, start_pos):
         scalar = (magn * torch.cos(v_norm))[:, None]
 
         quat = torch.hstack((scalar, vector))
+
+        # print(Quaternion(np.array(quat[0])))
 
         # Stack translation to quaternion
         full_quat = torch.hstack((quat, log_quat[:, 4:]))
