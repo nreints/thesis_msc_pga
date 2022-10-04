@@ -91,6 +91,9 @@ class MyDataset(data.Dataset):
                     self.target.append(data[train_end+1].flatten())
 
         self.data = torch.FloatTensor(np.asarray(self.data))
+
+        # print(self.data.shape)
+        # exit()
         self.target = torch.FloatTensor(np.asarray(self.target))
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
 
@@ -128,6 +131,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             ## Step 1: Move input data to device (only strictly necessary if we use GPU)
             data_inputs = data_inputs.to(device)
 
+            # print(data_inputs.shape)
             data_labels = data_labels.to(device)
             # print("true labels", data_labels[0])
             start_pos = start_pos.to(device)
@@ -192,11 +196,7 @@ def eval_model(model, data_loader, loss_module):
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
 
-
-            # print("----- TEST PREDS -------")
-
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
-            # print("----- TEST LABELS -------")
 
             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
@@ -263,7 +263,7 @@ if __name__ == "__main__":
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "pos",
+        data_type = "quat",
         architecture = "fcnn",
         train_sims = list(train_sims),
         test_sims = list(test_sims),

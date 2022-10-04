@@ -37,27 +37,32 @@ def fast_rotVecQuat(v, q):
     """
     device = v.device
 
-    v_reshaped = v.reshape((v.shape[0]*v.shape[1], -1))
+    # v_reshaped = v.reshape((v.shape[0]*v.shape[1], -1))
 
 
     # Swap columns for roma calculations (bi, cj, dk, a)
-    q_new = torch.index_select(q, 1, torch.tensor([1, 2, 3, 0]).to(device))
+    q_new1 = torch.index_select(q, 1, torch.tensor([1, 2, 3, 0]).to(device))
+
+    # q_new = torch.repeat_interleave(q_new1, repeats=8, dim=0)
+
+    # v_new = torch.hstack((v_reshaped, torch.zeros(v_reshaped.shape[0], 1).to(device)))
+
+    # # Calculate q* v q
+    # q_conj = roma.quat_conjugation(q_new)
+    # mult = roma.quat_product(v_new, q_new)
+    # mult2 = roma.quat_product(q_conj, mult)
+
+    # # Remove zeros, reshape to v shape
+    # rotated_vec = mult2[:,:-1].reshape(v.shape[0], v.shape[1], -1)
 
 
-    q_new = torch.repeat_interleave(q_new, repeats=8, dim=0)
-
-    v_new = torch.hstack((v_reshaped, torch.zeros(v_reshaped.shape[0], 1).to(device)))
-
-    # Calculate q* v q
-    q_conj = roma.quat_conjugation(q_new)
-    mult = roma.quat_product(v_new, q_new)
-    mult2 = roma.quat_product(q_conj, mult)
-
-    # Remove zeros, reshape to v shape
-    rotated_vec = mult2[:,:-1].reshape(v.shape[0], v.shape[1], -1)
+    v_test = v.mT
+    # print(v_test.shape)
+    rot_mat = (roma.unitquat_to_rotmat(q_new1) @ v_test).mT
+    # print("rotation matrix", rot_mat)
 
 
-    return rotated_vec
+    return rot_mat
 
 # def rot_quaternions(q1, q2):
 #     # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
@@ -211,6 +216,10 @@ def generate_data(string, n_steps, visualize):
 
 
     print(len(dataset["quat"]) == len(dataset["pos"]))
+    # print(dataset["pos"][10])
+    # print(dataset["quat"].squeeze().shape)
+    # quat = Quaternion(dataset["quat"][0][0][:4])
+    # print(quat.rotate(xyz_local.T[0]) + dataset["quat"][10][0][4:])
 
     dataset["pos_norm"] = (dataset["pos"] - np.mean(dataset["pos"], axis=(0,1))) / np.std(dataset["pos"], axis=(0,1))
     # print(np.mean(dataset["pos"], axis=(0,1)), np.std(dataset["pos"], axis=(0,1)))
@@ -236,7 +245,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Uncomment to create random data
-    n_sims = 750
+    n_sims = 2000
     n_steps = 2250
     obj_type = "box"
 

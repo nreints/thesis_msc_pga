@@ -38,11 +38,8 @@ def get_random_sim_data(data_type, nr_frames):
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
         else:
             start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32)
-            print(start_pos.shape)
+            print(start_pos)
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
-            print(start_pos.shape)
-
-        # exit()
 
         # start_zeros = torch.ones_like(start_pos)
 
@@ -55,29 +52,25 @@ def get_random_sim_data(data_type, nr_frames):
         plot_data = convert(data_tensor.flatten(start_dim=1), start_pos, data_type).reshape(nr_frames, 8, 3)
         plot_data2 = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
-
         # print("--- PLOT ----")
         # # Check if converting went correctly
         # print(data_type, original_data[0])
         # # print("start", start_pos[1])
         # print("xyz converted\n", plot_data[0])
-        # print("start ori pos\n", plot_data2[0])
-        # print("ori pos\n", plot_data2[1])
+        # print("ori pos\n", plot_data2[0])
+
+    print("--- Collected random simulation data ---")
 
 
-    return plot_data, original_data, plot_data2
+    return plot_data, original_data, plot_data2, start_pos[0]
 
-def get_prediction(original_data, data_type, xyz_data):
+def get_prediction(original_data, data_type, xyz_data, start):
     # Collect prediction of model given simulation
     # Result should be xyz data for plot
     result = torch.zeros_like(xyz_data)
 
     # Get first position
-    if data_type == "pos_diff_start":
-        start_pos = xyz_data[0][None, :]
-    else:
-        print("get correct start pos data[start]")
-        start_pos = xyz_data[0][None, :]
+    start_pos = start[None, :]
 
     for frame_id in range(20, xyz_data.shape[0]):
         # Get 20 frames shape: (1, 480)
@@ -127,11 +120,11 @@ def plot_3D_animation(data, result, plot_data2):
 
     # Begin plotting.
     ax.scatter(X, Y, Z, linewidth=0.5, color='b')
-    ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5)
+    # ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5)
     ax.scatter(X_check, Y_check, Z_check, c="black")
 
     ax.plot(X, Y, Z)
-    ax.plot(X_pred, Y_pred, Z_pred, c="r")
+    # ax.plot(X_pred, Y_pred, Z_pred, c="r")
     ax.plot(X_check, Y_check, Z_check, c="black")
 
     def update(idx):
@@ -180,13 +173,13 @@ def plot_3D_animation(data, result, plot_data2):
 
 if __name__ == "__main__":
     nr_frames = 225
-    data_type = "pos"
+    data_type = "quat"
     architecture = "fcnn"
 
     model = load_model(data_type, architecture)
 
-    plot_data, ori_data, pos_data = get_random_sim_data(data_type, nr_frames)
+    plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames)
 
-    prediction = get_prediction(ori_data, data_type, plot_data)
+    prediction = get_prediction(ori_data, data_type, plot_data, start)
 
     plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data))
