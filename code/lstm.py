@@ -34,7 +34,7 @@ class LSTM(nn.Module):
         else:
             hidden_state, cell_state = hidden_state
         # print(self.lstm(x, (hidden_state, cell_state))[0].shape)
-        out, h = self.lstm(x)
+        out, h = self.lstm(x, (hidden_state, cell_state))
         return self.layers(out), h
 
 

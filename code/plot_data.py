@@ -125,7 +125,7 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
                 input_data = prediction
             print("pred", prediction.shape)
             print("converted", convert(prediction, start_pos, data_type).reshape(-1, 8, 3).shape)
-            print("out shape", result[frame_id + 1 : frame_id + 21].shape)
+            print("out shape", result[frame_id + 1 : frame_id + nr_frames + 1].shape)
             out_shape = result[frame_id + 1 : frame_id + 21].shape
             print(convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :].shape)
             result[frame_id + 1 : frame_id + nr_frames + 1] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :]

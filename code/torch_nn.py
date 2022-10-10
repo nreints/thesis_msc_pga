@@ -6,7 +6,7 @@ import pickle
 import torch.utils.data as data
 import random
 from convert import *
-import wandb2
+import wandb
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
