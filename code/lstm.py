@@ -15,17 +15,16 @@ class LSTM(nn.Module):
     def __init__(self, in_size, config):
         super().__init__()
         # Initialize the modules we need to build the network
-        self.n_layers = config.n_layers
-        self.hidden_size = config.hidden_size
+        self.n_layers = config["n_layers"]
+        self.hidden_size = config["hidden_size"]
         self.in_size = in_size
-        self.lstm = nn.LSTM(in_size, self.hidden_size, batch_first=True, dropout=config.dropout, num_layers=config.n_layers)
+        self.lstm = nn.LSTM(in_size, self.hidden_size, batch_first=True, dropout=config["dropout"], num_layers=config["n_layers"])
         self.layers = nn.Sequential(
             nn.Linear(self.hidden_size, in_size)
         )
 
     def forward(self, x, hidden_state=None):
         # Perform the calculation of the model to determine the prediction
-        # print(x.shape)
 
         batch_size, _, _ = x.shape
         if hidden_state == None:
@@ -68,8 +67,10 @@ class MyDataset(data.Dataset):
                 data_all = pickle.load(f)["data"]
                 data = data_all[self.data_type]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-
-                    self.start_pos.append(data_all["pos"][0])
+                    if self.data_type == "pos_diff_start":
+                        self.start_pos.append(data_all["pos"][0])
+                    else:
+                        self.start_pos.append(data_all["start"])
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].reshape(-1, self.n_datap_perframe))
                     self.target.append(data[frame+1:train_end+1].reshape(-1, self.n_datap_perframe))
@@ -104,6 +105,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
         loss_epoch = 0
         for data_inputs, data_labels, start_pos in data_loader:
             data_inputs = data_inputs.to(device)
+
             data_labels = data_labels.to(device)
             start_pos = start_pos.to(device)
 
@@ -205,7 +207,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 if __name__ == "__main__":
 
-    n_sims = 750
+    n_sims = 1000
     sims = {i for i in range(n_sims)}
     train_sims = set(random.sample(sims, int(0.8 * n_sims)))
     test_sims = sims - train_sims
@@ -213,25 +215,26 @@ if __name__ == "__main__":
 
 
     config = dict(
-        learning_rate = 0.01,
-        epochs = 400,
+        learning_rate = 0.005,
+        epochs = 75,
         batch_size = 128,
         dropout = 0,
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "pos",
+        data_type = "quat",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
-        n_frames = 20,
+        n_frames = 30,
         n_sims = n_sims,
         n_layers = 1,
         hidden_size = 96
         )
 
     loss_dict = {'L1': nn.L1Loss,
-                    'L2': nn.MSELoss}
+                    'L2': nn.MSELoss
+                }
 
     optimizer_dict = {'Adam': torch.optim.Adam}
 
@@ -245,6 +248,6 @@ if __name__ == "__main__":
 
     model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
     model_dict = {'config': config,
-                'data_dict':ndata_dict,
+                'data_dict': ndata_dict,
                 'model': model.state_dict()}
     torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")

@@ -2,7 +2,8 @@ from platform import architecture
 import torch
 import matplotlib.pyplot as plt
 # from mpl_toolkits.mplot3d import Axes3D
-from torch_nn import Network
+from torch_nn import fcnn
+from lstm import LSTM
 import pickle
 from random import randint
 import numpy as np
@@ -15,11 +16,16 @@ from pyquaternion import Quaternion
 
 def load_model(data_type, architecture):
     # Load model
+
     model_dict = torch.load(f"models/{data_type}_{architecture}.pickle")
     config = model_dict['config']
     ndata_dict = model_dict['data_dict']
 
-    model = Network(ndata_dict[config['data_type']], config)
+    if architecture == "fcnn":
+        model = fcnn(ndata_dict[config['data_type']], config)
+    elif architecture == "lstm":
+        model = LSTM(ndata_dict[config['data_type']], config)
+
     model.load_state_dict(model_dict['model'])
     model.eval()
     print("Current model: \n", model)
@@ -60,10 +66,15 @@ def get_random_sim_data(data_type, nr_frames):
 
     return plot_data, original_data, plot_data2, start_pos[0]
 
-def get_prediction(original_data, data_type, xyz_data, start):
+def get_prediction_fcnn(original_data, data_type, xyz_data, start):
     # Collect prediction of model given simulation
     # Result should be xyz data for plot
+    # print("doiw")
+    # print(plot_data.shape)
+    # print(original_data.shape)
+    # print(xyz_data.shape)
     result = torch.zeros_like(xyz_data)
+    # print("iweoh")
 
     # Get first position
     start_pos = start[None, :]
@@ -72,15 +83,55 @@ def get_prediction(original_data, data_type, xyz_data, start):
         # Get 20 frames shape: (1, 480)
         input_data = original_data[frame_id - 20 : frame_id]
 
-        input_data = input_data.flatten()[None, :]
+        input_data = input_data.unsqueeze(dim=0)
+        #### fcnn
+        input_data = input_data.flatten(start_dim=1)
 
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
-            prediction = model(input_data)
+            prediction, hidden = model(input_data, hidden)
 
-            result[frame_id] = convert(prediction, start_pos, data_type)
+            result[frame_id] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)
 
     return result
+
+def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, out_is_in=False):
+    # Collect prediction of model given simulation
+    # Result should be xyz data for plot
+    frames, vert_num, dim = xyz_data.shape
+
+    # Because LSTM predicts 1 more frame
+    result = torch.zeros((frames+1, vert_num, dim))
+
+
+    # Get first position
+    start_pos = start[None, :]
+    hidden = torch.zeros(1, 1, 96)
+    cell = torch.zeros(1, 1, 96) #TODO
+    # print(hidden.shape)
+
+    for frame_id in range(0, xyz_data.shape[0], nr_frames):
+        # Get 20 frames shape: (1, 480)
+        print("---")
+        if not out_is_in or frame_id == 0:
+            input_data = original_data[frame_id : frame_id + nr_frames]
+            input_data = input_data.unsqueeze(dim=0)
+        print("input", input_data.shape)
+
+        # Save the prediction in result
+        with torch.no_grad(): # Deactivate gradients for the following code
+            prediction, (hidden, cell) = model(input_data, (hidden, cell))
+            if out_is_in:
+                input_data = prediction
+            print("pred", prediction.shape)
+            print("converted", convert(prediction, start_pos, data_type).reshape(-1, 8, 3).shape)
+            print("out shape", result[frame_id + 1 : frame_id + 21].shape)
+            out_shape = result[frame_id + 1 : frame_id + 21].shape
+            print(convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :].shape)
+            result[frame_id + 1 : frame_id + nr_frames + 1] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :]
+
+    return result
+
 
 def plot_3D_animation(data, result, plot_data2):
     data = data
@@ -89,10 +140,7 @@ def plot_3D_animation(data, result, plot_data2):
     # Open figure
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    # Set the axis limits
-    ax.set_xlim3d(-15, 15)
-    ax.set_ylim(-15, 15)
-    ax.set_zlim(0, 50)
+
     ax.set_xlabel('$X$')
     ax.set_ylabel('$Y$')
     ax.set_xlabel('$Z$')
@@ -128,15 +176,24 @@ def plot_3D_animation(data, result, plot_data2):
     ax.plot(X_pred, Y_pred, Z_pred, c="r")
     ax.plot(X_check, Y_check, Z_check, c="black")
 
+
+    # xx, yy = np.meshgrid(range(-15, 15), range(-15, 15))
+    # zz = xx*0
+
+    # ax.plot_surface(xx, yy, zz)
+
+
+    ax.set_xlim3d(-15, 15)
+    ax.set_ylim(-15, 15)
+    ax.set_zlim(0, 50)
+
     def update(idx):
         ax.set_xlabel('$X$')
         ax.set_ylabel('$Y$')
         ax.set_xlabel('$Z$')
 
-        ax.set_xlim3d(-15, 15)
-        ax.set_ylim3d(-15, 15)
-        ax.set_zlim3d(0, 50)
-
+        if idx == 20:
+            print("poep")
 
         # Remove the previous scatter plot
         if idx != 0:
@@ -172,6 +229,15 @@ def plot_3D_animation(data, result, plot_data2):
         ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r")
         ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black")
 
+        # xx, yy = np.meshgrid(range(-15, 15), range(-15, 15))
+        # zz = xx*0
+
+        # ax.plot_surface(xx, yy, zz)
+
+        ax.set_xlim3d(-15, 15)
+        ax.set_ylim3d(-15, 15)
+        ax.set_zlim3d(0, 40)
+
 
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, 225, interval=100, repeat=False)
@@ -182,12 +248,15 @@ def plot_3D_animation(data, result, plot_data2):
 if __name__ == "__main__":
     nr_frames = 225
     data_type = "pos"
-    architecture = "fcnn"
+    architecture = "lstm"
 
     model = load_model(data_type, architecture)
 
     plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames)
 
-    prediction = get_prediction(ori_data, data_type, plot_data, start)
+    if architecture == "fcnn":
+        prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start)
+    elif architecture == "lstm":
+        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, 5, out_is_in=True)
 
     plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data))

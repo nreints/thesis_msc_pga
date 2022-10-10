@@ -6,16 +6,12 @@ import pickle
 import torch.utils.data as data
 import random
 from convert import *
-import wandb
-
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-
+import wandb2
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
-class Network(nn.Module):
+class fcnn(nn.Module):
 
     def __init__(self, n_data, config):
         super().__init__()
@@ -165,7 +161,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             optimizer.step()
 
         # Log and print epoch every 10 epochs
-        if epoch % 1 == 0:
+        if epoch % 10 == 0:
             # Log to W&B
             train_log(loss_epoch/len(data_loader), epoch)
 
@@ -242,7 +238,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
 
     # Make the model
-    model = Network(ndata_dict[config.data_type], config).to(device)
+    model = fcnn(ndata_dict[config.data_type], config).to(device)
 
     # Make the loss and optimizer
     criterion = loss_dict[config.loss_type](reduction=config.loss_reduction_type)
@@ -260,21 +256,21 @@ if __name__ == "__main__":
 
 
     config = dict(
-        learning_rate = 0.001,
+        learning_rate = 0.005,
         epochs = 50,
         batch_size = 128,
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "quat",
+        data_type = "log_quat",
         architecture = "fcnn",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
         n_frames = 20,
         n_sims = n_sims,
-        hidden_sizes = [128, 256, 128],
-        activation_func = ["ReLU", "ReLU", "ReLU"],
-        dropout = [0.6, 0.4, 0.4],
+        hidden_sizes = [128, 256],
+        activation_func = ["ReLU", "ReLU"],
+        dropout = [0.6, 0.8],
         batch_norm = [True, True, True]
     )
 

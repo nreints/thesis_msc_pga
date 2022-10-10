@@ -186,6 +186,10 @@ def generate_data(string, n_steps, visualize):
         if i % 10 == 0:
             # Collect position data
             dataset["pos"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T
+            # print(get_vert_coords(sim, geom_id, xyz_local).T[0,2] - prev[0, 2])
+            # if get_vert_coords(sim, geom_id, xyz_local).T[0, 2] > prev[0, 2]:
+            #     print("flying away")
+            #     exit()
 
             # Collect euclidean motion data
             dataset["eucl_motion"][i//10] = np.append(get_mat(sim, geom_id), sim.data.body_xpos[geom_id])
@@ -200,6 +204,7 @@ def generate_data(string, n_steps, visualize):
                 dataset["pos_diff"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T - prev
 
                 prev = get_vert_coords(sim, geom_id, xyz_local).T
+
                 dataset["pos_diff_start"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T - start
 
 
@@ -217,10 +222,10 @@ def generate_data(string, n_steps, visualize):
 def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
         print("sim: ", sim_id)
-        euler = f"{np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)} {np.random.uniform(-80, 80)}"
+        euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
         # euler = f"{0.0} {0.0} {0.0}"
-        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(4, 30)}"
-        size = f"{np.random.uniform(5, 10)} {np.random.uniform(5, 10)} {np.random.uniform(5, 10)}"
+        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
+        size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
         # print("size object", size)
 
         string = create_string(euler, pos, obj_type, size)

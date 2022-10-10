@@ -69,11 +69,11 @@ def quat2pos(quat, start_pos):
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
 
-        X_start, Y_start, Z_start = start_pos[0][:, 0], start_pos[0][:, 1], start_pos[0][:, 2]
-        X_rot, Y_rot, Z_rot = rotated_start[0][:, 0], rotated_start[0][:, 1], rotated_start[0][:, 2]
+        # X_start, Y_start, Z_start = start_pos[0][:, 0], start_pos[0][:, 1], start_pos[0][:, 2]
+        # X_rot, Y_rot, Z_rot = rotated_start[0][:, 0], rotated_start[0][:, 1], rotated_start[0][:, 2]
 
-        distance_start = ((X_start[0] - X_start[1])**2 + (Y_start[0] - Y_start[1])**2 + (Z_start[0] - Z_start[1])**2)**0.5
-        distance_rot = ((X_rot[0] - X_rot[1])**2 + (Y_rot[0] - Y_rot[1])**2 + (Z_rot[0] - Z_rot[1])**2)**0.5
+        # distance_start = ((X_start[0] - X_start[1])**2 + (Y_start[0] - Y_start[1])**2 + (Z_start[0] - Z_start[1])**2)**0.5
+        # distance_rot = ((X_rot[0] - X_rot[1])**2 + (Y_rot[0] - Y_rot[1])**2 + (Z_rot[0] - Z_rot[1])**2)**0.5
 
         # print(distance_start)
         # print(distance_rot)
@@ -93,8 +93,8 @@ def quat2pos(quat, start_pos):
         out = torch.empty((quat.shape[1], batch, vert_num, dim)).to(device)
 
         for frame in range(quat.shape[1]):
-            rotated_start = fast_rotVecQuat(start_pos, quat[:,frame,:4])
-            repeated_trans = torch.repeat_interleave(quat[:,frame,4:], repeats=8, dim=0)
+            rotated_start = fast_rotVecQuat(start_pos, quat[:, frame, :4]).reshape(-1, 3)
+            repeated_trans = torch.repeat_interleave(quat[:, frame, 4:], repeats=8, dim=0)
             out[frame] = (rotated_start + repeated_trans).reshape((batch, vert_num, dim))
 
         # Batch first
@@ -202,8 +202,6 @@ def diff_pos_start2pos(true_preds, start_pos):
     result = start_pos + true_preds
     return result.reshape(result.shape[0], 8, 3)
 
-
-
 def convert(true_preds, start_pos, data_type):
     """
     Converts true predictions given data type.
@@ -217,7 +215,8 @@ def convert(true_preds, start_pos, data_type):
 
     """
     if data_type == "pos" or data_type == "pos_norm":
-        return true_preds.reshape(true_preds.shape[0], 8,3)
+        return true_preds
+        # return true_preds.reshape(true_preds.shape[0], 8, 3)
     elif data_type == "eucl_motion":
         return eucl2pos(true_preds, start_pos)
     elif data_type == "quat":
