@@ -6,6 +6,7 @@ from convert import *
 import pickle
 import random
 import wandb
+import time
 
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -60,6 +61,7 @@ class MyDataset(data.Dataset):
 
         self.data = []
         self.target = []
+        self.target_pos = []
         self.start_pos = []
 
         for i in self.sims:
@@ -74,9 +76,12 @@ class MyDataset(data.Dataset):
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].reshape(-1, self.n_datap_perframe))
                     self.target.append(data[frame+1:train_end+1].reshape(-1, self.n_datap_perframe))
+                    self.target_pos.append(data_all["pos"][frame+1:train_end+1])
+
 
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
+        self.target_pos = torch.FloatTensor(np.asarray(self.target_pos))
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
 
     def __len__(self):
@@ -88,8 +93,9 @@ class MyDataset(data.Dataset):
         # If we have multiple things to return (data point and label), we can return them as tuple
         data_point = self.data[idx]
         data_target = self.target[idx]
+        data_target_pos = self.target_pos[idx]
         data_start = self.start_pos[idx]
-        return data_point, data_target, data_start
+        return data_point, data_target, data_target_pos, data_start
 
 def train_log(loss, epoch):
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
@@ -103,17 +109,19 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
-        for data_inputs, data_labels, start_pos in data_loader:
+        for data_inputs, data_labels, data_labels_pos, start_pos in data_loader:
             data_inputs = data_inputs.to(device)
-
             data_labels = data_labels.to(device)
+            data_labels_pos = data_labels_pos.to(device)
             start_pos = start_pos.to(device)
 
             output, _ = model(data_inputs)
-
+            # start = time.time()
             alt_preds = convert(output, start_pos, data_loader.dataset.data_type)
-            alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
-            loss = loss_module(alt_preds, alt_labels)
+            # print(time.time() - start)
+            # alt_labels = convert(data_labels.cpu(), start_pos, data_loader.dataset.data_type)
+            # alt_labels = data_labels
+            loss = loss_module(alt_preds, data_labels_pos)
 
             # loss = loss_module(output.squeeze(), data_labels.float())
 
@@ -146,7 +154,7 @@ def eval_model(model, data_loader, loss_module):
     with torch.no_grad(): # Deactivate gradients for the following code
         total_loss = 0
         total_convert_loss = 0
-        for data_inputs, data_labels, start_pos in data_loader:
+        for data_inputs, data_labels, data_labels_pos, start_pos in data_loader:
 
             # Determine prediction of model on dev set
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
@@ -155,10 +163,9 @@ def eval_model(model, data_loader, loss_module):
             preds = preds.squeeze(dim=1)
 
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
-            alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
             total_loss += loss_module(preds, data_labels)
-            total_convert_loss += loss_module(alt_preds, alt_labels)
+            total_convert_loss += loss_module(alt_preds, data_labels_pos)
 
         wandb.log({"Converted test loss": total_convert_loss/len(data_loader)})
 
@@ -232,8 +239,9 @@ if __name__ == "__main__":
         hidden_size = 96
         )
 
-    loss_dict = {'L1': nn.L1Loss,
-                    'L2': nn.MSELoss
+    loss_dict = {
+                'L1': nn.L1Loss,
+                'L2': nn.MSELoss
                 }
 
     optimizer_dict = {'Adam': torch.optim.Adam}

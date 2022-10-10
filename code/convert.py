@@ -93,8 +93,8 @@ def quat2pos(quat, start_pos):
         out = torch.empty((quat.shape[1], batch, vert_num, dim)).to(device)
 
         for frame in range(quat.shape[1]):
-            rotated_start = fast_rotVecQuat(start_pos, quat[:, frame, :4]).reshape(-1, 3)
-            repeated_trans = torch.repeat_interleave(quat[:, frame, 4:], repeats=8, dim=0)
+            rotated_start = fast_rotVecQuat(start_pos, quat[:, frame, :4])
+            repeated_trans = quat[:, frame, 4:][:, None, :].repeat(1, 8, 1)
             out[frame] = (rotated_start + repeated_trans).reshape((batch, vert_num, dim))
 
         # Batch first
