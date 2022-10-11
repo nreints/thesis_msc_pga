@@ -84,7 +84,6 @@ def get_prediction_fcnn(original_data, data_type, xyz_data, start):
         input_data = original_data[frame_id - 20 : frame_id]
 
         input_data = input_data.unsqueeze(dim=0)
-        #### fcnn
         input_data = input_data.flatten(start_dim=1)
 
         # Save the prediction in result
@@ -112,22 +111,17 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
 
     for frame_id in range(0, xyz_data.shape[0], nr_frames):
         # Get 20 frames shape: (1, 480)
-        print("---")
         if not out_is_in or frame_id == 0:
             input_data = original_data[frame_id : frame_id + nr_frames]
             input_data = input_data.unsqueeze(dim=0)
-        print("input", input_data.shape)
 
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
             prediction, (hidden, cell) = model(input_data, (hidden, cell))
             if out_is_in:
                 input_data = prediction
-            print("pred", prediction.shape)
-            print("converted", convert(prediction, start_pos, data_type).reshape(-1, 8, 3).shape)
-            print("out shape", result[frame_id + 1 : frame_id + nr_frames + 1].shape)
+
             out_shape = result[frame_id + 1 : frame_id + 21].shape
-            print(convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :].shape)
             result[frame_id + 1 : frame_id + nr_frames + 1] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :]
 
     return result
@@ -185,9 +179,6 @@ def plot_3D_animation(data, result, plot_data2):
         ax.set_ylabel('$Y$')
         ax.set_xlabel('$Z$')
 
-        if idx == 20:
-            print("poep")
-
         # Remove the previous scatter plot
         if idx != 0:
             ax.cla()
@@ -244,6 +235,6 @@ if __name__ == "__main__":
     if architecture == "fcnn":
         prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start)
     elif architecture == "lstm":
-        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, 5, out_is_in=True)
+        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, 5, out_is_in=False)
 
     plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data))

@@ -21,7 +21,7 @@ def eucl2pos(eucl_motion, start_pos):
         out = torch.empty_like(start_pos)
         for batch in range(out.shape[0]):
             out[batch] =  (eucl_motion[batch, :9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
-
+        return out.reshape((out.shape[0], -1))
     # In case of LSTM
     else:
         out = torch.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-2], start_pos.shape[-1]))
@@ -35,7 +35,7 @@ def eucl2pos(eucl_motion, start_pos):
                 # Add translation to each rotated_start
                 out[batch, frame] =  (rotated_start.T + torch.vstack([eucl_motion[batch, frame, 9:]]*8))
 
-    return out.reshape((out.shape[0], -1))
+        return out
 
 
 def quat2pos(quat, start_pos):

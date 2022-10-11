@@ -7,6 +7,7 @@ import torch
 import roma
 from convert import *
 import copy
+from pyquaternion import Quaternion
 
 
 def fast_rotVecQuat(v, q):
@@ -16,8 +17,21 @@ def fast_rotVecQuat(v, q):
     q shape: batchx4
     """
     device = v.device
+    # ori_quat = Quaternion(np.array(q[0]))
+    # norm_ori_quat = ori_quat / ori_quat.norm
+    # print(norm_ori_quat.norm)
+
+    # norm = q @ q.T
+    # print(norm.diagonal())
 
     q_norm = torch.div(q.T, torch.norm(q, dim=-1)).T
+
+    # print(torch.norm(q_norm, dim=1))
+    # print(q_norm[0])
+
+    # quat = Quaternion(np.array(q_norm[0]))
+    # print(quat.norm)
+    # exit()
 
     # Swap columns for roma calculations (bi, cj, dk, a)
     q_new1 = torch.index_select(q_norm, 1, torch.tensor([1, 2, 3, 0]).to(device))

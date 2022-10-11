@@ -222,7 +222,7 @@ if __name__ == "__main__":
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "quat",
+        data_type = "eucl_motion",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
@@ -246,9 +246,9 @@ if __name__ == "__main__":
                     "pos_diff": 24,
                     "pos_diff_start": 24,
                 }
-
+    start_time = time.time()
     model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
-
+    print("It took ", time.time() - start_time, " seconds.")
     model_dict = {'config': config,
                 'data_dict': ndata_dict,
                 'model': model.state_dict()}
