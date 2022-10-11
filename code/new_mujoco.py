@@ -4,30 +4,10 @@ import itertools
 from create_strings import create_string
 import pickle
 import torch
-from pyquaternion import Quaternion
 import roma
 from convert import *
 import copy
 
-# q = torch.randn(4) # Random unnormalized quaternion
-# qconv = roma.quat_conjugation(q) # Quaternion conjugation
-# print(q,
-# qconv)
-# qinv = roma.quat_inverse(q) # Quaternion inverse
-# print(roma.quat_product(q, qinv)) # -> [0,0,0,1] identity quaternion
-
-VERT_NUM = 1
-
-# def own_rotVecQuat(v, q):
-# original from https://math.stackexchange.com/questions/40164/how-do-you-rotate-a-vector-by-a-unit-quaternion
-#     v_new = np.zeros(4)
-#     v_new[1:] = v
-#     part1 = rot_quaternions(v_new, q)
-#     print(part1)
-#     q_prime = q
-#     q_prime[1:] = -q_prime[1:]
-#     print(q_prime, "prime")
-#     return rot_quaternions(q_prime, part1)
 
 def fast_rotVecQuat(v, q):
     """
@@ -39,12 +19,8 @@ def fast_rotVecQuat(v, q):
 
     q_norm = torch.div(q.T, torch.norm(q, dim=-1)).T
 
-    # print(Quaternion(np.array(q_norm[0].detach())).norm)
-
     # Swap columns for roma calculations (bi, cj, dk, a)
     q_new1 = torch.index_select(q_norm, 1, torch.tensor([1, 2, 3, 0]).to(device))
-
-    # return roma.quat_action(q_new1, v, is_normalized=False)
 
     v_test = v.mT
 
@@ -52,41 +28,11 @@ def fast_rotVecQuat(v, q):
 
     return rot_mat
 
-# def rot_quaternions(q1, q2):
-#     # https://stackoverflow.com/questions/39000758/how-to-multiply-two-quaternions-by-python-or-numpy
-#     w0, x0, y0, z0 = q1
-#     w1, x1, y1, z1 = q2
-#     return torch.tensor([-x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
-#                      x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
-#                      -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
-#                      x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0], dtype=torch.float64)
-
-# def own_rotVecQuat(v, q):
-#     # According to mujoco? Ask Steven/Leo
-#     v_new = torch.zeros(4)
-#     v_new[1:] = v
-#     part1 = rot_quaternions(q, v_new)
-#     q_prime = q
-#     q_prime[1:] = -q_prime[1:]
-#     return rot_quaternions(part1, q_prime)[1:]
-
-
 def rotVecQuat(v, q):
     # From internet MuJoCo
     res = np.zeros(3)
     mujoco_py.functions.mju_rotVecQuat(res, v, q)
     return res
-
-
-# def get_vert_coords_quat(sim, obj_id, xyz_local):
-#     """
-#     Returns the locations of the vertices during simulation
-#         using quaternion
-#     """
-#     obj_xquat = sim.data.body_xquat[obj_id]
-#     trans = sim.data.body_xpos[obj_id]
-#     # FIX Geeft nu alleen de geroteerde eerste vertice terug [:,??]
-#     return rotVecQuat(xyz_local[:,VERT_NUM], obj_xquat) + trans
 
 def get_quat(sim, obj_id):
     return sim.data.body_xquat[obj_id]
@@ -186,10 +132,6 @@ def generate_data(string, n_steps, visualize):
         if i % 10 == 0:
             # Collect position data
             dataset["pos"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T
-            # print(get_vert_coords(sim, geom_id, xyz_local).T[0,2] - prev[0, 2])
-            # if get_vert_coords(sim, geom_id, xyz_local).T[0, 2] > prev[0, 2]:
-            #     print("flying away")
-            #     exit()
 
             # Collect euclidean motion data
             dataset["eucl_motion"][i//10] = np.append(get_mat(sim, geom_id), sim.data.body_xpos[geom_id])
@@ -207,15 +149,8 @@ def generate_data(string, n_steps, visualize):
 
                 dataset["pos_diff_start"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T - start
 
-
-    print(len(dataset["quat"]) == len(dataset["pos"]))
-    # print(dataset["pos"][10])
-    # print(dataset["quat"].squeeze().shape)
-    # quat = Quaternion(dataset["quat"][0][0][:4])
-    # print(quat.rotate(xyz_local.T[0]) + dataset["quat"][10][0][4:])
-
     dataset["pos_norm"] = (dataset["pos"] - np.mean(dataset["pos"], axis=(0,1))) / np.std(dataset["pos"], axis=(0,1))
-    # print(np.mean(dataset["pos"], axis=(0,1)), np.std(dataset["pos"], axis=(0,1)))
+
     return dataset
 
 
@@ -223,10 +158,8 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
         print("sim: ", sim_id)
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
-        # euler = f"{0.0} {0.0} {0.0}"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
-        # print("size object", size)
 
         string = create_string(euler, pos, obj_type, size)
         dataset = generate_data(string, n_steps, visualize)

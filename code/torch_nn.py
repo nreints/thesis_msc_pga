@@ -88,8 +88,6 @@ class MyDataset(data.Dataset):
 
         self.data = torch.FloatTensor(np.asarray(self.data))
 
-        # print(self.data.shape)
-        # exit()
         self.target = torch.FloatTensor(np.asarray(self.target))
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
 
@@ -123,30 +121,20 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     for epoch in range(num_epochs):
         loss_epoch = 0
         for data_inputs, data_labels, start_pos in data_loader:
-            # print("----------------------")
             ## Step 1: Move input data to device (only strictly necessary if we use GPU)
             data_inputs = data_inputs.to(device)
 
-            # print(data_inputs.shape)
             data_labels = data_labels.to(device)
-            # print("true labels", data_labels[0])
             start_pos = start_pos.to(device)
 
             ## Step 2: Run the model on the input data
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
-            # print("true predictions\n", preds[0])
-
 
             ## Step 3: Calculate the loss
-            # print("--- PREDS ------")
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
 
-            # print("alt predictions\n", alt_preds[0])
-            # print("----- LABELS -------")
             alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
-            # print("alt labels\n", alt_labels[0])
-
 
             loss = loss_module(alt_preds, alt_labels)
             # loss = loss_module(preds, data_labels)
@@ -202,7 +190,7 @@ def eval_model(model, data_loader, loss_module):
             total_loss += loss_module(preds, data_labels)
             total_convert_loss += loss_module(alt_preds, alt_labels)
 
-        # Log loss to Weights and Biases
+        # Log loss to W&B
         wandb.log({"Converted test loss": total_convert_loss/len(data_loader)})
 
     # Return the average loss
@@ -221,7 +209,6 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
         print(model)
 
         # and use them to train the model
-            #   model, optimizer, data_loader, test_loader, loss_module, num_epochs=100, loss_type="L1"):
         train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config)
 
         # and test its final performance

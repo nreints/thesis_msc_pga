@@ -56,9 +56,6 @@ class MyDataset(data.Dataset):
         self.collect_data()
 
     def collect_data(self):
-        # self.data = torch.empty((self.n_sims * , self.n_frames_perentry * self.n_datap_perframe))
-        # self.target = torch.empty((1, self.n_datap_perframe))
-
         self.data = []
         self.target = []
         self.target_pos = []
@@ -116,16 +113,12 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             start_pos = start_pos.to(device)
 
             output, _ = model(data_inputs)
-            # start = time.time()
             alt_preds = convert(output, start_pos, data_loader.dataset.data_type)
-            # print(time.time() - start)
-            # alt_labels = convert(data_labels.cpu(), start_pos, data_loader.dataset.data_type)
-            # alt_labels = data_labels
+
             loss = loss_module(alt_preds, data_labels_pos)
 
-            # loss = loss_module(output.squeeze(), data_labels.float())
-
             optimizer.zero_grad()
+
             # Perform backpropagation
             loss.backward()
 
@@ -255,7 +248,9 @@ if __name__ == "__main__":
                 }
 
     model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
+
     model_dict = {'config': config,
                 'data_dict': ndata_dict,
                 'model': model.state_dict()}
+
     torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")

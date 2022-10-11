@@ -176,13 +176,6 @@ def plot_3D_animation(data, result, plot_data2):
     ax.plot(X_pred, Y_pred, Z_pred, c="r")
     ax.plot(X_check, Y_check, Z_check, c="black")
 
-
-    # xx, yy = np.meshgrid(range(-15, 15), range(-15, 15))
-    # zz = xx*0
-
-    # ax.plot_surface(xx, yy, zz)
-
-
     ax.set_xlim3d(-15, 15)
     ax.set_ylim(-15, 15)
     ax.set_zlim(0, 50)
@@ -229,15 +222,9 @@ def plot_3D_animation(data, result, plot_data2):
         ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r")
         ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black")
 
-        # xx, yy = np.meshgrid(range(-15, 15), range(-15, 15))
-        # zz = xx*0
-
-        # ax.plot_surface(xx, yy, zz)
-
         ax.set_xlim3d(-15, 15)
         ax.set_ylim3d(-15, 15)
         ax.set_zlim3d(0, 40)
-
 
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, 225, interval=100, repeat=False)

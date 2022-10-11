@@ -1,8 +1,6 @@
 import torch
 import numpy as np
 from new_mujoco import fast_rotVecQuat
-from pyquaternion import Quaternion
-from rotation_Thijs import quat2mat
 
 def eucl2pos(eucl_motion, start_pos):
     # print(eucl.shape, start_pos.shape)
@@ -69,18 +67,6 @@ def quat2pos(quat, start_pos):
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
 
-        # X_start, Y_start, Z_start = start_pos[0][:, 0], start_pos[0][:, 1], start_pos[0][:, 2]
-        # X_rot, Y_rot, Z_rot = rotated_start[0][:, 0], rotated_start[0][:, 1], rotated_start[0][:, 2]
-
-        # distance_start = ((X_start[0] - X_start[1])**2 + (Y_start[0] - Y_start[1])**2 + (Z_start[0] - Z_start[1])**2)**0.5
-        # distance_rot = ((X_rot[0] - X_rot[1])**2 + (Y_rot[0] - Y_rot[1])**2 + (Z_rot[0] - Z_rot[1])**2)**0.5
-
-        # print(distance_start)
-        # print(distance_rot)
-
-        # print(quat[0][4:])
-        # print()
-
         repeated_trans = quat[:, 4:][:, None, :].repeat(1,8,1)
 
         out = rotated_start + repeated_trans
@@ -123,39 +109,26 @@ def log_quat2pos(log_quat, start_pos):
     if len(log_quat.shape) == 2:
 
         v = log_quat[:, 1:4]
-        # print("V", v.shape)
 
         v_norm = torch.linalg.norm(v, dim=1)
-        # print("v_norm", v_norm.shape)
 
         # Normalize v
         vec = torch.div(v.T, v_norm).T
 
         # v_norm = 0 --> div regel wordt NaN
-        ################### Maybe correct#
         vec = torch.nan_to_num(vec)
-        ######
 
         magn = torch.exp(log_quat[:, 0])
-        # print("m", magn.shape)
 
         # --> sin(0) = 0 --> vector = torch.zeros if v_norm = 0
-        # print("part1", torch.mul(magn, torch.sin(v_norm)).shape)
         vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.T).T
-        # print("vector", vector.shape)
 
         scalar = (magn * torch.cos(v_norm))[:, None]
 
         quat = torch.hstack((scalar, vector))
 
-        # print(Quaternion(np.array(quat[0])))
-
         # Stack translation to quaternion
         full_quat = torch.hstack((quat, log_quat[:, 4:]))
-        # print("log", log_quat[0])
-        # print("quat", full_quat[0])
-
-        # print("start", start_pos[0])
 
         return quat2pos(full_quat, start_pos)
 
@@ -198,7 +171,6 @@ def diff_pos_start2pos(true_preds, start_pos):
         start_pos = start_pos[:, None, :]
 
     start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(-1, true_preds.shape[1], -1)
-    # print(true_preds[0])
     result = start_pos + true_preds
     return result.reshape(result.shape[0], 8, 3)
 
@@ -216,7 +188,6 @@ def convert(true_preds, start_pos, data_type):
     """
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
-        # return true_preds.reshape(true_preds.shape[0], 8, 3)
     elif data_type == "eucl_motion":
         return eucl2pos(true_preds, start_pos)
     elif data_type == "quat":
