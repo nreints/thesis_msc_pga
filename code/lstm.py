@@ -24,16 +24,15 @@ class LSTM(nn.Module):
             nn.Linear(self.hidden_size, in_size)
         )
 
-    def forward(self, x, hidden_state=None):
+    def forward(self, x, hidden_cell=None):
         # Perform the calculation of the model to determine the prediction
 
         batch_size, _, _ = x.shape
-        if hidden_state == None:
+        if hidden_cell == None:
             hidden_state = torch.zeros(self.n_layers, batch_size, self.hidden_size)
             cell_state = torch.zeros(self.n_layers, batch_size, self.hidden_size)
         else:
-            hidden_state, cell_state = hidden_state
-        # print(self.lstm(x, (hidden_state, cell_state))[0].shape)
+            hidden_state, cell_state = hidden_cell
         out, h = self.lstm(x, (hidden_state, cell_state))
         return self.layers(out), h
 
@@ -216,13 +215,13 @@ if __name__ == "__main__":
 
     config = dict(
         learning_rate = 0.005,
-        epochs = 75,
+        epochs = 50,
         batch_size = 128,
         dropout = 0,
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "eucl_motion",
+        data_type = "dual_quat",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
@@ -243,12 +242,14 @@ if __name__ == "__main__":
                     "eucl_motion": 12,
                     "quat": 7,
                     "log_quat": 7,
+                    "dual_quat": 8,
                     "pos_diff": 24,
                     "pos_diff_start": 24,
                 }
     start_time = time.time()
     model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
     print("It took ", time.time() - start_time, " seconds.")
+
     model_dict = {'config': config,
                 'data_dict': ndata_dict,
                 'model': model.state_dict()}

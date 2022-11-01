@@ -88,7 +88,7 @@ def get_prediction_fcnn(original_data, data_type, xyz_data, start):
 
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
-            prediction, hidden = model(input_data, hidden)
+            prediction = model(input_data)
 
             result[frame_id] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)
 
@@ -162,9 +162,9 @@ def plot_3D_animation(data, result, plot_data2):
     print(distance_check)
 
     # Begin plotting.
-    ax.scatter(X, Y, Z, linewidth=0.5, color='b')
-    ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5)
-    ax.scatter(X_check, Y_check, Z_check, c="black")
+    ax.scatter(X, Y, Z, linewidth=0.5, color='b', label="conv pos")
+    ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5, label="prediction")
+    ax.scatter(X_check, Y_check, Z_check, c="black", label="real pos")
 
     ax.plot(X, Y, Z)
     ax.plot(X_pred, Y_pred, Z_pred, c="r")
@@ -209,13 +209,14 @@ def plot_3D_animation(data, result, plot_data2):
 
         ax.scatter(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], color='black', linewidth=0.5)
 
-        ax.plot(cube[:, 0], cube[:, 1], cube[:, 2])
-        ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r")
-        ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black")
+        ax.plot(cube[:, 0], cube[:, 1], cube[:, 2], label="conv pos")
+        ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r", label="prediction")
+        ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black", label="real pos")
 
         ax.set_xlim3d(-15, 15)
         ax.set_ylim3d(-15, 15)
         ax.set_zlim3d(0, 40)
+        ax.legend()
 
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, 225, interval=100, repeat=False)
@@ -225,8 +226,8 @@ def plot_3D_animation(data, result, plot_data2):
 
 if __name__ == "__main__":
     nr_frames = 225
-    data_type = "pos"
-    architecture = "lstm"
+    data_type = "quat"
+    architecture = "fcnn"
 
     model = load_model(data_type, architecture)
 

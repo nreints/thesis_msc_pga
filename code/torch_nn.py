@@ -7,6 +7,7 @@ import torch.utils.data as data
 import random
 from convert import *
 import wandb
+import time
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -136,8 +137,13 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
 
-            loss = loss_module(alt_preds, alt_labels)
-            # loss = loss_module(preds, data_labels)
+            if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
+                norm_penalty = config["lam"] * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1)))**2
+            else:
+                norm_penalty = 0
+
+            position_loss = loss_module(alt_preds, alt_labels)
+            loss = position_loss + norm_penalty
 
             loss_epoch += loss
 
@@ -187,8 +193,16 @@ def eval_model(model, data_loader, loss_module):
 
             alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
+
+            if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
+                norm_penalty = config["lam"] * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1)))**2
+            else:
+                norm_penalty = 0
+
+            position_loss = loss_module(alt_preds, alt_labels)
+            total_convert_loss += position_loss + norm_penalty
+
             total_loss += loss_module(preds, data_labels)
-            total_convert_loss += loss_module(alt_preds, alt_labels)
 
         # Log loss to W&B
         wandb.log({"Converted test loss": total_convert_loss/len(data_loader)})
@@ -206,6 +220,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
 
         # make the model, data, and optimization problem
         model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
+        print(config["data_type"])
         print(model)
 
         # and use them to train the model
@@ -249,7 +264,7 @@ if __name__ == "__main__":
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "log_quat",
+        data_type = "dual_quat",
         architecture = "fcnn",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
@@ -257,8 +272,9 @@ if __name__ == "__main__":
         n_sims = n_sims,
         hidden_sizes = [128, 256],
         activation_func = ["ReLU", "ReLU"],
-        dropout = [0.6, 0.8],
-        batch_norm = [True, True, True]
+        dropout = [0.4, 0.6],
+        batch_norm = [True, True, True],
+        lam = 0.01
     )
 
     loss_dict = {'L1': nn.L1Loss,
@@ -270,12 +286,16 @@ if __name__ == "__main__":
                     "eucl_motion": 12,
                     "quat": 7,
                     "log_quat": 7,
+                    "dual_quat": 8,
                     "pos_diff": 24,
                     "pos_diff_start": 24,
                     "pos_norm": 24
                 }
 
+    start_time = time.time()
     model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
+    print("It took ", time.time() - start_time, " seconds.")
+
     model_dict = {'config': config,
                 'data_dict':ndata_dict,
                 'model': model.state_dict()}

@@ -48,6 +48,8 @@ def rotVecQuat(v, q):
     mujoco_py.functions.mju_rotVecQuat(res, v, q)
     return res
 
+
+
 def get_quat(sim, obj_id):
     return sim.data.body_xquat[obj_id]
 
@@ -96,6 +98,15 @@ def calculate_log_quat(quat):
 
     return logQuat
 
+def get_dualQ(quat, translation):
+    qr = quat
+
+    t = np.hstack((np.array([0]), translation))
+    qd = 0.5 * t * quat
+
+    dual = np.append(qr, qd)
+    return dual
+
 def create_empty_dataset(local_start):
     """
     Returns empyt data dictionary.
@@ -106,6 +117,7 @@ def create_empty_dataset(local_start):
             "eucl_motion" : np.empty((n_steps//10, 1, 12)),
             "quat": np.empty((n_steps//10, 1, 7)),
             "log_quat": np.empty((n_steps//10, 1, 7)),
+            "dual_quat": np.empty((n_steps//10, 1, 8)),
             "pos_diff": np.empty((n_steps//10, 8, 3)),
             "pos_diff_start": np.empty((n_steps//10, 8, 3)),
             "pos_norm": np.empty((n_steps//10, 8, 3))
@@ -138,7 +150,6 @@ def generate_data(string, n_steps, visualize):
         if i == 0:
             prev = get_vert_coords(sim, geom_id, xyz_local).T
             start = prev
-            start_x_pos = copy.deepcopy(sim.data.body_xpos[geom_id])
 
             # First difference should be zero
             dataset["pos_diff_start"][i] = np.zeros((8, 3))
@@ -155,6 +166,9 @@ def generate_data(string, n_steps, visualize):
 
             # Collect Log Quaternion data
             dataset["log_quat"][i//10] = np.append(calculate_log_quat(get_quat(sim, geom_id)), sim.data.body_xpos[geom_id])
+
+            # Collect Dual-Quaternion data
+            dataset["dual_quat"][i//10] = get_dualQ(get_quat(sim, geom_id), sim.data.body_xpos[geom_id])
 
             if i != 0:
                 dataset["pos_diff"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T - prev

@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from new_mujoco import fast_rotVecQuat
+import roma
 
 def eucl2pos(eucl_motion, start_pos):
     # print(eucl.shape, start_pos.shape)
@@ -20,6 +21,7 @@ def eucl2pos(eucl_motion, start_pos):
     if len(eucl_motion.shape) == 2:
         out = torch.empty_like(start_pos)
         for batch in range(out.shape[0]):
+            # EINSUM
             out[batch] =  (eucl_motion[batch, :9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
         return out.reshape((out.shape[0], -1))
     # In case of LSTM
@@ -153,6 +155,19 @@ def log_quat2pos(log_quat, start_pos):
 
         return quat2pos(full_quat, start_pos)
 
+def dualQ2pos(dualQ, start_pos):
+
+    qr = dualQ[..., :4]
+    conj_qr = roma.quat_conjugation(qr)
+    qd = dualQ[..., 4:]
+    t = 2 * qd * conj_qr
+
+    quaternion = torch.cat((qr, t[..., 1:]), dim=-1)
+    converted_pos = quat2pos(quaternion, start_pos)
+
+    return converted_pos
+
+
 def diff_pos_start2pos(true_preds, start_pos):
     """
     Input:
@@ -194,6 +209,8 @@ def convert(true_preds, start_pos, data_type):
         return quat2pos(true_preds, start_pos)
     elif data_type == "log_quat":
         return log_quat2pos(true_preds, start_pos)
+    elif data_type == "dual_quat":
+        return dualQ2pos(true_preds, start_pos)
     # elif data_type == "pos_diff":
     #     return diff_pos2pos(true_preds, start_pos)
     elif data_type == "pos_diff_start":
