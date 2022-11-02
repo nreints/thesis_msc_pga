@@ -90,18 +90,12 @@ class MyDataset(data.Dataset):
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end+1].flatten())
                     pos_data_vec = pos_data[train_end+1].flatten()
-                    self.pos_target.append(pos_data_vec)
-                    # self.trans.append(data_all["trans"][train_end+1].flatten())
+                    self.pos_target.append(pos_data_vec.reshape(-1, 8, 3).squeeze())
 
         self.data = torch.FloatTensor(np.asarray(self.data))
-        print("pos", data_all["pos"].shape)
         self.target = torch.FloatTensor(np.asarray(self.target))
-        self.pos_target = torch.FloatTensor(np.asarray(self.target))
-        # self.trans = torch.FloatTensor(np.asarray(self.trans))
-        print("tarSHAPE", self.target.shape)
-        print("posSHAPE", self.pos_target.shape)
+        self.pos_target = torch.FloatTensor(np.asarray(self.pos_target))
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
-        exit()
 
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
@@ -115,7 +109,7 @@ class MyDataset(data.Dataset):
         data_start = self.start_pos[idx]
         data_pos_target = self.pos_target[idx]
         # data_trans = self.trans[idx]
-        return data_point, data_target, data_start
+        return data_point, data_target, data_start, data_pos_target
 
 
 def train_log(loss, epoch):
@@ -134,7 +128,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
-        for data_inputs, data_labels, start_pos in data_loader:
+        for data_inputs, data_labels, start_pos, pos_target in data_loader:
             ## Step 1: Move input data to device (only strictly necessary if we use GPU)
             data_inputs = data_inputs.to(device)
 
@@ -151,15 +145,14 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # print("orig", data_labels[:10])
             # print("target", target.shape)
             # print("trans", trans[:10])
-            alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
-
+            # alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
 
             if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
                 norm_penalty = config["lam"] * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1)))**2
             else:
                 norm_penalty = 0
 
-            position_loss = loss_module(alt_preds, alt_labels)
+            position_loss = loss_module(alt_preds, pos_target)
             loss = position_loss + norm_penalty
 
             loss_epoch += loss
@@ -199,7 +192,7 @@ def eval_model(model, data_loader, loss_module):
     with torch.no_grad(): # Deactivate gradients for the following code
         total_loss = 0
         total_convert_loss = 0
-        for data_inputs, data_labels, start_pos in data_loader:
+        for data_inputs, data_labels, start_pos, pos_target in data_loader:
 
             # Determine prediction of model on dev set
             data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
@@ -208,7 +201,7 @@ def eval_model(model, data_loader, loss_module):
 
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
-            alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
+            # alt_labels = convert(data_labels.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
 
             if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
@@ -216,7 +209,7 @@ def eval_model(model, data_loader, loss_module):
             else:
                 norm_penalty = 0
 
-            position_loss = loss_module(alt_preds, alt_labels)
+            position_loss = loss_module(alt_preds, pos_target)
             total_convert_loss += position_loss + norm_penalty
 
             total_loss += loss_module(preds, data_labels)
