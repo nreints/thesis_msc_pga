@@ -78,6 +78,7 @@ class MyDataset(data.Dataset):
                 data_all = pickle.load(f)["data"]
                 # Collect data from data_type
                 data = data_all[self.data_type]
+                pos_data = data_all["pos"]
                 # Add data and targets
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     # Always save the start_position for converting
@@ -88,16 +89,19 @@ class MyDataset(data.Dataset):
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end+1].flatten())
-                    self.pos_target.append(data_all["pos"][train_end+1].flatten())
-                    self.trans.append(data_all["trans"][train_end+1].flatten())
+                    pos_data_vec = pos_data[train_end+1].flatten()
+                    self.pos_target.append(pos_data_vec)
+                    # self.trans.append(data_all["trans"][train_end+1].flatten())
 
         self.data = torch.FloatTensor(np.asarray(self.data))
-
+        print("pos", data_all["pos"].shape)
         self.target = torch.FloatTensor(np.asarray(self.target))
         self.pos_target = torch.FloatTensor(np.asarray(self.target))
-        self.trans = torch.FloatTensor(np.asarray(self.trans))
-        print(self.pos_target.shape)
+        # self.trans = torch.FloatTensor(np.asarray(self.trans))
+        print("tarSHAPE", self.target.shape)
+        print("posSHAPE", self.pos_target.shape)
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+        exit()
 
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
@@ -110,7 +114,7 @@ class MyDataset(data.Dataset):
         data_target = self.target[idx]
         data_start = self.start_pos[idx]
         data_pos_target = self.pos_target[idx]
-        data_trans = self.trans[idx]
+        # data_trans = self.trans[idx]
         return data_point, data_target, data_start
 
 
@@ -281,7 +285,7 @@ if __name__ == "__main__":
         architecture = "fcnn",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
-        n_frames = 20,
+        n_frames = 10,
         n_sims = n_sims,
         hidden_sizes = [128, 256],
         activation_func = ["ReLU", "ReLU"],

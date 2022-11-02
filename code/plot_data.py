@@ -30,12 +30,12 @@ def load_model(data_type, architecture):
     model.eval()
     print("Current model: \n", model)
 
-    return model
+    return model, config
 
 def get_random_sim_data(data_type, nr_frames):
     # Select random simulation
     i = randint(0, 749)
-    i = 10
+    i = 539
 
     print("Using simulation number ", i)
     with open(f'data/sim_{i}.pickle', 'rb') as f:
@@ -66,7 +66,7 @@ def get_random_sim_data(data_type, nr_frames):
 
     return plot_data, original_data, plot_data2, start_pos[0]
 
-def get_prediction_fcnn(original_data, data_type, xyz_data, start):
+def get_prediction_fcnn(original_data, data_type, xyz_data, start, nr_input_frames):
     result = torch.zeros_like(xyz_data)
 
     # Get first position
@@ -74,7 +74,7 @@ def get_prediction_fcnn(original_data, data_type, xyz_data, start):
 
     for frame_id in range(20, xyz_data.shape[0]):
         # Get 20 frames shape: (1, 480)
-        input_data = original_data[frame_id - 20 : frame_id]
+        input_data = original_data[frame_id - nr_input_frames : frame_id]
 
         input_data = input_data.unsqueeze(dim=0)
         input_data = input_data.flatten(start_dim=1)
@@ -123,7 +123,7 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
     return result
 
 
-def plot_3D_animation(data, result, plot_data2):
+def plot_3D_animation(data, result, real_pos_data, data_type):
     data = data
     result = result
 
@@ -137,19 +137,16 @@ def plot_3D_animation(data, result, plot_data2):
 
     # Initial plot
     # Converted data
-    first_cube = data[0]
-    first_cube = first_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+    converted_cube = data[0]
 
     # Predicted data
-    cube_result = result[0]
-    cube_result = cube_result[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+    predicted_cube = result[0]
 
     # Original xyz data
-    check_cube = plot_data2[0]
-    check_cube = check_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+    check_cube = real_pos_data[0]
 
-    X, Y, Z = first_cube[:, 0], first_cube[:, 1], first_cube[:, 2]
-    X_pred, Y_pred, Z_pred = cube_result[:, 0], cube_result[:, 1], cube_result[:, 2]
+    X, Y, Z = converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2]
+    X_pred, Y_pred, Z_pred = predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2]
     X_check, Y_check, Z_check = check_cube[:, 0], check_cube[:, 1], check_cube[:, 2]
 
     distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
@@ -158,13 +155,24 @@ def plot_3D_animation(data, result, plot_data2):
     print(distance_check)
 
     # Begin plotting.
-    ax.scatter(X, Y, Z, linewidth=0.5, color='b', label="conv pos == label")
+    ax.scatter(X, Y, Z, linewidth=0.5, color='b', label="converted pos")
     ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5, label="prediction")
     ax.scatter(X_check, Y_check, Z_check, c="black", label="real pos")
 
-    ax.plot(X, Y, Z)
-    ax.plot(X_pred, Y_pred, Z_pred, c="r")
-    ax.plot(X_check, Y_check, Z_check, c="black")
+    list_ind = [1, 3, 2, 0, 4, 6, 2, 3, 7, 5, 1, 5, 4, 6, 7]
+    converted_edges = [converted_cube[i, :] for i in list_ind]
+    converted_cube = np.append(converted_cube[0, :], converted_edges).reshape(-1,3)
+
+    predicted_edges = [predicted_cube[i, :] for i in list_ind]
+    predicted_cube = np.append(converted_cube[0, :], predicted_edges).reshape(-1,3)
+
+    check_edges = [check_cube[i, :] for i in list_ind]
+    check_cube = np.append(check_cube[0, :], check_edges).reshape(-1,3)
+    print(converted_cube.shape)
+
+    ax.plot(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2])
+    # ax.plot(predicted_edges[:, 0], predicted_edges[:, 1], predicted_edges[:, 2], c="r")
+    # ax.plot(check_cube[:][0], check_cube[:][1], check_cube[:][2], c="black")
 
     ax.set_xlim3d(-15, 15)
     ax.set_ylim(-15, 15)
@@ -181,15 +189,15 @@ def plot_3D_animation(data, result, plot_data2):
 
         # Get original cube data
         cube = data[idx]
-        cube = cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+        # cube = cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
 
         # Get predicted cube date
         predicted_cube = result[idx]
-        predicted_cube = predicted_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+        # predicted_cube = predicted_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
         X_pred, Y_pred, Z_pred = predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2]
 
-        check_cube = plot_data2[idx]
-        check_cube = check_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
+        check_cube = real_pos_data[idx]
+        # check_cube = check_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
         X_check, Y_check, Z_check = check_cube[:, 0], check_cube[:, 1], check_cube[:, 2]
 
         distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
@@ -205,13 +213,24 @@ def plot_3D_animation(data, result, plot_data2):
 
         ax.scatter(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], color='black', linewidth=0.5)
 
-        ax.plot(cube[:, 0], cube[:, 1], cube[:, 2], label="conv pos == label")
+        list_ind = [1, 3, 2, 0, 4, 6, 2, 3, 7, 5, 1, 5, 4, 6, 7]
+        converted_edges = [cube[i, :] for i in list_ind]
+        cube = np.append(cube[0, :], converted_edges).reshape(-1,3)
+
+        predicted_edges = [predicted_cube[i, :] for i in list_ind]
+        predicted_cube = np.append(predicted_cube[0, :], predicted_edges).reshape(-1,3)
+
+        check_edges = [check_cube[i, :] for i in list_ind]
+        check_cube = np.append(check_cube[0, :], check_edges).reshape(-1,3)
+
+        ax.plot(cube[:, 0], cube[:, 1], cube[:, 2], label="converted pos")
         ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r", label="prediction")
         ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black", label="real pos")
 
         ax.set_xlim3d(-15, 15)
         ax.set_ylim3d(-15, 15)
         ax.set_zlim3d(0, 40)
+        ax.set_title(data_type)
         ax.legend()
 
     # Interval : Delay between frames in milliseconds.
@@ -221,17 +240,18 @@ def plot_3D_animation(data, result, plot_data2):
 
 
 if __name__ == "__main__":
-    nr_frames = 225
+    nr_frames = 225 # See new_mujoco.py
     data_type = "dual_quat"
     architecture = "fcnn"
 
-    model = load_model(data_type, architecture)
+    model, config = load_model(data_type, architecture)
 
+    nr_input_frames = config["n_frames"]
     plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames)
 
     if architecture == "fcnn":
-        prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start)
+        prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames)
     elif architecture == "lstm":
         prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, 5, out_is_in=False)
 
-    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data))
+    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type)
