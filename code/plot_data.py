@@ -159,11 +159,11 @@ def plot_3D_animation(data, result, plot_data2):
 
     # Begin plotting.
     ax.scatter(X, Y, Z, linewidth=0.5, color='b', label="conv pos == label")
-    # ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5, label="prediction")
+    ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5, label="prediction")
     ax.scatter(X_check, Y_check, Z_check, c="black", label="real pos")
 
     ax.plot(X, Y, Z)
-    # ax.plot(X_pred, Y_pred, Z_pred, c="r")
+    ax.plot(X_pred, Y_pred, Z_pred, c="r")
     ax.plot(X_check, Y_check, Z_check, c="black")
 
     ax.set_xlim3d(-15, 15)
@@ -201,12 +201,12 @@ def plot_3D_animation(data, result, plot_data2):
         ax.scatter(cube[:, 0], cube[:, 1], cube[:, 2], color='b', linewidth=0.5)
 
         # Scatter prediction data
-        # ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', linewidth=0.5)
+        ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', linewidth=0.5)
 
         ax.scatter(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], color='black', linewidth=0.5)
 
         ax.plot(cube[:, 0], cube[:, 1], cube[:, 2], label="conv pos == label")
-        # ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r", label="prediction")
+        ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r", label="prediction")
         ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black", label="real pos")
 
         ax.set_xlim3d(-15, 15)
