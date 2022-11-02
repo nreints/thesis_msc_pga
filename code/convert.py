@@ -1,3 +1,4 @@
+from timeit import repeat
 import torch
 import numpy as np
 from new_mujoco import fast_rotVecQuat
@@ -67,9 +68,9 @@ def quat2pos(quat, start_pos):
 
         out = torch.empty_like(start_pos).to(device)
 
-        rotated_start = fast_rotVecQuat(start_pos, quat[:,:4])
-
-        repeated_trans = quat[:, 4:][:, None, :].repeat(1,8,1)
+        rotated_start = fast_rotVecQuat(start_pos, quat[:, :4])
+        # print("convQ", quat[:, 4:])
+        repeated_trans = quat[:, 4:][:, None, :].repeat(1, 8, 1)
 
         out = rotated_start + repeated_trans
 
@@ -156,13 +157,24 @@ def log_quat2pos(log_quat, start_pos):
         return quat2pos(full_quat, start_pos)
 
 def dualQ2pos(dualQ, start_pos):
-
     qr = dualQ[..., :4]
-    conj_qr = roma.quat_conjugation(qr)
     qd = dualQ[..., 4:]
-    t = 2 * qd * conj_qr
+    shape_len = dualQ.shape[0]
+    # repeated_unit = torch.cat((torch.ones((shape_len, 1)), torch.zeros(shape_len, 3)), dim=-1)
+    # mask = qr == repeated_unit
+    # qr[mask] = 0.5
+    qr_roma = torch.index_select(qr, 1, torch.tensor([1, 2, 3, 0]))
+    conj_qr = roma.quat_conjugation(qr_roma)
 
-    quaternion = torch.cat((qr, t[..., 1:]), dim=-1)
+    qd_roma = torch.index_select(qd, 1, torch.tensor([1, 2, 3, 0]))
+
+    t = 2 * roma.quat_product(qd_roma, conj_qr)
+    # # print(qd[:10])
+    # print("qd", qd[:10])
+    # print("conv", t[:10, :-1])
+    # exit()
+
+    quaternion = torch.cat((qr, t[..., :-1]), dim=-1)
     converted_pos = quat2pos(quaternion, start_pos)
 
     return converted_pos

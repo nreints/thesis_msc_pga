@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from convert import *
 
-from pyquaternion import Quaternion
+# from pyquaternion import Quaternion
 
 
 def load_model(data_type, architecture):
@@ -35,6 +35,7 @@ def load_model(data_type, architecture):
 def get_random_sim_data(data_type, nr_frames):
     # Select random simulation
     i = randint(0, 749)
+    i = 10
 
     print("Using simulation number ", i)
     with open(f'data/sim_{i}.pickle', 'rb') as f:
@@ -46,35 +47,27 @@ def get_random_sim_data(data_type, nr_frames):
             start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32)
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
-        # start_zeros = torch.ones_like(start_pos)
-
         data_tensor = torch.tensor(file["data"][data_type], dtype=torch.float32)
 
         # Get data as data_type
         original_data = data_tensor.flatten(start_dim=1)
 
         # Convert to pos data for plotting
+        # print(data_tensor.shape)
         plot_data = convert(data_tensor.flatten(start_dim=1), start_pos, data_type).reshape(nr_frames, 8, 3)
         plot_data2 = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
-
+        # print(plot_data2[:10])
+        # exit()
         # print("--- PLOT ----")
-        # # Check if converting went correctly
-        # print(data_type, original_data[0])
-        # # print("start", start_pos[1])
-        # print("xyz converted\n", plot_data[0])
-        # print("ori pos\n", plot_data2[0])
+        # print(start_pos)
+        # print(original_data[0])
+        # print("1\n", plot_data)
+        # print("2\n", plot_data2)
 
     return plot_data, original_data, plot_data2, start_pos[0]
 
 def get_prediction_fcnn(original_data, data_type, xyz_data, start):
-    # Collect prediction of model given simulation
-    # Result should be xyz data for plot
-    # print("doiw")
-    # print(plot_data.shape)
-    # print(original_data.shape)
-    # print(xyz_data.shape)
     result = torch.zeros_like(xyz_data)
-    # print("iweoh")
 
     # Get first position
     start_pos = start[None, :]
@@ -89,7 +82,10 @@ def get_prediction_fcnn(original_data, data_type, xyz_data, start):
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
             prediction = model(input_data)
-
+            # print(input_data)
+            # # print()
+            # print(prediction)
+            # exit()
             result[frame_id] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)
 
     return result
@@ -162,12 +158,12 @@ def plot_3D_animation(data, result, plot_data2):
     print(distance_check)
 
     # Begin plotting.
-    ax.scatter(X, Y, Z, linewidth=0.5, color='b', label="conv pos")
-    ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5, label="prediction")
+    ax.scatter(X, Y, Z, linewidth=0.5, color='b', label="conv pos == label")
+    # ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5, label="prediction")
     ax.scatter(X_check, Y_check, Z_check, c="black", label="real pos")
 
     ax.plot(X, Y, Z)
-    ax.plot(X_pred, Y_pred, Z_pred, c="r")
+    # ax.plot(X_pred, Y_pred, Z_pred, c="r")
     ax.plot(X_check, Y_check, Z_check, c="black")
 
     ax.set_xlim3d(-15, 15)
@@ -205,12 +201,12 @@ def plot_3D_animation(data, result, plot_data2):
         ax.scatter(cube[:, 0], cube[:, 1], cube[:, 2], color='b', linewidth=0.5)
 
         # Scatter prediction data
-        ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', linewidth=0.5)
+        # ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', linewidth=0.5)
 
         ax.scatter(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], color='black', linewidth=0.5)
 
-        ax.plot(cube[:, 0], cube[:, 1], cube[:, 2], label="conv pos")
-        ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r", label="prediction")
+        ax.plot(cube[:, 0], cube[:, 1], cube[:, 2], label="conv pos == label")
+        # ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r", label="prediction")
         ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black", label="real pos")
 
         ax.set_xlim3d(-15, 15)
@@ -226,7 +222,7 @@ def plot_3D_animation(data, result, plot_data2):
 
 if __name__ == "__main__":
     nr_frames = 225
-    data_type = "quat"
+    data_type = "dual_quat"
     architecture = "fcnn"
 
     model = load_model(data_type, architecture)

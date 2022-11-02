@@ -102,7 +102,19 @@ def get_dualQ(quat, translation):
     qr = quat
 
     t = np.hstack((np.array([0]), translation))
-    qd = 0.5 * t * quat
+
+    # print("t*q", t * quat)
+    # print(t)
+    # print(qr)
+    if qr[0] == 1 & (qr[1] == qr[2] == qr[3] == 0):
+        # print("poep")
+        qd = t
+    else:
+        qd = (0.5 * Quaternion(t) * Quaternion(quat)).elements
+        # print("-------")
+        # print(t)
+        # print(qr)
+        # print(qd)
 
     dual = np.append(qr, qd)
     return dual
@@ -120,7 +132,9 @@ def create_empty_dataset(local_start):
             "dual_quat": np.empty((n_steps//10, 1, 8)),
             "pos_diff": np.empty((n_steps//10, 8, 3)),
             "pos_diff_start": np.empty((n_steps//10, 8, 3)),
-            "pos_norm": np.empty((n_steps//10, 8, 3))
+            "pos_norm": np.empty((n_steps//10, 8, 3)),
+
+            "trans": np.empty((n_steps//10, 3))
             }
 
 def generate_data(string, n_steps, visualize):
@@ -161,6 +175,8 @@ def generate_data(string, n_steps, visualize):
             # Collect euclidean motion data
             dataset["eucl_motion"][i//10] = np.append(get_mat(sim, geom_id), sim.data.body_xpos[geom_id])
 
+
+            # print("trans", sim.data.body_xpos[geom_id])
             # Collect quaternion data
             dataset["quat"][i//10] = np.append(get_quat(sim, geom_id), sim.data.body_xpos[geom_id])
 
@@ -169,6 +185,7 @@ def generate_data(string, n_steps, visualize):
 
             # Collect Dual-Quaternion data
             dataset["dual_quat"][i//10] = get_dualQ(get_quat(sim, geom_id), sim.data.body_xpos[geom_id])
+            dataset["trans"][i//10] = sim.data.body_xpos[geom_id]
 
             if i != 0:
                 dataset["pos_diff"][i//10] = get_vert_coords(sim, geom_id, xyz_local).T - prev
@@ -186,8 +203,10 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
         print("sim: ", sim_id)
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
+        # euler = f"0 0 0"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
+        # size = "1 1 1"
 
         string = create_string(euler, pos, obj_type, size)
         dataset = generate_data(string, n_steps, visualize)

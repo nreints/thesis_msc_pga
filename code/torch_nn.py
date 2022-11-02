@@ -69,7 +69,9 @@ class MyDataset(data.Dataset):
 
         self.data = []
         self.target = []
+        self.pos_target = []
         self.start_pos = []
+        self.trans = []
 
         for i in self.sims:
             with open(f'data/sim_{i}.pickle', 'rb') as f:
@@ -86,10 +88,15 @@ class MyDataset(data.Dataset):
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end+1].flatten())
+                    self.pos_target.append(data_all["pos"][train_end+1].flatten())
+                    self.trans.append(data_all["trans"][train_end+1].flatten())
 
         self.data = torch.FloatTensor(np.asarray(self.data))
 
         self.target = torch.FloatTensor(np.asarray(self.target))
+        self.pos_target = torch.FloatTensor(np.asarray(self.target))
+        self.trans = torch.FloatTensor(np.asarray(self.trans))
+        print(self.pos_target.shape)
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
 
     def __len__(self):
@@ -102,6 +109,8 @@ class MyDataset(data.Dataset):
         data_point = self.data[idx]
         data_target = self.target[idx]
         data_start = self.start_pos[idx]
+        data_pos_target = self.pos_target[idx]
+        data_trans = self.trans[idx]
         return data_point, data_target, data_start
 
 
@@ -134,8 +143,12 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             ## Step 3: Calculate the loss
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
-
+            # print("CONVERTING LABELS")
+            # print("orig", data_labels[:10])
+            # print("target", target.shape)
+            # print("trans", trans[:10])
             alt_labels = convert(data_labels, start_pos, data_loader.dataset.data_type)
+
 
             if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
                 norm_penalty = config["lam"] * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1)))**2
@@ -272,7 +285,7 @@ if __name__ == "__main__":
         n_sims = n_sims,
         hidden_sizes = [128, 256],
         activation_func = ["ReLU", "ReLU"],
-        dropout = [0.4, 0.6],
+        dropout = [0.2, 0.4],
         batch_norm = [True, True, True],
         lam = 0.01
     )
