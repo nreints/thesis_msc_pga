@@ -123,7 +123,7 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
     return result
 
 
-def plot_3D_animation(data, result, real_pos_data, data_type):
+def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
     data = data
     result = result
 
@@ -230,7 +230,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type):
         ax.set_xlim3d(-15, 15)
         ax.set_ylim3d(-15, 15)
         ax.set_zlim3d(0, 40)
-        ax.set_title(data_type)
+        ax.set_title(f"data {data_type} trained with {architecture}")
         ax.legend()
 
     # Interval : Delay between frames in milliseconds.
@@ -242,7 +242,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type):
 if __name__ == "__main__":
     nr_frames = 225 # See new_mujoco.py
     data_type = "dual_quat"
-    architecture = "fcnn"
+    architecture = "lstm"
 
     model, config = load_model(data_type, architecture)
 
@@ -254,4 +254,4 @@ if __name__ == "__main__":
     elif architecture == "lstm":
         prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, 5, out_is_in=False)
 
-    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type)
+    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture)

@@ -269,7 +269,7 @@ if __name__ == "__main__":
 
     config = dict(
         learning_rate = 0.005,
-        epochs = 50,
+        epochs = 100,
         batch_size = 128,
         loss_type = "L1",
         loss_reduction_type = "mean",
