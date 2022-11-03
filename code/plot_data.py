@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from convert import *
+import math
 
 # from pyquaternion import Quaternion
 
@@ -35,7 +36,6 @@ def load_model(data_type, architecture):
 def get_random_sim_data(data_type, nr_frames):
     # Select random simulation
     i = randint(0, 749)
-    i = 539
 
     print("Using simulation number ", i)
     with open(f'data/sim_{i}.pickle', 'rb') as f:
@@ -123,6 +123,23 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
     return result
 
 
+def calculate_edges(cube):
+    list_ind = [1, 3, 2, 0, 4, 6, 2, 3, 7, 5, 1, 5, 4, 6, 7]
+    edges = [cube[i, :] for i in list_ind]
+    return np.append(cube[0, :], edges).reshape(-1,3)
+
+def distance_check(converted, predicted, check):
+    X_conv, Y_conv, Z_conv = converted[:, 0], converted[:, 1], converted[:, 2]
+    X_pred, Y_pred, Z_pred = predicted[:, 0], predicted[:, 1], predicted[:, 2]
+    X_check, Y_check, Z_check = check[:, 0], check[:, 1], check[:, 2]
+
+    distance_conv = ((X_conv[0] - X_conv[1])**2 + (Y_conv[0] - Y_conv[1])**2 + (Z_conv[0] - Z_conv[1])**2)**0.5
+    distance_predicted = ((X_pred[0] - X_pred[1])**2 + (Y_pred[0] - Y_pred[1])**2 + (Z_pred[0] - Z_pred[1])**2)**0.5
+    distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
+
+    print(distance_check, distance_predicted)
+    assert math.isclose(distance_conv, distance_predicted, abs_tol=0.001)
+
 def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
     data = data
     result = result
@@ -131,105 +148,70 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    ax.set_xlabel('$X$')
-    ax.set_ylabel('$Y$')
-    ax.set_xlabel('$Z$')
-
-    # Initial plot
-    # Converted data
+    # Collect init data
     converted_cube = data[0]
-
-    # Predicted data
     predicted_cube = result[0]
-
-    # Original xyz data
     check_cube = real_pos_data[0]
 
-    X, Y, Z = converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2]
-    X_pred, Y_pred, Z_pred = predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2]
-    X_check, Y_check, Z_check = check_cube[:, 0], check_cube[:, 1], check_cube[:, 2]
+    #  TODO
+    # distance_check(converted_cube, predicted_cube, check_cube)
 
-    distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
+    # Scatter the corners
+    ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], linewidth=0.5, color='b', label="converted pos")
+    ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', label="prediction")
+    ax.scatter(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], color="black", label="real pos")
 
-    distance = ((X_pred[0] - X_pred[1])**2 + (Y_pred[0] - Y_pred[1])**2 + (Z_pred[0] - Z_pred[1])**2)**0.5
-    print(distance_check)
+    # Calculate the edges
+    converted_cube_edges = calculate_edges(converted_cube)
+    predicted_cube_edges = calculate_edges(predicted_cube)
+    check_cube_edges = calculate_edges(check_cube)
 
-    # Begin plotting.
-    ax.scatter(X, Y, Z, linewidth=0.5, color='b', label="converted pos")
-    ax.scatter(X_pred, Y_pred, Z_pred, color='r', linewidth=0.5, label="prediction")
-    ax.scatter(X_check, Y_check, Z_check, c="black", label="real pos")
-
-    list_ind = [1, 3, 2, 0, 4, 6, 2, 3, 7, 5, 1, 5, 4, 6, 7]
-    converted_edges = [converted_cube[i, :] for i in list_ind]
-    converted_cube = np.append(converted_cube[0, :], converted_edges).reshape(-1,3)
-
-    predicted_edges = [predicted_cube[i, :] for i in list_ind]
-    predicted_cube = np.append(converted_cube[0, :], predicted_edges).reshape(-1,3)
-
-    check_edges = [check_cube[i, :] for i in list_ind]
-    check_cube = np.append(check_cube[0, :], check_edges).reshape(-1,3)
-    print(converted_cube.shape)
-
-    ax.plot(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2])
-    # ax.plot(predicted_edges[:, 0], predicted_edges[:, 1], predicted_edges[:, 2], c="r")
-    # ax.plot(check_cube[:][0], check_cube[:][1], check_cube[:][2], c="black")
+    # Plot the edges
+    ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c="b")
+    # TODO error?
+    # ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
+    # ax.plot(check_cube_edges[:][0], check_cube_edges[:][1], check_cube_edges[:][2], c="black")
 
     ax.set_xlim3d(-15, 15)
     ax.set_ylim(-15, 15)
     ax.set_zlim(0, 50)
 
     def update(idx):
-        ax.set_xlabel('$X$')
-        ax.set_ylabel('$Y$')
-        ax.set_xlabel('$Z$')
 
         # Remove the previous scatter plot
         if idx != 0:
             ax.cla()
 
-        # Get original cube data
-        cube = data[idx]
-        # cube = cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
-
-        # Get predicted cube date
+        # Get cube vertice data
+        converted_cube = data[idx]
         predicted_cube = result[idx]
-        # predicted_cube = predicted_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
-        X_pred, Y_pred, Z_pred = predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2]
-
         check_cube = real_pos_data[idx]
-        # check_cube = check_cube[np.array([0, 1, 2, 3, 4, 5, 6, 7]), :][np.array([0,1,3,2,6,7,5,4]), :]
-        X_check, Y_check, Z_check = check_cube[:, 0], check_cube[:, 1], check_cube[:, 2]
 
-        distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
+        # TODO
+        # distance_check(converted_cube, predicted_cube, check_cube)
 
-        distance = ((X_pred[0] - X_pred[1])**2 + (Y_pred[0] - Y_pred[1])**2 + (Z_pred[0] - Z_pred[1])**2)**0.5
-        print(distance_check)
-
-        # Scatter original data
-        ax.scatter(cube[:, 0], cube[:, 1], cube[:, 2], color='b', linewidth=0.5)
-
-        # Scatter prediction data
+        # Scatter vertice data
+        ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], color='b', linewidth=0.5)
         ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', linewidth=0.5)
-
         ax.scatter(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], color='black', linewidth=0.5)
 
-        list_ind = [1, 3, 2, 0, 4, 6, 2, 3, 7, 5, 1, 5, 4, 6, 7]
-        converted_edges = [cube[i, :] for i in list_ind]
-        cube = np.append(cube[0, :], converted_edges).reshape(-1,3)
+        # Calculate the edges
+        converted_cube_edges = calculate_edges(converted_cube)
+        predicted_cube_edges = calculate_edges(predicted_cube)
+        check_cube_edges = calculate_edges(check_cube)
 
-        predicted_edges = [predicted_cube[i, :] for i in list_ind]
-        predicted_cube = np.append(predicted_cube[0, :], predicted_edges).reshape(-1,3)
-
-        check_edges = [check_cube[i, :] for i in list_ind]
-        check_cube = np.append(check_cube[0, :], check_edges).reshape(-1,3)
-
-        ax.plot(cube[:, 0], cube[:, 1], cube[:, 2], label="converted pos")
-        ax.plot(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], c="r", label="prediction")
-        ax.plot(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], c="black", label="real pos")
+        # Plot the edges
+        ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label="converted pos")
+        ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r", label="prediction")
+        ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black", label="real pos")
 
         ax.set_xlim3d(-15, 15)
         ax.set_ylim3d(-15, 15)
         ax.set_zlim3d(0, 40)
+
+        ax.set_xlabel('$X$')
+        ax.set_ylabel('$Y$')
+        ax.set_zlabel('$Z$')
         ax.set_title(f"data {data_type} trained with {architecture}")
         ax.legend()
 
