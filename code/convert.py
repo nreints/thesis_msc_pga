@@ -4,6 +4,7 @@ import numpy as np
 from new_mujoco import fast_rotVecQuat
 import roma
 
+
 def eucl2pos(eucl_motion, start_pos):
     # print(eucl.shape, start_pos.shape)
     # NN
@@ -23,20 +24,34 @@ def eucl2pos(eucl_motion, start_pos):
         out = torch.empty_like(start_pos)
         for batch in range(out.shape[0]):
             # EINSUM
-            out[batch] =  (eucl_motion[batch, :9].reshape(3,3) @ start_pos[batch].T + torch.vstack([eucl_motion[batch, 9:]]*8).T).T
+            out[batch] = (
+                eucl_motion[batch, :9].reshape(3, 3) @ start_pos[batch].T
+                + torch.vstack([eucl_motion[batch, 9:]] * 8).T
+            ).T
         return out.reshape((out.shape[0], -1))
     # In case of LSTM
     else:
-        out = torch.empty((eucl_motion.shape[0], eucl_motion.shape[1], start_pos.shape[-2], start_pos.shape[-1]))
+        out = torch.empty(
+            (
+                eucl_motion.shape[0],
+                eucl_motion.shape[1],
+                start_pos.shape[-2],
+                start_pos.shape[-1],
+            )
+        )
 
         n_frames = eucl_motion.shape[1]
         for batch in range(out.shape[0]):
             for frame in range(n_frames):
                 # Reshape first 9 elements in rotation matrix and multiply with start_pos
-                rotated_start = eucl_motion[batch, frame, :9].reshape(3,3) @ start_pos[batch].T
+                rotated_start = (
+                    eucl_motion[batch, frame, :9].reshape(3, 3) @ start_pos[batch].T
+                )
 
                 # Add translation to each rotated_start
-                out[batch, frame] =  (rotated_start.T + torch.vstack([eucl_motion[batch, frame, 9:]]*8))
+                out[batch, frame] = rotated_start.T + torch.vstack(
+                    [eucl_motion[batch, frame, 9:]] * 8
+                )
 
         return out
 
@@ -69,7 +84,6 @@ def quat2pos(quat, start_pos):
         out = torch.empty_like(start_pos).to(device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:, :4])
-        # print("convQ", quat[:, 4:])
         repeated_trans = quat[:, 4:][:, None, :].repeat(1, 8, 1)
 
         out = rotated_start + repeated_trans
@@ -84,12 +98,13 @@ def quat2pos(quat, start_pos):
         for frame in range(quat.shape[1]):
             rotated_start = fast_rotVecQuat(start_pos, quat[:, frame, :4])
             repeated_trans = quat[:, frame, 4:][:, None, :].repeat(1, 8, 1)
-            out[frame] = (rotated_start + repeated_trans).reshape((batch, vert_num, dim))
+            out[frame] = (rotated_start + repeated_trans).reshape(
+                (batch, vert_num, dim)
+            )
 
         # Batch first
         out = torch.permute(out, (1, 0, 2, 3))
         return out
-
 
 
 def log_quat2pos(log_quat, start_pos):
@@ -145,7 +160,9 @@ def log_quat2pos(log_quat, start_pos):
 
         magn = torch.exp(log_quat[:, :, 0])
 
-        vector = torch.mul(torch.mul(magn, torch.sin(v_norm)), vec.permute((2, 0, 1))).permute((1, 2, 0))
+        vector = torch.mul(
+            torch.mul(magn, torch.sin(v_norm)), vec.permute((2, 0, 1))
+        ).permute((1, 2, 0))
 
         scalar = (magn * torch.cos(v_norm))[:, :, None]
 
@@ -155,6 +172,7 @@ def log_quat2pos(log_quat, start_pos):
         full_quat = torch.cat((quat, log_quat[:, :, 4:]), dim=2)
 
         return quat2pos(full_quat, start_pos)
+
 
 def dualQ2pos(dualQ, start_pos):
     qr_dim = dualQ[..., :4].shape
@@ -194,9 +212,12 @@ def diff_pos_start2pos(true_preds, start_pos):
         true_preds = true_preds[:, None, :]
         start_pos = start_pos[:, None, :]
 
-    start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(-1, true_preds.shape[1], -1)
+    start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(
+        -1, true_preds.shape[1], -1
+    )
     result = start_pos + true_preds
     return result.reshape(result.shape[0], 8, 3)
+
 
 def convert(true_preds, start_pos, data_type):
     """
