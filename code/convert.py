@@ -1,8 +1,6 @@
-from timeit import repeat
 import torch
-import numpy as np
-from new_mujoco import fast_rotVecQuat
 import roma
+import time
 
 
 def eucl2pos(eucl_motion, start_pos):
@@ -21,9 +19,11 @@ def eucl2pos(eucl_motion, start_pos):
     """
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
+
+        print(eucl_motion.shape)
         out = torch.empty_like(start_pos)
         for batch in range(out.shape[0]):
-            # EINSUM
+            # EINSUM # bij,bkj->bik
             out[batch] = (
                 eucl_motion[batch, :9].reshape(3, 3) @ start_pos[batch].T
                 + torch.vstack([eucl_motion[batch, 9:]] * 8).T
@@ -56,12 +56,43 @@ def eucl2pos(eucl_motion, start_pos):
         return out
 
 
+def fast_rotVecQuat(v, q):
+    """
+    Input:
+        v: vector to be rotated
+            shape: (* x 8 x 3)
+        q: quaternion to rotate v
+            shape: (* x 4)
+    Output:
+        Rotated batch of vectors v by a batch quaternion q.
+    """
+    device = v.device
+
+    q_norm = torch.div(q.T, torch.norm(q, dim=-1)).T
+
+    # Swap columns for roma calculations (bi, cj, dk, a)
+    q_new1 = torch.index_select(q_norm, 1, torch.tensor([1, 2, 3, 0], device=device))
+
+    # start = time.time()
+    v_test = v.mT
+    # print("matT", time.time() - start)
+
+    # TODO einsum 10x slower
+    # start = time.time()
+    # v_test = torch.einsum("...ij->...ji", v)
+    # print("einsum", time.time() - start)
+
+    rot_mat = (roma.unitquat_to_rotmat(q_new1) @ v_test).mT.to(device)
+
+    return rot_mat
+
+
 def quat2pos(quat, start_pos):
     # print(quat.shape, start_pos.shape)
     # NN
     # (128 x 7), (128 x 8 x 3)
     # LSTM
-    # (128 x 20 x 7), (128 x 8 x 3)
+    # (128 x 20 x 7), (128 x 20 x 8 x 3)
 
     """
     Input:
@@ -81,23 +112,22 @@ def quat2pos(quat, start_pos):
 
         batch, vert_num, dim = start_pos.shape
 
-        out = torch.empty_like(start_pos).to(device)
+        out = torch.empty_like(start_pos, device=device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:, :4])
-        repeated_trans = quat[:, 4:][:, None, :].repeat(1, 8, 1)
+        repeated_trans = quat[:, 4:][:, None, :]
 
         out = rotated_start + repeated_trans
-
         return out
 
     # In case of LSTM
     else:
         batch, vert_num, dim = start_pos.shape
-        out = torch.empty((quat.shape[1], batch, vert_num, dim)).to(device)
+        out = torch.empty((quat.shape[1], batch, vert_num, dim), device=device)
 
         for frame in range(quat.shape[1]):
             rotated_start = fast_rotVecQuat(start_pos, quat[:, frame, :4])
-            repeated_trans = quat[:, frame, 4:][:, None, :].repeat(1, 8, 1)
+            repeated_trans = quat[:, frame, 4:][:, None, :]
             out[frame] = (rotated_start + repeated_trans).reshape(
                 (batch, vert_num, dim)
             )
@@ -116,8 +146,9 @@ def log_quat2pos(log_quat, start_pos):
     """
     Input:
         log_quat: Original predictions (log quaternion motion)
+            Shape:
         start_pos: Start position of simulation
-
+            Shape:
     Output:
         Converted log quaternion to current xyz position
 
@@ -175,15 +206,30 @@ def log_quat2pos(log_quat, start_pos):
 
 
 def dualQ2pos(dualQ, start_pos):
+    """
+    Input:
+        dualQ: Original predictions (Dual quaternion)
+            Shape (batch_size x * x 8)
+        start_pos: Start position of simulation
+            Shape (batch_size x * x 8 x 3)
+
+            (* is only present for lstm)
+
+    Output:
+        Converted Dual-quaternion to current position
+    """
+    device = dualQ.device
+
     qr_dim = dualQ[..., :4].shape
     qd_dim = dualQ[..., 4:].shape
     qr = dualQ[..., :4].flatten(0, -2)
     qd = dualQ[..., 4:].flatten(0, -2)
 
-    qr_roma = torch.index_select(qr, 1, torch.tensor([1, 2, 3, 0]))
+    swapped_ind = torch.tensor([1, 2, 3, 0], device=device)
+    qr_roma = torch.index_select(qr, 1, swapped_ind)
     conj_qr = roma.quat_conjugation(qr_roma)
 
-    qd_roma = torch.index_select(qd, 1, torch.tensor([1, 2, 3, 0]))
+    qd_roma = torch.index_select(qd, 1, swapped_ind)
     t = 2 * roma.quat_product(qd_roma, conj_qr)
 
     qr = qr.reshape(qr_dim)
@@ -232,6 +278,8 @@ def convert(true_preds, start_pos, data_type):
 
     """
     if data_type == "pos" or data_type == "pos_norm":
+        # print(true_preds.shape, start_pos.shape)
+        true_preds = true_preds.reshape(start_pos.shape)
         return true_preds
     elif data_type == "eucl_motion":
         return eucl2pos(true_preds, start_pos)

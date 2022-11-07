@@ -16,13 +16,13 @@ class fcnn(nn.Module):
     def __init__(self, n_data, config):
         super().__init__()
 
-        # Add first layes
+        # Add first layers
         self.layers = [
             nn.Linear(config["n_frames"] * n_data, config["hidden_sizes"][0])
         ]
 
         # Add consecuative layers with batch_norm / activation funct / dropout
-        # As defined in config
+        # as defined in config
         for i in range(len(config["hidden_sizes"])):
 
             if config["batch_norm"][i]:
@@ -72,8 +72,8 @@ class MyDataset(data.Dataset):
         self.target = []
         self.pos_target = []
         self.start_pos = []
-        self.trans = []
 
+        # Loop through all simulations
         for i in self.sims:
             with open(f"data/sim_{i}.pickle", "rb") as f:
                 data_all = pickle.load(f)["data"]
@@ -87,29 +87,31 @@ class MyDataset(data.Dataset):
                         self.start_pos.append(data_all["pos"][0])
                     else:
                         self.start_pos.append(data_all["start"])
+
                     train_end = frame + self.n_frames_perentry
+
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end + 1].flatten())
+
                     pos_data_vec = pos_data[train_end + 1].flatten()
                     self.pos_target.append(pos_data_vec.reshape(-1, 8, 3).squeeze())
 
+        # TODO CUDA torch.cuda.FloatTensor
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
         self.pos_target = torch.FloatTensor(np.asarray(self.pos_target))
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
 
     def __len__(self):
-        # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
+        # Number of data point we have
         return self.data.shape[0]
 
     def __getitem__(self, idx):
         # Return the idx-th data point of the dataset
-        # If we have multiple things to return (data point and label), we can return them as tuple
         data_point = self.data[idx]
         data_target = self.target[idx]
         data_start = self.start_pos[idx]
         data_pos_target = self.pos_target[idx]
-        # data_trans = self.trans[idx]
         return data_point, data_target, data_start, data_pos_target
 
 
@@ -118,7 +120,7 @@ def train_log(loss, epoch):
     Log the train loss to Weights and Biases
     """
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
-    print(f"Loss after " + f" examples: {loss:.3f}")
+    print(f"Loss : {loss:.3f}")
 
 
 def train_model(
@@ -131,20 +133,25 @@ def train_model(
 
     # Training loop
     for epoch in range(num_epochs):
+        epoch_time = time.time()
         loss_epoch = 0
         for data_inputs, data_labels, start_pos, pos_target in data_loader:
+            start = time.time()
 
             # Set data to current device
             data_inputs = data_inputs.to(device)
             data_labels = data_labels.to(device)
             start_pos = start_pos.to(device)
+            pos_target = pos_target.to(device)
 
             # Get predictions
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
 
             # Convert predictions to xyz-data
+            # conv_time = time.time()
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+            # print("conv_time", time.time() - conv_time)
 
             # Determine norm penalty for quaternion data
             if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
@@ -163,11 +170,14 @@ def train_model(
             loss_epoch += loss
 
             # Perform backpropagation
+            # back_time = time.time()
             optimizer.zero_grad()
             loss.backward()
+            # print("backpropagate", time.time() - back_time)
 
             # Update the parameters
             optimizer.step()
+            # print("total_time", time.time() - start)
 
         # Log and print epoch every 10 epochs
         if epoch % 10 == 0:
@@ -197,6 +207,7 @@ def train_model(
             )
             f.write("\n")
             f.close()
+        print("epoch_time", time.time() - epoch_time)
 
 
 def eval_model(model, data_loader, loss_module):
@@ -209,7 +220,10 @@ def eval_model(model, data_loader, loss_module):
         for data_inputs, data_labels, start_pos, pos_target in data_loader:
 
             # Set data to current device
-            data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
+            data_inputs = data_inputs.to(device)
+            data_labels = data_labels.to(device)
+            # start_pos = start_pos.to(device)
+            # pos_target = pos_target.to(device)
 
             # Get predictions
             preds = model(data_inputs)
