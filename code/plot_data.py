@@ -214,7 +214,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
         ax.set_xlabel('$X$')
         ax.set_ylabel('$Y$')
         ax.set_zlabel('$Z$')
-        ax.set_title(f"data {data_type} trained with {architecture}")
+        ax.set_title(f"{data_type} trained with {architecture}")
         ax.legend()
 
     # Interval : Delay between frames in milliseconds.

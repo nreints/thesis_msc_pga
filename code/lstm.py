@@ -221,7 +221,7 @@ if __name__ == "__main__":
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "dual_quat",
+        data_type = "eucl_motion",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
@@ -254,4 +254,4 @@ if __name__ == "__main__":
                 'data_dict': ndata_dict,
                 'model': model.state_dict()}
 
-    torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")
+    torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}_{config['learning_rate']}_{config['epochs']}.pickle")

@@ -115,7 +115,9 @@ def quat2pos(quat, start_pos):
         out = torch.empty_like(start_pos, device=device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:, :4])
+
         repeated_trans = quat[:, 4:][:, None, :]
+
 
         out = rotated_start + repeated_trans
         return out
@@ -205,6 +207,7 @@ def log_quat2pos(log_quat, start_pos):
         return quat2pos(full_quat, start_pos)
 
 
+
 def dualQ2pos(dualQ, start_pos):
     """
     Input:
@@ -220,22 +223,27 @@ def dualQ2pos(dualQ, start_pos):
     """
     device = dualQ.device
 
+
     qr_dim = dualQ[..., :4].shape
-    qd_dim = dualQ[..., 4:].shape
+
     qr = dualQ[..., :4].flatten(0, -2)
     qd = dualQ[..., 4:].flatten(0, -2)
+
 
     swapped_ind = torch.tensor([1, 2, 3, 0], device=device)
     qr_roma = torch.index_select(qr, 1, swapped_ind)
     conj_qr = roma.quat_conjugation(qr_roma)
 
     qd_roma = torch.index_select(qd, 1, swapped_ind)
+
     t = 2 * roma.quat_product(qd_roma, conj_qr)
 
     qr = qr.reshape(qr_dim)
-    t = t.reshape(qd_dim)
+    t = t.reshape(qr_dim)
 
+    # Concatenate and delete zeros column
     quaternion = torch.cat((qr, t[..., :-1]), dim=-1)
+
     converted_pos = quat2pos(quaternion, start_pos)
 
     return converted_pos
@@ -293,4 +301,4 @@ def convert(true_preds, start_pos, data_type):
     #     return diff_pos2pos(true_preds, start_pos)
     elif data_type == "pos_diff_start":
         return diff_pos_start2pos(true_preds, start_pos)
-    return True
+    raise Exception(f"{data_type} cannot be converted")
