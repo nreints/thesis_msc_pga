@@ -186,7 +186,8 @@ def generate_data(string, n_steps, visualize):
 
 def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
-        print("sim: ", sim_id)
+        if sim_id % 10 == 0:
+            print("sim: ", sim_id)
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
         # euler = f"0 0 0"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
