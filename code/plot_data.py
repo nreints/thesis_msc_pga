@@ -14,11 +14,13 @@ import math
 
 # from pyquaternion import Quaternion
 
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+
 
 def load_model(data_type, architecture):
     # Load model
 
-    model_dict = torch.load(f"models/{data_type}_{architecture}.pickle")
+    model_dict = torch.load(f"models/{data_type}_{architecture}.pickle", map_location=torch.device(device))
     config = model_dict['config']
     ndata_dict = model_dict['data_dict']
 
