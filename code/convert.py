@@ -20,38 +20,45 @@ def eucl2pos(eucl_motion, start_pos):
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
 
-        print(eucl_motion.shape)
-        out = torch.empty_like(start_pos)
-        for batch in range(out.shape[0]):
-            # EINSUM # bij,bkj->bik
-            out[batch] = (
-                eucl_motion[batch, :9].reshape(3, 3) @ start_pos[batch].T
-                + torch.vstack([eucl_motion[batch, 9:]] * 8).T
-            ).T
-        return out.reshape((out.shape[0], -1))
+        # TODO Werkt niet
+
+        rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
+        mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
+        # print(mult.shape)
+        # print(eucl_motion[:, 9:][:, None, :].flatten(start_dim=1).shape)
+        out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
+
+        # out = torch.empty_like(start_pos)
+        # for batch in range(out.shape[0]):
+        #     # EINSUM # bij,bkj->bik
+        #     out[batch] = (
+        #         eucl_motion[batch, :9].reshape(3, 3) @ start_pos[batch].reshape(8,3).T
+        #         + torch.vstack([eucl_motion[batch, 9:]] * 8).T
+        #     ).T.flatten()
+
+        return out
+
     # In case of LSTM
     else:
+        # print(eucl_motion.shape, start_pos.shape)
         out = torch.empty(
             (
                 eucl_motion.shape[0],
                 eucl_motion.shape[1],
-                start_pos.shape[-2],
                 start_pos.shape[-1],
             )
         )
+
+                # TODO TODO TODO Maak sneller
 
         n_frames = eucl_motion.shape[1]
         for batch in range(out.shape[0]):
             for frame in range(n_frames):
                 # Reshape first 9 elements in rotation matrix and multiply with start_pos
-                rotated_start = (
-                    eucl_motion[batch, frame, :9].reshape(3, 3) @ start_pos[batch].T
-                )
+                rotated_start = (eucl_motion[batch, frame, :9].reshape(3, 3) @ start_pos[batch].reshape(8,3).T).T
 
                 # Add translation to each rotated_start
-                out[batch, frame] = rotated_start.T + torch.vstack(
-                    [eucl_motion[batch, frame, 9:]] * 8
-                )
+                out[batch, frame] = (rotated_start + eucl_motion[batch, frame, 9:][None, :]).flatten()
 
         return out
 
@@ -74,15 +81,17 @@ def fast_rotVecQuat(v, q):
     q_new1 = torch.index_select(q_norm, 1, torch.tensor([1, 2, 3, 0], device=device))
 
     # start = time.time()
-    v_test = v.mT
+    vT = v.mT
     # print("matT", time.time() - start)
 
     # TODO einsum 10x slower
     # start = time.time()
     # v_test = torch.einsum("...ij->...ji", v)
     # print("einsum", time.time() - start)
-
-    rot_mat = (roma.unitquat_to_rotmat(q_new1) @ v_test).mT.to(device)
+    # print(roma.unitquat_to_rotmat(q_new1).shape)
+    # print(v.reshape(-1, 8,3).mT.shape)
+    # print("poep", torch.bmm(roma.unitquat_to_rotmat(q_new1), v.reshape(-1, 8,3).mT).mT.shape)
+    rot_mat = torch.bmm(roma.unitquat_to_rotmat(q_new1), v.reshape(-1, 8,3).mT).mT.to(device)
 
     return rot_mat
 
@@ -110,32 +119,34 @@ def quat2pos(quat, start_pos):
     # In case of fcnn
     if len(quat.shape) == 2:
 
-        batch, vert_num, dim = start_pos.shape
-
+        # batch, vert_num, dim = start_pos.shape
+        # print(start_pos.shape)
         out = torch.empty_like(start_pos, device=device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:, :4])
 
         repeated_trans = quat[:, 4:][:, None, :]
 
-
         out = rotated_start + repeated_trans
-        return out
+        return out.flatten(start_dim=1)
 
     # In case of LSTM
     else:
-        batch, vert_num, dim = start_pos.shape
-        out = torch.empty((quat.shape[1], batch, vert_num, dim), device=device)
+        vert_dim = start_pos.shape[-1]
+        batch = quat.shape[0]
+        n_frames = quat.shape[1]
 
-        for frame in range(quat.shape[1]):
+        out = torch.empty((n_frames, batch, vert_dim), device=device)
+
+        for frame in range(n_frames):
             rotated_start = fast_rotVecQuat(start_pos, quat[:, frame, :4])
             repeated_trans = quat[:, frame, 4:][:, None, :]
             out[frame] = (rotated_start + repeated_trans).reshape(
-                (batch, vert_num, dim)
+                (batch, vert_dim)
             )
 
         # Batch first
-        out = torch.permute(out, (1, 0, 2, 3))
+        out = torch.permute(out, (1, 0, 2))
         return out
 
 
@@ -261,16 +272,15 @@ def diff_pos_start2pos(true_preds, start_pos):
         Converted difference to current position
 
     """
-    start_pos = start_pos.reshape(start_pos.shape[0], 8, 3)
+    # start_pos = start_pos.reshape(start_pos.shape[0], 8, 3)
+
     if len(true_preds.shape) == 2:
         true_preds = true_preds[:, None, :]
+    if len(start_pos.shape) == 2:
         start_pos = start_pos[:, None, :]
 
-    start_pos = start_pos.reshape(-1, 1, true_preds.shape[2]).expand(
-        -1, true_preds.shape[1], -1
-    )
     result = start_pos + true_preds
-    return result.reshape(result.shape[0], 8, 3)
+    return result.squeeze()
 
 
 def convert(true_preds, start_pos, data_type):
@@ -285,9 +295,10 @@ def convert(true_preds, start_pos, data_type):
         Converted true predictions.
 
     """
+    # print("prediction", true_preds.shape)
+    # print("start_pos", start_pos.shape)
+    # exit()
     if data_type == "pos" or data_type == "pos_norm":
-        # print(true_preds.shape, start_pos.shape)
-        true_preds = true_preds.reshape(start_pos.shape)
         return true_preds
     elif data_type == "eucl_motion":
         return eucl2pos(true_preds, start_pos)

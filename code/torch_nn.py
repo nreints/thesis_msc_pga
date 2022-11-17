@@ -84,17 +84,16 @@ class MyDataset(data.Dataset):
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     # Always save the start_position for converting
                     if self.data_type == "pos_diff_start":
-                        self.start_pos.append(data_all["pos"][0])
+                        self.start_pos.append(data_all["pos"][0].flatten())
                     else:
-                        self.start_pos.append(data_all["start"])
+                        self.start_pos.append(data_all["start"].flatten())
 
                     train_end = frame + self.n_frames_perentry
 
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end + 1].flatten())
 
-                    pos_data_vec = pos_data[train_end + 1].flatten()
-                    self.pos_target.append(pos_data_vec.reshape(-1, 8, 3).squeeze())
+                    self.pos_target.append(pos_data[train_end + 1].flatten())
 
         # TODO CUDA torch.cuda.FloatTensor
         self.data = torch.FloatTensor(np.asarray(self.data))
@@ -143,10 +142,14 @@ def train_model(
             data_labels = data_labels.to(device)
             start_pos = start_pos.to(device)
             pos_target = pos_target.to(device)
+            # print("here", pos_target.shape)
 
             # Get predictions
             preds = model(data_inputs)
-            preds = preds.squeeze(dim=1)
+
+            # print("inputs", data_inputs.shape)
+            # print("labels", data_labels.shape)
+            # print("pos_target", pos_target.shape)
 
             # Convert predictions to xyz-data
             # conv_time = time.time()
@@ -185,7 +188,7 @@ def train_model(
             train_log(loss_epoch / len(data_loader), epoch)
 
             # Evaluate model
-            true_loss, convert_loss = eval_model(model, test_loader, loss_module)
+            true_loss, convert_loss = eval_model(model, test_loader, loss_module, config)
 
             # Set model to train mode
             model.train()
@@ -210,7 +213,7 @@ def train_model(
         print("epoch_time", time.time() - epoch_time)
 
 
-def eval_model(model, data_loader, loss_module):
+def eval_model(model, data_loader, loss_module, config):
 
     model.eval()  # Set model to eval mode
 
@@ -229,11 +232,14 @@ def eval_model(model, data_loader, loss_module):
             preds = model(data_inputs)
             preds = preds.squeeze(dim=1)
 
+            # if config['data_type'] == 'pos':
+            #     preds = preds.reshape((preds.shape[0], 8, 3))
+            #     data_labels = data_labels.reshape((data_labels.shape[0], 8, 3))
+
             # Convert predictions to xyz-data
             alt_preds = convert(
                 preds.detach().cpu(), start_pos, data_loader.dataset.data_type
             )
-
             # Determine norm penalty for quaternion data
             if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
                 norm_penalty = (
@@ -284,7 +290,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
         )
 
         # and test its final performance
-        eval_model(model, test_loader, criterion)
+        eval_model(model, test_loader, criterion, config)
 
     return model
 
@@ -333,12 +339,12 @@ if __name__ == "__main__":
     # Set config
     config = dict(
         learning_rate=0.005,
-        epochs=100,
+        epochs=5,
         batch_size=128,
         loss_type="L1",
         loss_reduction_type="mean",
         optimizer="Adam",
-        data_type="quat",
+        data_type="pos_diff_start",
         architecture="fcnn",
         train_sims=list(train_sims),
         test_sims=list(test_sims),

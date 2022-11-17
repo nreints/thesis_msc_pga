@@ -66,9 +66,9 @@ class MyDataset(data.Dataset):
                 data = data_all[self.data_type]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     if self.data_type == "pos_diff_start":
-                        self.start_pos.append(data_all["pos"][0])
+                        self.start_pos.append(data_all["pos"][0].flatten())
                     else:
-                        self.start_pos.append(data_all["start"])
+                        self.start_pos.append(data_all["start"].flatten())
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].reshape(-1, self.n_datap_perframe))
                     self.target.append(data[frame+1:train_end+1].reshape(-1, self.n_datap_perframe))
@@ -77,7 +77,7 @@ class MyDataset(data.Dataset):
 
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
-        self.target_pos = torch.FloatTensor(np.asarray(self.target_pos))
+        self.target_pos = torch.FloatTensor(np.asarray(self.target_pos)).flatten(start_dim=2)
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
 
     def __len__(self):
@@ -105,16 +105,26 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
-        for data_inputs, data_labels, data_labels_pos, start_pos in data_loader:
+        for data_inputs, data_labels, pos_target, start_pos in data_loader:
             data_inputs = data_inputs.to(device)
             data_labels = data_labels.to(device)
-            data_labels_pos = data_labels_pos.to(device)
+            pos_target = pos_target.to(device)
             start_pos = start_pos.to(device)
 
             output, _ = model(data_inputs)
+
+            # if config['data_type'] == 'pos':
+            #     # print(output.shape, data_labels_pos.shape)
+            #     output = output.reshape((output.shape[0], output.shape[1], 8, 3))
+
+
+            # print("inputs", data_inputs.shape)
+            # print("labels", data_labels.shape)
+            # print("pos_target", pos_target.shape)
+
             alt_preds = convert(output, start_pos, data_loader.dataset.data_type)
 
-            loss = loss_module(alt_preds, data_labels_pos)
+            loss = loss_module(alt_preds, pos_target)
 
             optimizer.zero_grad()
 
@@ -130,7 +140,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
         if epoch % 10 == 0:
             train_log(loss_epoch/len(data_loader), epoch)
 
-            convert_loss = eval_model(model, test_loader, loss_module)
+            convert_loss = eval_model(model, test_loader, loss_module, config)
             model.train()
             print(epoch, round(loss_epoch.item()/len(data_loader), 10), '\t', round(convert_loss, 10))
 
@@ -140,7 +150,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # f.close()
 
 
-def eval_model(model, data_loader, loss_module):
+def eval_model(model, data_loader, loss_module, config):
     model.eval() # Set model to eval mode
 
     with torch.no_grad(): # Deactivate gradients for the following code
@@ -153,6 +163,9 @@ def eval_model(model, data_loader, loss_module):
 
             preds, _ = model(data_inputs)
             preds = preds.squeeze(dim=1)
+
+            # if config['data_type'] == 'pos':
+            #     preds = preds.reshape((preds.shape[0], preds.shape[1], 8, 3))
 
             alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
@@ -179,7 +192,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
       train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config)
 
       # and test its final performance
-      eval_model(model, test_loader, criterion)
+      eval_model(model, test_loader, criterion, config)
 
     return model
 
@@ -215,13 +228,13 @@ if __name__ == "__main__":
 
     config = dict(
         learning_rate = 0.005,
-        epochs = 50,
+        epochs = 5,
         batch_size = 128,
         dropout = 0,
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "eucl_motion",
+        data_type = "pos_diff_start",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
@@ -247,6 +260,7 @@ if __name__ == "__main__":
                     "pos_diff_start": 24,
                 }
     start_time = time.time()
+    print(config["data_type"])
     model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
     print("It took ", time.time() - start_time, " seconds.")
 
@@ -254,4 +268,4 @@ if __name__ == "__main__":
                 'data_dict': ndata_dict,
                 'model': model.state_dict()}
 
-    torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}_{config['learning_rate']}_{config['epochs']}.pickle")
+    torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")

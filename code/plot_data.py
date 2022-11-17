@@ -43,29 +43,19 @@ def get_random_sim_data(data_type, nr_frames):
     with open(f'data/sim_{i}.pickle', 'rb') as f:
         file = pickle.load(f)
         if data_type == "pos_diff_start":
-            start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32)
+            start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
         else:
-            start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32)
+            start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
-        data_tensor = torch.tensor(file["data"][data_type], dtype=torch.float32)
-
-        # Get data as data_type
-        original_data = data_tensor.flatten(start_dim=1)
+        original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
 
         # Convert to pos data for plotting
-        # print(data_tensor.shape)
-        plot_data = convert(data_tensor.flatten(start_dim=1), start_pos, data_type).reshape(nr_frames, 8, 3)
+        plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
         plot_data2 = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
-        # print(plot_data2[:10])
-        # exit()
-        # print("--- PLOT ----")
-        # print(start_pos)
-        # print(original_data[0])
-        # print("1\n", plot_data)
-        # print("2\n", plot_data2)
 
+    print(plot_data.shape)
     return plot_data, original_data, plot_data2, start_pos[0]
 
 def get_prediction_fcnn(original_data, data_type, xyz_data, start, nr_input_frames):
@@ -95,17 +85,16 @@ def get_prediction_fcnn(original_data, data_type, xyz_data, start, nr_input_fram
 def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, out_is_in=False):
     # Collect prediction of model given simulation
     # Result should be xyz data for plot
-    frames, vert_num, dim = xyz_data.shape
+    frames, vert, dim = xyz_data.shape
 
     # Because LSTM predicts 1 more frame
-    result = torch.zeros((frames+1, vert_num, dim))
+    result = torch.zeros((frames+1, vert, dim))
 
 
     # Get first position
     start_pos = start[None, :]
     hidden = torch.zeros(1, 1, 96)
     cell = torch.zeros(1, 1, 96) #TODO
-    # print(hidden.shape)
 
     for frame_id in range(0, xyz_data.shape[0], nr_frames):
         # Get 20 frames shape: (1, 480)
@@ -113,13 +102,16 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
             input_data = original_data[frame_id : frame_id + nr_frames]
             input_data = input_data.unsqueeze(dim=0)
 
+        # print("in", input_data.shape)
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
             prediction, (hidden, cell) = model(input_data, (hidden, cell))
+            # print("pred", prediction.shape)
             if out_is_in:
                 input_data = prediction
 
             out_shape = result[frame_id + 1 : frame_id + 21].shape
+            # print("out", convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :].shape)
             result[frame_id + 1 : frame_id + nr_frames + 1] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :]
 
     return result
@@ -143,6 +135,7 @@ def distance_check(converted, predicted, check):
     assert math.isclose(distance_conv, distance_predicted, abs_tol=0.001)
 
 def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
+    print("data", data.shape, result.shape, real_pos_data.shape)
     data = data
     result = result
 
@@ -225,7 +218,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
 
 if __name__ == "__main__":
     nr_frames = 225 # See new_mujoco.py
-    data_type = "dual_quat"
+    data_type = "eucl_motion"
     architecture = "lstm"
 
     model, config = load_model(data_type, architecture)
