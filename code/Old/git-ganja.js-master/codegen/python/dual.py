@@ -17,7 +17,7 @@ class DUAL:
         self._base = ["1", "e0"]
         if (value != 0):
             self.mvec[index] = value
-            
+
     @classmethod
     def fromarray(cls, array):
         """Initiate a new DUAL from an array-like object.

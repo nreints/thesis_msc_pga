@@ -41,24 +41,40 @@ def eucl2pos(eucl_motion, start_pos):
     # In case of LSTM
     else:
         # print(eucl_motion.shape, start_pos.shape)
-        out = torch.empty(
-            (
-                eucl_motion.shape[0],
-                eucl_motion.shape[1],
-                start_pos.shape[-1],
-            )
-        )
+        # out2 = torch.empty(
+        #     (
+        #         eucl_motion.shape[0],
+        #         eucl_motion.shape[1],
+        #         start_pos.shape[-1],
+        #     )
+        # )
 
-                # TODO TODO TODO Maak sneller
+        # TODO TODO TODO Maak sneller
+        rotations = eucl_motion[..., :9].reshape(eucl_motion.shape[0], eucl_motion.shape[1], 3, 3)
+        # print(rotations.shape)
+        flat_rotations = rotations.flatten(end_dim=1)
+        # print(flat_rotations.shape)
+        # print(start_pos[:, None, :].repeat(1, eucl_motion.shape[1],1).flatten(end_dim=1).shape)
+        correct_start_pos = start_pos[:, None, :].repeat(1, eucl_motion.shape[1],1).flatten(end_dim=1)
+        mult = torch.bmm(flat_rotations, correct_start_pos.reshape(-1, 8, 3).mT).mT
+        # print(mult.shape)
 
-        n_frames = eucl_motion.shape[1]
-        for batch in range(out.shape[0]):
-            for frame in range(n_frames):
-                # Reshape first 9 elements in rotation matrix and multiply with start_pos
-                rotated_start = (eucl_motion[batch, frame, :9].reshape(3, 3) @ start_pos[batch].reshape(8,3).T).T
+        # print(eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :].shape)
+        out = (mult + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]).flatten(start_dim=1)
+        # print(out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1]).shape)
+        out = out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1])
 
-                # Add translation to each rotated_start
-                out[batch, frame] = (rotated_start + eucl_motion[batch, frame, 9:][None, :]).flatten()
+
+        # n_frames = eucl_motion.shape[1]
+        # for batch in range(out2.shape[0]):
+        #     for frame in range(n_frames):
+        #         # Reshape first 9 elements in rotation matrix and multiply with start_pos
+        #         rotated_start = (eucl_motion[batch, frame, :9].reshape(3, 3) @ start_pos[batch].reshape(8,3).T).T
+
+        #         # Add translation to each rotated_start
+        #         out2[batch, frame] = (rotated_start + eucl_motion[batch, frame, 9:][None, :]).flatten()
+
+        # print(out - out2)
 
         return out
 
@@ -258,6 +274,36 @@ def dualQ2pos(dualQ, start_pos):
     converted_pos = quat2pos(quaternion, start_pos)
 
     return converted_pos
+
+
+def motor2pos(motor, start_pos):
+    """
+    Input bivector (6 numbers) returns rotor (=exp of bivector) (8 numbers)
+    (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
+    """
+    device = motor.device
+    l = motor[3] * motor[3] + motor[4] * motor[4] + motor[5] * motor[5]
+    if l == 0:
+        dualQ = torch.tensor([1, motor[0], motor[1], motor[2], 0, 0, 0, 0], device=device)
+
+    else:
+        m = motor[0] * motor[5] + motor[1] * motor[4] + motor[2] * motor[3]
+        a = torch.sqrt(l)
+        c = torch.cos(a)
+        s = torch.sin(a) / a
+        t = m / l * (c - s)
+        dualQ = torch.array([
+                        c,
+                        s * motor[0] + t * motor[5],
+                        s * motor[1] + t * motor[4],
+                        s * motor[2] + t * motor[3],
+                        s * motor[3],
+                        s * motor[4],
+                        s * motor[5],
+                        m * s
+                    ], device=device)
+
+    return dualQ2pos(dualQ, start_pos)
 
 
 def diff_pos_start2pos(true_preds, start_pos):

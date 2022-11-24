@@ -234,7 +234,7 @@ if __name__ == "__main__":
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "pos_diff_start",
+        data_type = "eucl_motion",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),

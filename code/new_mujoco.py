@@ -74,22 +74,81 @@ def get_dualQ(quat, translation):
 
     t = np.hstack((np.array([0]), translation))
 
-    # print("t*q", t * quat)
-    # print(t)
-    # print(qr)
     if qr[0] == 1 & (qr[1] == qr[2] == qr[3] == 0):
-        # print("poep")
         qd = t
     else:
         qd = (0.5 * Quaternion(t) * Quaternion(quat)).elements
-        # print("-------")
-        # print(t)
-        # print(qr)
-        # print(qd)
 
     dual = np.append(qr, qd)
     return dual
 
+
+# def normalize(x):
+#     """
+#     Normalize an even element X on the basis [1,e01,e02,e03,e12,e31,e23,e0123]
+#     """
+#     a = 1 / (x[0] * x[0] + x[4] * x[4] + x[5] * x[5] + x[6] * x[6])**0.5
+#     b = (x[7] * x[0] - (x[1] * x[6] + x[2] * x[5] + x[3] * x[4])) * a * a * a
+#     return np.array([
+#                     a*x[0],
+#                     a*x[1]+b*x[6],
+#                     a*x[2]+b*x[5],
+#                     a*x[3]+b*x[4],
+#                     a*x[4],
+#                     a*x[5],
+#                     a*x[6],
+#                     a*x[7]-b*x[0]
+#                 ])
+
+# def square_root(r):
+#     """
+#     Square root of a rotor R
+#     """
+#     return normalize(1 + r)
+
+def exp_biv(b):
+    """
+    Input bivector (6 numbers) returns rotor (=exp of bivector) (8 numbers)
+    (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
+    """
+    l = b[3] * b[3] + b[4] * b[4] + b[5] * b[5]
+    if l == 0:
+        return np.array([1, b[0], b[1], b[2], 0, 0, 0, 0])
+
+    m = b[0] * b[5] + b[1] * b[4] + b[2] * b[3]
+    a = np.sqrt(l)
+    c = np.cos(a)
+    s = np.sin(a) / a
+    t = m / l * (c - s)
+    return np.array([
+                    c,
+                    s * b[0] + t * b[5],
+                    s * b[1] + t * b[4],
+                    s * b[2] + t * b[3],
+                    s * b[3], s * b[4],
+                    s * b[5],
+                    m * s
+                ])
+
+
+def logDual(r):
+    """
+    Input rotor (8 numbers) returns bivector (=log of rotor) (6 numbers)
+    (14 mul, 5 add, 1 div, 1 acos, 1 sqrt)
+    """
+    if r[0] == 1:
+        return np.array([r[1], r[2], r[3], 0, 0, 0])
+    a = 1 / (1 - r[0] * r[0])
+    b = np.arccos(r[0]) * np.sqrt(a)
+    c = a * r[7] * (1 - r[0] * b)
+    return np.array([
+                    c * r[6] + b * r[1],
+                    c * r[5] + b * r[2],
+                    c * r[4] + b * r[3],
+                    b * r[4],
+                    b * r[5],
+                    b * r[6]
+                ])
 
 def create_empty_dataset(local_start):
     """
@@ -106,6 +165,7 @@ def create_empty_dataset(local_start):
         "pos_diff_start": np.empty((n_steps // 10, 8, 3)),
         "pos_norm": np.empty((n_steps // 10, 8, 3)),
         "trans": np.empty((n_steps // 10, 3)),
+        "log_dualQ": np.empty((n_steps // 10, 6))
     }
 
 
@@ -141,30 +201,48 @@ def generate_data(string, n_steps, visualize):
             dataset["pos_diff_start"][i] = np.zeros((8, 3))
 
         if i % 10 == 0:
+            xpos = sim.data.body_xpos[geom_id]
+
             # Collect position data
             dataset["pos"][i // 10] = get_vert_coords(sim, geom_id, xyz_local).T
 
             # Collect euclidean motion data
             dataset["eucl_motion"][i // 10] = np.append(
-                get_mat(sim, geom_id), sim.data.body_xpos[geom_id]
+                get_mat(sim, geom_id), xpos
             )
 
-            # print("trans", sim.data.body_xpos[geom_id])
+            quaternion = get_quat(sim, geom_id)
+
+            # print("trans", xpos)
             # Collect quaternion data
             dataset["quat"][i // 10] = np.append(
-                get_quat(sim, geom_id), sim.data.body_xpos[geom_id]
+                quaternion, xpos
             )
 
             # Collect Log Quaternion data
             dataset["log_quat"][i // 10] = np.append(
-                calculate_log_quat(get_quat(sim, geom_id)), sim.data.body_xpos[geom_id]
+                calculate_log_quat(quaternion), xpos
+            )
+
+            dualQuaternion = get_dualQ(
+                quaternion, xpos
             )
 
             # Collect Dual-Quaternion data
-            dataset["dual_quat"][i // 10] = get_dualQ(
-                get_quat(sim, geom_id), sim.data.body_xpos[geom_id]
-            )
-            dataset["trans"][i // 10] = sim.data.body_xpos[geom_id]
+            dataset["dual_quat"][i // 10] = dualQuaternion
+
+            # Collect exp_dualQ data
+            dataset["log_dualQ"][i//10] = logDual(dualQuaternion)
+
+
+            # Should be the same??
+            # new_DQ = torch.tensor(exp_biv(logDual(dualQuaternion)))
+            # converted_pos = convert(new_DQ[None, :], torch.tensor(dataset["pos"][0][None, :]), "dual_quat").reshape(8,3)
+            # print(dataset["pos"][i])
+            # print(converted_pos)
+
+
+            dataset["trans"][i // 10] = xpos
 
             if i != 0:
                 dataset["pos_diff"][i // 10] = (
@@ -187,7 +265,7 @@ def generate_data(string, n_steps, visualize):
 def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
         if sim_id % 10 == 0:
-            print("sim: ", sim_id)
+            print(f"sim: {sim_id}/{num_sims}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
         # euler = f"0 0 0"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
