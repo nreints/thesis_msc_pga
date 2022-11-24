@@ -17,6 +17,7 @@ def eucl2pos(eucl_motion, start_pos):
     Output:
         Converted eucledian motion to current xyz position
     """
+
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
 
@@ -40,7 +41,25 @@ def eucl2pos(eucl_motion, start_pos):
 
     # In case of LSTM
     else:
-        # print(eucl_motion.shape, start_pos.shape)
+        print(eucl_motion.shape, start_pos.shape)
+
+
+        # TODO TODO TODO Maak sneller
+        rotations = eucl_motion[..., :9].reshape(eucl_motion.shape[0], eucl_motion.shape[1], 3, 3)
+        flat_rotations = rotations.flatten(end_dim=1)
+        print(flat_rotations.shape)
+        print(start_pos[:, None, :].shape)
+
+        #TODO TODO FIX in plot_data
+        if len(start_pos.shape) != 3:
+            start_pos = start_pos[:, None, :]
+        correct_start_pos = start_pos.repeat(1, eucl_motion.shape[1], 1).flatten(end_dim=1)
+        mult = torch.bmm(flat_rotations, correct_start_pos.reshape(-1, 8, 3).mT).mT
+
+        out = (mult + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]).flatten(start_dim=1)
+        out = out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1])
+
+        # Code above 24x as fast
         # out2 = torch.empty(
         #     (
         #         eucl_motion.shape[0],
@@ -48,23 +67,6 @@ def eucl2pos(eucl_motion, start_pos):
         #         start_pos.shape[-1],
         #     )
         # )
-
-        # TODO TODO TODO Maak sneller
-        rotations = eucl_motion[..., :9].reshape(eucl_motion.shape[0], eucl_motion.shape[1], 3, 3)
-        # print(rotations.shape)
-        flat_rotations = rotations.flatten(end_dim=1)
-        # print(flat_rotations.shape)
-        # print(start_pos[:, None, :].repeat(1, eucl_motion.shape[1],1).flatten(end_dim=1).shape)
-        correct_start_pos = start_pos[:, None, :].repeat(1, eucl_motion.shape[1],1).flatten(end_dim=1)
-        mult = torch.bmm(flat_rotations, correct_start_pos.reshape(-1, 8, 3).mT).mT
-        # print(mult.shape)
-
-        # print(eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :].shape)
-        out = (mult + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]).flatten(start_dim=1)
-        # print(out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1]).shape)
-        out = out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1])
-
-
         # n_frames = eucl_motion.shape[1]
         # for batch in range(out2.shape[0]):
         #     for frame in range(n_frames):

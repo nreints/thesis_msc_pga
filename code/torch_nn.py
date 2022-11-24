@@ -180,7 +180,7 @@ def train_model(
 
             # Update the parameters
             optimizer.step()
-            # print("total_time", time.time() - start)
+            print("total_time", time.time() - start)
 
         # Log and print epoch every 10 epochs
         if epoch % 10 == 0:

@@ -105,7 +105,11 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
+        epoch_time = time.time()
+
         for data_inputs, data_labels, pos_target, start_pos in data_loader:
+            # start = time.time()
+
             data_inputs = data_inputs.to(device)
             data_labels = data_labels.to(device)
             pos_target = pos_target.to(device)
@@ -136,6 +140,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             loss_epoch += loss
 
+            # print("total_time", time.time() - start)
 
         if epoch % 10 == 0:
             train_log(loss_epoch/len(data_loader), epoch)
@@ -148,6 +153,8 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             # f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
             # f.write("\n")
             # f.close()
+        print("epoch_time", time.time() - epoch_time)
+
 
 
 def eval_model(model, data_loader, loss_module, config):
