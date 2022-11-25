@@ -19,6 +19,7 @@ def log(r):
                     b * r[6]
                 )
 
+
 def exp(b):
     """
     Input bivector (6 numbers) returns rotor (=exp of bivector) (8 numbers)
@@ -38,7 +39,8 @@ def exp(b):
                     s * b[0] + t * b[5],
                     s * b[1] + t * b[4],
                     s * b[2] + t * b[3],
-                    s * b[3], s * b[4],
+                    s * b[3],
+                    s * b[4],
                     s * b[5],
                     m * s
                 )

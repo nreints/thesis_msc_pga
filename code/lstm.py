@@ -29,13 +29,12 @@ class LSTM(nn.Module):
 
         batch_size, _, _ = x.shape
         if hidden_cell == None:
-            hidden_state = torch.zeros(self.n_layers, batch_size, self.hidden_size)
-            cell_state = torch.zeros(self.n_layers, batch_size, self.hidden_size)
+            hidden_state = torch.zeros(self.n_layers, batch_size, self.hidden_size, device=device)
+            cell_state = torch.zeros(self.n_layers, batch_size, self.hidden_size, device=device)
         else:
             hidden_state, cell_state = hidden_cell
         out, h = self.lstm(x, (hidden_state, cell_state))
         return self.layers(out), h
-
 
 
 class MyDataset(data.Dataset):
@@ -241,7 +240,7 @@ if __name__ == "__main__":
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "eucl_motion",
+        data_type = "quat",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),

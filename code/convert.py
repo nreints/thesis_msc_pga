@@ -41,14 +41,11 @@ def eucl2pos(eucl_motion, start_pos):
 
     # In case of LSTM
     else:
-        print(eucl_motion.shape, start_pos.shape)
-
 
         # TODO TODO TODO Maak sneller
         rotations = eucl_motion[..., :9].reshape(eucl_motion.shape[0], eucl_motion.shape[1], 3, 3)
         flat_rotations = rotations.flatten(end_dim=1)
-        print(flat_rotations.shape)
-        print(start_pos[:, None, :].shape)
+
 
         #TODO TODO FIX in plot_data
         if len(start_pos.shape) != 3:
@@ -66,7 +63,7 @@ def eucl2pos(eucl_motion, start_pos):
         #         eucl_motion.shape[1],
         #         start_pos.shape[-1],
         #     )
-        # )
+        # , device=eucl_motion.device)
         # n_frames = eucl_motion.shape[1]
         # for batch in range(out2.shape[0]):
         #     for frame in range(n_frames):
@@ -85,7 +82,7 @@ def fast_rotVecQuat(v, q):
     """
     Input:
         v: vector to be rotated
-            shape: (* x 8 x 3)
+            shape: (* x 24)
         q: quaternion to rotate v
             shape: (* x 4)
     Output:
@@ -150,21 +147,39 @@ def quat2pos(quat, start_pos):
 
     # In case of LSTM
     else:
-        vert_dim = start_pos.shape[-1]
-        batch = quat.shape[0]
-        n_frames = quat.shape[1]
+        quat_flat = quat.flatten(end_dim=1)
+        if len(start_pos.shape) != 3:
+            start_pos = start_pos[:, None, :]
+        correct_start_pos = start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1)
+        # Rotate start by quaternion
+        rotated_start = fast_rotVecQuat(correct_start_pos, quat_flat[:, :4])
 
-        out = torch.empty((n_frames, batch, vert_dim), device=device)
+        # Add Translation
+        out = (rotated_start + quat_flat[:, 4:][:, None, :]).flatten(start_dim=1)
+        # Fix shape
+        out = out.reshape(quat.shape[0], quat.shape[1], out.shape[-1])
 
-        for frame in range(n_frames):
-            rotated_start = fast_rotVecQuat(start_pos, quat[:, frame, :4])
-            repeated_trans = quat[:, frame, 4:][:, None, :]
-            out[frame] = (rotated_start + repeated_trans).reshape(
-                (batch, vert_dim)
-            )
+        ######################### OLD WAY
+        # vert_dim = start_pos.shape[-1]
+        # batch = quat.shape[0]
+        # n_frames = quat.shape[1]
 
-        # Batch first
-        out = torch.permute(out, (1, 0, 2))
+        # out2 = torch.empty((n_frames, batch, vert_dim), device=device)
+
+        # for frame in range(n_frames):
+        #     rotated_start1 = fast_rotVecQuat(start_pos, quat[:, frame, :4])
+        #     repeated_trans = quat[:, frame, 4:][:, None, :]
+        #     out2[frame] = (rotated_start1 + repeated_trans).reshape(
+        #         (batch, vert_dim)
+        #     )
+
+
+        # # # Batch first
+        # out2 = torch.permute(out2, (1, 0, 2))
+
+        # # print(out.shape, out2.shape)
+        # print(out-out2)
+        # exit()
         return out
 
 
