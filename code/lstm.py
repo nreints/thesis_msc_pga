@@ -234,13 +234,13 @@ if __name__ == "__main__":
 
     config = dict(
         learning_rate = 0.005,
-        epochs = 5,
+        epochs = 30,
         batch_size = 128,
         dropout = 0,
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "quat",
+        data_type = "log_dualQ",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),
@@ -264,6 +264,7 @@ if __name__ == "__main__":
                     "dual_quat": 8,
                     "pos_diff": 24,
                     "pos_diff_start": 24,
+                    "log_dualQ": 6
                 }
     start_time = time.time()
     print(config["data_type"])

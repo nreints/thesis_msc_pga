@@ -293,12 +293,18 @@ def dualQ2pos(dualQ, start_pos):
 
     return converted_pos
 
-def log_dualQ2pos(logDualQ, start_pos):
+def log_dualQ2pos(logDualQ_in, start_pos):
     """
     Input bivector (6 numbers) returns rotor (=exp of bivector) (8 numbers)
     (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
     """
+    # print(logDualQ.flatten(start_dim=0, end_dim=-2).shape)
+    out_shape = list(logDualQ_in.shape)
+    out_shape[-1] = 8
 
+    # 128, 6
+    # 128, 30, 6
+    logDualQ = logDualQ_in.flatten(start_dim=0, end_dim=-2)
     l = logDualQ[:, 3] * logDualQ[:, 3] + logDualQ[:, 4] * logDualQ[:, 4] + logDualQ[:, 5] * logDualQ[:, 5]
     mask = (l == 0)[:, None]
     ones = torch.ones_like(l)
@@ -320,7 +326,9 @@ def log_dualQ2pos(logDualQ, start_pos):
                         -s * logDualQ[:, 2] - t * logDualQ[:, 3]
                     ]).T
     dualQ = mask * alternative + (~mask) * dualQ
-    return dualQ2pos(dualQ, start_pos)
+    # 128, 8
+    # 128, 30, 8
+    return dualQ2pos(dualQ.reshape(out_shape), start_pos)
 
 
 def diff_pos_start2pos(true_preds, start_pos):

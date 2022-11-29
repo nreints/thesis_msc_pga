@@ -338,8 +338,8 @@ if __name__ == "__main__":
 
     # Set config
     config = dict(
-        learning_rate=0.005,
-        epochs=5,
+        learning_rate=0.01,
+        epochs=50,
         batch_size=128,
         loss_type="L1",
         loss_reduction_type="mean",
@@ -375,7 +375,7 @@ if __name__ == "__main__":
 
     start_time = time.time()
     model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
-    print("It took ", time.time() - start_time, " seconds.")
+    print("It took", time.time() - start_time, "seconds.")
 
     # Save model
     model_dict = {
