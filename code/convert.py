@@ -150,6 +150,7 @@ def quat2pos(quat, start_pos):
         quat_flat = quat.flatten(end_dim=1)
         if len(start_pos.shape) != 3:
             start_pos = start_pos[:, None, :]
+
         correct_start_pos = start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1)
         # Rotate start by quaternion
         rotated_start = fast_rotVecQuat(correct_start_pos, quat_flat[:, :4])
@@ -159,7 +160,7 @@ def quat2pos(quat, start_pos):
         # Fix shape
         out = out.reshape(quat.shape[0], quat.shape[1], out.shape[-1])
 
-        ######################### OLD WAY
+        ######################### OLD WAY 2x slower
         # vert_dim = start_pos.shape[-1]
         # batch = quat.shape[0]
         # n_frames = quat.shape[1]
@@ -292,34 +293,33 @@ def dualQ2pos(dualQ, start_pos):
 
     return converted_pos
 
-
-def motor2pos(motor, start_pos):
+def log_dualQ2pos(logDualQ, start_pos):
     """
     Input bivector (6 numbers) returns rotor (=exp of bivector) (8 numbers)
     (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
     """
-    device = motor.device
-    l = motor[3] * motor[3] + motor[4] * motor[4] + motor[5] * motor[5]
-    if l == 0:
-        dualQ = torch.tensor([1, motor[0], motor[1], motor[2], 0, 0, 0, 0], device=device)
 
-    else:
-        m = motor[0] * motor[5] + motor[1] * motor[4] + motor[2] * motor[3]
-        a = torch.sqrt(l)
-        c = torch.cos(a)
-        s = torch.sin(a) / a
-        t = m / l * (c - s)
-        dualQ = torch.array([
+    l = logDualQ[:, 3] * logDualQ[:, 3] + logDualQ[:, 4] * logDualQ[:, 4] + logDualQ[:, 5] * logDualQ[:, 5]
+    mask = (l == 0)[:, None]
+    ones = torch.ones_like(l)
+    zeros = torch.zeros_like(l)
+    alternative = torch.stack([ones, zeros, zeros, zeros, zeros, -logDualQ[:, 0], -logDualQ[:, 1], -logDualQ[:, 2]]).T
+    m = logDualQ[:, 0] * logDualQ[:, 5] + logDualQ[:, 1] * logDualQ[:, 4] + logDualQ[:, 2] * logDualQ[:, 3]
+    a = torch.sqrt(l)
+    c = torch.cos(a)
+    s = torch.sin(a) / a
+    t = m / l * (c - s)
+    dualQ = torch.stack([
                         c,
-                        s * motor[0] + t * motor[5],
-                        s * motor[1] + t * motor[4],
-                        s * motor[2] + t * motor[3],
-                        s * motor[3],
-                        s * motor[4],
-                        s * motor[5],
-                        m * s
-                    ], device=device)
-
+                        s * logDualQ[:, 5],
+                        s * logDualQ[:, 4],
+                        s * logDualQ[:, 3],
+                        m * s,
+                        -s * logDualQ[:, 0] - t * logDualQ[:, 5],
+                        -s * logDualQ[:, 1] - t * logDualQ[:, 4],
+                        -s * logDualQ[:, 2] - t * logDualQ[:, 3]
+                    ]).T
+    dualQ = mask * alternative + (~mask) * dualQ
     return dualQ2pos(dualQ, start_pos)
 
 
@@ -375,4 +375,6 @@ def convert(true_preds, start_pos, data_type):
     #     return diff_pos2pos(true_preds, start_pos)
     elif data_type == "pos_diff_start":
         return diff_pos_start2pos(true_preds, start_pos)
+    elif data_type =="log_dualQ":
+        return log_dualQ2pos(true_preds, start_pos)
     raise Exception(f"{data_type} cannot be converted")

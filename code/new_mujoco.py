@@ -3,18 +3,18 @@ import numpy as np
 import itertools
 from create_strings import create_string
 import pickle
-import torch
-import roma
 from convert import *
-import copy
 from pyquaternion import Quaternion
+# import copy
+# import torch
+# import roma
 
 
-def rotVecQuat(v, q):
-    # From internet MuJoCo
-    res = np.zeros(3)
-    mujoco_py.functions.mju_rotVecQuat(res, v, q)
-    return res
+# def rotVecQuat(v, q):
+#     # From internet MuJoCo
+#     res = np.zeros(3)
+#     mujoco_py.functions.mju_rotVecQuat(res, v, q)
+#     return res
 
 
 def get_quat(sim, obj_id):
@@ -22,7 +22,6 @@ def get_quat(sim, obj_id):
 
 
 def get_mat(sim, obj_id):
-    # TODO Check how the matrix is constructed
     return sim.data.body_xmat[obj_id]
 
 
@@ -51,7 +50,6 @@ def calculate_log_quat(quat):
     Calculate the log quaternion based on the quaternion according
         to https://en.wikipedia.org/wiki/Quaternion#Exponential,_logarithm,_and_power_functions
     """
-
     norm = np.linalg.norm(quat)
     log_norm = np.log(norm)
 
@@ -70,14 +68,15 @@ def calculate_log_quat(quat):
 
 
 def get_dualQ(quat, translation):
+    # https://cs.gmu.edu/~jmlien/teaching/cs451/uploads/Main/dual-quaternion.pdf
     qr = quat
 
     t = np.hstack((np.array([0]), translation))
 
-    if qr[0] == 1 & (qr[1] == qr[2] == qr[3] == 0):
-        qd = t
-    else:
-        qd = (0.5 * Quaternion(t) * Quaternion(quat)).elements
+    # if qr[0] == 1 & (qr[1] == qr[2] == qr[3] == 0):
+    #     qd = t
+    # else:
+    qd = (0.5 * Quaternion(t) * Quaternion(quat)).elements
 
     dual = np.append(qr, qd)
     return dual
@@ -113,7 +112,7 @@ def exp_biv(b):
     """
     l = b[3] * b[3] + b[4] * b[4] + b[5] * b[5]
     if l == 0:
-        return np.array([1, b[0], b[1], b[2], 0, 0, 0, 0])
+        return np.array([1, 0, 0, 0, 0, -b[0], -b[1], -b[2]])
 
     m = b[0] * b[5] + b[1] * b[4] + b[2] * b[3]
     a = np.sqrt(l)
@@ -122,12 +121,13 @@ def exp_biv(b):
     t = m / l * (c - s)
     return np.array([
                     c,
-                    s * b[0] + t * b[5],
-                    s * b[1] + t * b[4],
-                    s * b[2] + t * b[3],
-                    s * b[3], s * b[4],
                     s * b[5],
-                    m * s
+                    s * b[4],
+                    s * b[3],
+                    m * s,
+                    -s * b[0] - t * b[5],
+                    -s * b[1] - t * b[4],
+                    -s * b[2] - t * b[3]
                 ])
 
 
@@ -137,17 +137,17 @@ def logDual(r):
     (14 mul, 5 add, 1 div, 1 acos, 1 sqrt)
     """
     if r[0] == 1:
-        return np.array([r[1], r[2], r[3], 0, 0, 0])
+        return np.array([-r[5], -r[6], -r[7], 0, 0, 0])
     a = 1 / (1 - r[0] * r[0])
     b = np.arccos(r[0]) * np.sqrt(a)
-    c = a * r[7] * (1 - r[0] * b)
+    c = a * r[4] * (1 - r[0] * b)
     return np.array([
-                    c * r[6] + b * r[1],
-                    c * r[5] + b * r[2],
-                    c * r[4] + b * r[3],
-                    b * r[4],
-                    b * r[5],
-                    b * r[6]
+                    c * r[1] - b * r[5],
+                    c * r[2] - b * r[6],
+                    c * r[3] - b * r[7],
+                    b * r[3],
+                    b * r[2],
+                    b * r[1]
                 ])
 
 def create_empty_dataset(local_start):
@@ -169,7 +169,7 @@ def create_empty_dataset(local_start):
     }
 
 
-def generate_data(string, n_steps, visualize):
+def generate_data(string, n_steps, visualize=False):
     """
     Create the dataset of data_type for n//10 steps.
     """
@@ -233,16 +233,6 @@ def generate_data(string, n_steps, visualize):
 
             # Collect exp_dualQ data
             dataset["log_dualQ"][i//10] = logDual(dualQuaternion)
-
-
-            # Should be the same??
-            # new_DQ = torch.tensor(exp_biv(logDual(dualQuaternion)))
-            # converted_pos = convert(new_DQ[None, :], torch.tensor(dataset["pos"][0][None, :]), "dual_quat").reshape(8,3)
-            # print(dataset["pos"][i])
-            # print(converted_pos)
-
-
-            dataset["trans"][i // 10] = xpos
 
             if i != 0:
                 dataset["pos_diff"][i // 10] = (

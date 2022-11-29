@@ -180,7 +180,7 @@ def train_model(
 
             # Update the parameters
             optimizer.step()
-            print("total_time", time.time() - start)
+            # print("total_time", time.time() - start)
 
         # Log and print epoch every 10 epochs
         if epoch % 10 == 0:
@@ -344,7 +344,7 @@ if __name__ == "__main__":
         loss_type="L1",
         loss_reduction_type="mean",
         optimizer="Adam",
-        data_type="eucl_motion",
+        data_type="log_dualQ",
         architecture="fcnn",
         train_sims=list(train_sims),
         test_sims=list(test_sims),
@@ -370,6 +370,7 @@ if __name__ == "__main__":
         "pos_diff": 24,
         "pos_diff_start": 24,
         "pos_norm": 24,
+        "log_dualQ": 6
     }
 
     start_time = time.time()
