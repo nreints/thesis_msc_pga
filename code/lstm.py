@@ -189,6 +189,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
     with wandb.init(project="thesis", config=hyperparameters):
       # access all HPs through wandb.config, so logging matches execution!
       config = wandb.config
+      wandb.run.name = f"{config.architecture}/{config.data_type}"
 
       # make the model, data, and optimization problem
       model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
@@ -210,10 +211,8 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     train_data_loader = data.DataLoader(data_set_train, batch_size=config.batch_size, shuffle=True)
     test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
 
-
     # Make the model
     model = LSTM(ndata_dict[config.data_type], config).to(device)
-
 
     # Make the loss and optimizer
     criterion = loss_dict[config.loss_type](reduction=config.loss_reduction_type)
@@ -230,12 +229,10 @@ if __name__ == "__main__":
     train_sims = set(random.sample(sims, int(0.8 * n_sims)))
     test_sims = sims - train_sims
 
-
-
     config = dict(
         learning_rate = 0.005,
-        epochs = 30,
-        batch_size = 128,
+        epochs = 50,
+        batch_size = 1024,
         dropout = 0,
         loss_type = "L1",
         loss_reduction_type = "mean",
