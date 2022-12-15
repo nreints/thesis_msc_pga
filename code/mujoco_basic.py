@@ -277,7 +277,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Uncomment to create random data
-    n_sims = 1000
+    n_sims = 2000
     n_steps = 2250
     obj_type = "box"
 

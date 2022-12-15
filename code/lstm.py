@@ -223,53 +223,53 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 
 if __name__ == "__main__":
+    for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
+        n_sims = 2000
+        sims = {i for i in range(n_sims)}
+        train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+        test_sims = sims - train_sims
 
-    n_sims = 1000
-    sims = {i for i in range(n_sims)}
-    train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-    test_sims = sims - train_sims
+        config = dict(
+            learning_rate = 0.005,
+            epochs = 30,
+            batch_size = 1024,
+            dropout = 0,
+            loss_type = "L1",
+            loss_reduction_type = "mean",
+            optimizer = "Adam",
+            data_type = data_thing,
+            architecture = "lstm",
+            train_sims = list(train_sims),
+            test_sims = list(test_sims),
+            n_frames = 30,
+            n_sims = n_sims,
+            n_layers = 1,
+            hidden_size = 96
+            )
 
-    config = dict(
-        learning_rate = 0.005,
-        epochs = 100,
-        batch_size = 1024,
-        dropout = 0,
-        loss_type = "L1",
-        loss_reduction_type = "mean",
-        optimizer = "Adam",
-        data_type = "pos_diff_start",
-        architecture = "lstm",
-        train_sims = list(train_sims),
-        test_sims = list(test_sims),
-        n_frames = 30,
-        n_sims = n_sims,
-        n_layers = 1,
-        hidden_size = 96
-        )
+        loss_dict = {
+                    'L1': nn.L1Loss,
+                    'L2': nn.MSELoss
+                    }
 
-    loss_dict = {
-                'L1': nn.L1Loss,
-                'L2': nn.MSELoss
-                }
+        optimizer_dict = {'Adam': torch.optim.Adam}
 
-    optimizer_dict = {'Adam': torch.optim.Adam}
+        ndata_dict = {"pos": 24,
+                        "eucl_motion": 12,
+                        "quat": 7,
+                        "log_quat": 7,
+                        "dual_quat": 8,
+                        "pos_diff": 24,
+                        "pos_diff_start": 24,
+                        "log_dualQ": 6
+                    }
+        start_time = time.time()
+        print(config["data_type"])
+        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
+        print("It took ", time.time() - start_time, " seconds.")
 
-    ndata_dict = {"pos": 24,
-                    "eucl_motion": 12,
-                    "quat": 7,
-                    "log_quat": 7,
-                    "dual_quat": 8,
-                    "pos_diff": 24,
-                    "pos_diff_start": 24,
-                    "log_dualQ": 6
-                }
-    start_time = time.time()
-    print(config["data_type"])
-    model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
-    print("It took ", time.time() - start_time, " seconds.")
+        model_dict = {'config': config,
+                    'data_dict': ndata_dict,
+                    'model': model.state_dict()}
 
-    model_dict = {'config': config,
-                'data_dict': ndata_dict,
-                'model': model.state_dict()}
-
-    torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")
+        torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")

@@ -218,7 +218,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
 
 if __name__ == "__main__":
     nr_frames = 225 # See new_mujoco.py
-    data_type = "eucl_motion"
+    data_type = "log_dualQ"
     architecture = "fcnn"
 
     model, config = load_model(data_type, architecture)

@@ -331,12 +331,12 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 
 if __name__ == "__main__":
-    n_sims = 2000
-    # Divide the train en test dataset
-    sims = {i for i in range(n_sims)}
-    train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-    test_sims = sims - train_sims
-    for data in ["log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
+    for data_thing in ["log_dualQ"]:
+        n_sims = 2000
+        # Divide the train en test dataset
+        sims = {i for i in range(n_sims)}
+        train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+        test_sims = sims - train_sims
         # Set config
         config = dict(
             learning_rate=0.005,
@@ -345,7 +345,7 @@ if __name__ == "__main__":
             loss_type="L1",
             loss_reduction_type="mean",
             optimizer="Adam",
-            data_type=data,
+            data_type=data_thing,
             architecture="fcnn",
             train_sims=list(train_sims),
             test_sims=list(test_sims),
