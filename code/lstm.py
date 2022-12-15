@@ -141,7 +141,7 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             # print("total_time", time.time() - start)
 
-        if epoch % 10 == 0:
+        if epoch % 10 == 0 or epoch == num_epochs - 1:
             train_log(loss_epoch/len(data_loader), epoch)
 
             convert_loss = eval_model(model, test_loader, loss_module, config)
@@ -231,13 +231,13 @@ if __name__ == "__main__":
 
     config = dict(
         learning_rate = 0.005,
-        epochs = 50,
+        epochs = 100,
         batch_size = 1024,
         dropout = 0,
         loss_type = "L1",
         loss_reduction_type = "mean",
         optimizer = "Adam",
-        data_type = "log_dualQ",
+        data_type = "pos_diff_start",
         architecture = "lstm",
         train_sims = list(train_sims),
         test_sims = list(test_sims),

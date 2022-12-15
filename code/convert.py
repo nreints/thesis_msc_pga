@@ -21,28 +21,16 @@ def eucl2pos(eucl_motion, start_pos):
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
 
-        # TODO Werkt niet
-
         rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
         mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
-        # print(mult.shape)
-        # print(eucl_motion[:, 9:][:, None, :].flatten(start_dim=1).shape)
-        out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
 
-        # out = torch.empty_like(start_pos)
-        # for batch in range(out.shape[0]):
-        #     # EINSUM # bij,bkj->bik
-        #     out[batch] = (
-        #         eucl_motion[batch, :9].reshape(3, 3) @ start_pos[batch].reshape(8,3).T
-        #         + torch.vstack([eucl_motion[batch, 9:]] * 8).T
-        #     ).T.flatten()
+        out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
 
         return out
 
     # In case of LSTM
     else:
 
-        # TODO TODO TODO Maak sneller
         rotations = eucl_motion[..., :9].reshape(eucl_motion.shape[0], eucl_motion.shape[1], 3, 3)
         flat_rotations = rotations.flatten(end_dim=1)
 
@@ -55,25 +43,6 @@ def eucl2pos(eucl_motion, start_pos):
 
         out = (mult + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]).flatten(start_dim=1)
         out = out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1])
-
-        # Code above 24x as fast
-        # out2 = torch.empty(
-        #     (
-        #         eucl_motion.shape[0],
-        #         eucl_motion.shape[1],
-        #         start_pos.shape[-1],
-        #     )
-        # , device=eucl_motion.device)
-        # n_frames = eucl_motion.shape[1]
-        # for batch in range(out2.shape[0]):
-        #     for frame in range(n_frames):
-        #         # Reshape first 9 elements in rotation matrix and multiply with start_pos
-        #         rotated_start = (eucl_motion[batch, frame, :9].reshape(3, 3) @ start_pos[batch].reshape(8,3).T).T
-
-        #         # Add translation to each rotated_start
-        #         out2[batch, frame] = (rotated_start + eucl_motion[batch, frame, 9:][None, :]).flatten()
-
-        # print(out - out2)
 
         return out
 
@@ -95,17 +64,6 @@ def fast_rotVecQuat(v, q):
     # Swap columns for roma calculations (bi, cj, dk, a)
     q_new1 = torch.index_select(q_norm, 1, torch.tensor([1, 2, 3, 0], device=device))
 
-    # start = time.time()
-    vT = v.mT
-    # print("matT", time.time() - start)
-
-    # TODO einsum 10x slower
-    # start = time.time()
-    # v_test = torch.einsum("...ij->...ji", v)
-    # print("einsum", time.time() - start)
-    # print(roma.unitquat_to_rotmat(q_new1).shape)
-    # print(v.reshape(-1, 8,3).mT.shape)
-    # print("poep", torch.bmm(roma.unitquat_to_rotmat(q_new1), v.reshape(-1, 8,3).mT).mT.shape)
     rot_mat = torch.bmm(roma.unitquat_to_rotmat(q_new1), v.reshape(-1, 8,3).mT).mT.to(device)
 
     return rot_mat
@@ -134,8 +92,6 @@ def quat2pos(quat, start_pos):
     # In case of fcnn
     if len(quat.shape) == 2:
 
-        # batch, vert_num, dim = start_pos.shape
-        # print(start_pos.shape)
         out = torch.empty_like(start_pos, device=device)
 
         rotated_start = fast_rotVecQuat(start_pos, quat[:, :4])
@@ -160,27 +116,6 @@ def quat2pos(quat, start_pos):
         # Fix shape
         out = out.reshape(quat.shape[0], quat.shape[1], out.shape[-1])
 
-        ######################### OLD WAY 2x slower
-        # vert_dim = start_pos.shape[-1]
-        # batch = quat.shape[0]
-        # n_frames = quat.shape[1]
-
-        # out2 = torch.empty((n_frames, batch, vert_dim), device=device)
-
-        # for frame in range(n_frames):
-        #     rotated_start1 = fast_rotVecQuat(start_pos, quat[:, frame, :4])
-        #     repeated_trans = quat[:, frame, 4:][:, None, :]
-        #     out2[frame] = (rotated_start1 + repeated_trans).reshape(
-        #         (batch, vert_dim)
-        #     )
-
-
-        # # # Batch first
-        # out2 = torch.permute(out2, (1, 0, 2))
-
-        # # print(out.shape, out2.shape)
-        # print(out-out2)
-        # exit()
         return out
 
 
@@ -251,8 +186,6 @@ def log_quat2pos(log_quat, start_pos):
 
         return quat2pos(full_quat, start_pos)
 
-
-
 def dualQ2pos(dualQ, start_pos):
     """
     Input:
@@ -295,10 +228,9 @@ def dualQ2pos(dualQ, start_pos):
 
 def log_dualQ2pos(logDualQ_in, start_pos):
     """
-    Input bivector (6 numbers) returns rotor (=exp of bivector) (8 numbers)
+    Input bivector (6 numbers) returns position by first calculating the dual quaternion = exp(log_dualQ) . 
     (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
     """
-    # print(logDualQ.flatten(start_dim=0, end_dim=-2).shape)
     out_shape = list(logDualQ_in.shape)
     out_shape[-1] = 8
 
@@ -326,8 +258,7 @@ def log_dualQ2pos(logDualQ_in, start_pos):
                         -s * logDualQ[:, 2] - t * logDualQ[:, 3]
                     ]).T
     dualQ = mask * alternative + (~mask) * dualQ
-    # 128, 8
-    # 128, 30, 8
+
     return dualQ2pos(dualQ.reshape(out_shape), start_pos)
 
 
@@ -343,7 +274,6 @@ def diff_pos_start2pos(true_preds, start_pos):
         Converted difference to current position
 
     """
-    # start_pos = start_pos.reshape(start_pos.shape[0], 8, 3)
 
     if len(true_preds.shape) == 2:
         true_preds = true_preds[:, None, :]
@@ -366,9 +296,6 @@ def convert(true_preds, start_pos, data_type):
         Converted true predictions.
 
     """
-    # print("prediction", true_preds.shape)
-    # print("start_pos", start_pos.shape)
-    # exit()
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type == "eucl_motion":

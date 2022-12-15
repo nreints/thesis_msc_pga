@@ -178,6 +178,7 @@ def generate_data(string, n_steps, visualize=False):
 
     model = mujoco_py.load_model_from_xml(string)
     sim = mujoco_py.MjSim(model)
+    print(sim.data.qvel)
 
     geom_id = model.geom_names.index(geom_name) + 1
     xyz_local = get_vert_local(sim, geom_id)
@@ -262,6 +263,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
         # size = "1 1 1"
 
+        # string = create_string()
         string = create_string(euler, pos, obj_type, size)
         dataset = generate_data(string, n_steps, visualize)
 
@@ -273,7 +275,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Uncomment to create random data
-    n_sims = 2000
+    n_sims = 1
     n_steps = 2250
     obj_type = "box"
 
