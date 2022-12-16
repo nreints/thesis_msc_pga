@@ -7,6 +7,7 @@ from convert import *
 from pyquaternion import Quaternion
 import mediapy as media
 import mujoco_viewer
+import random
 # import copy
 # import torch
 # import roma
@@ -185,21 +186,27 @@ def generate_data(string, n_steps, visualize=False):
     data = mujoco.MjData(model)
     # qvel 012 -> translational
     # qvel 345 -> rotational
-    print(len(data.qvel))
-    data.qvel[3] = 1
-    data.qvel[4] = 1
-    data.qvel[5] = 1
-
+    # print(len(data.qvel))
+    # data.qvel[2] = 10
+    # data.qvel[3] = 1
+    # data.qvel[4] = 3
+    # data.qvel[5] = 5
+    # print(data.qvel.shape)
+    data.qvel = np.random.rand(6) * random.randint(-10, 10)
+    print(data.qvel)
     geom_id = model.geom(geom_name).id
 
     xyz_local = get_vert_local(model, geom_id)
 
     dataset = create_empty_dataset(xyz_local)
 
-    if visualize:
-        viewer = mujoco_viewer.MujocoViewer(model, data)
+    # if visualize:
+    viewer = mujoco_viewer.MujocoViewer(model, data)
 
     for i in range(n_steps):
+        # if i < 100:
+        #     data.qvel[2] = 10
+
         if viewer.is_alive:
             mujoco.mj_step(model, data)
 
@@ -270,7 +277,8 @@ def generate_data(string, n_steps, visualize=False):
     dataset["pos_norm"] = (
         dataset["pos"] - np.mean(dataset["pos"], axis=(0, 1))
     ) / np.std(dataset["pos"], axis=(0, 1))
-    viewer.close()
+    if visualize:
+        viewer.close()
     return dataset
 
 
@@ -279,12 +287,10 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
-        euler = f"0 0 0"
-        print(euler)
+        # euler = f"0 0 0"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
         # size = "1 1 1"
-        print(size)
 
         # string = create_string()
         string = create_string(euler, pos, obj_type, size)
@@ -298,8 +304,8 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Uncomment to create random data
-    n_sims = 1
+    n_sims = 2000
     n_steps = 2250
     obj_type = "box"
 
-    write_data_nsim(n_sims, n_steps, obj_type, visualize=True)
+    write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
