@@ -332,14 +332,14 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 if __name__ == "__main__":
     for data_thing in ["log_dualQ"]:
-        n_sims = 2000
+        n_sims = 5000
         # Divide the train en test dataset
         sims = {i for i in range(n_sims)}
         train_sims = set(random.sample(sims, int(0.8 * n_sims)))
         test_sims = sims - train_sims
         # Set config
         config = dict(
-            learning_rate=0.005,
+            learning_rate=0.01,
             epochs=30,
             batch_size=1024,
             loss_type="L1",

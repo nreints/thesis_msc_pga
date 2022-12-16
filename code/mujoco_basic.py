@@ -193,21 +193,20 @@ def generate_data(string, n_steps, visualize=False):
     # data.qvel[5] = 5
     # print(data.qvel.shape)
     data.qvel = np.random.rand(6) * random.randint(-10, 10)
-    print(data.qvel)
     geom_id = model.geom(geom_name).id
 
     xyz_local = get_vert_local(model, geom_id)
 
     dataset = create_empty_dataset(xyz_local)
 
-    # if visualize:
-    viewer = mujoco_viewer.MujocoViewer(model, data)
+    if visualize:
+        viewer = mujoco_viewer.MujocoViewer(model, data)
 
     for i in range(n_steps):
         # if i < 100:
         #     data.qvel[2] = 10
 
-        if viewer.is_alive:
+        if not visualize or viewer.is_alive:
             mujoco.mj_step(model, data)
 
             if visualize and (i%5==0 or i==0):
@@ -267,16 +266,11 @@ def generate_data(string, n_steps, visualize=False):
                     )
         else:
             break
-    # if visualize:
-    #     print("showing")
-    #     with media.set_show_save_dir('/tmp'):
-    #         media.show_video(frames, fps=60)
-    #     media.write_video('/tmp/video1.mp4', frames, fps=10, qp=10)
-    #     print("closing")
 
     dataset["pos_norm"] = (
         dataset["pos"] - np.mean(dataset["pos"], axis=(0, 1))
     ) / np.std(dataset["pos"], axis=(0, 1))
+
     if visualize:
         viewer.close()
     return dataset
@@ -304,7 +298,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Uncomment to create random data
-    n_sims = 2000
+    n_sims = 5000
     n_steps = 2250
     obj_type = "box"
 
