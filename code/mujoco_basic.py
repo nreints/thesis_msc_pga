@@ -191,7 +191,7 @@ def generate_data(string, n_steps, visualize=False):
     dataset = create_empty_dataset(xyz_local)
 
     if visualize:
-        renderer = mujoco.Renderer(model)
+        # renderer = mujoco.Renderer(model)
         viewer = mujoco_viewer.MujocoViewer(model, data)
         # frames = []
 
