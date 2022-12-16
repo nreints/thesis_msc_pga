@@ -183,6 +183,12 @@ def generate_data(string, n_steps, visualize=False):
     # print(sim.data.qvel)
 
     data = mujoco.MjData(model)
+    # qvel 012 -> translational
+    # qvel 345 -> rotational
+    print(len(data.qvel))
+    data.qvel[3] = 1
+    data.qvel[4] = 1
+    data.qvel[5] = 1
 
     geom_id = model.geom(geom_name).id
 
@@ -191,22 +197,17 @@ def generate_data(string, n_steps, visualize=False):
     dataset = create_empty_dataset(xyz_local)
 
     if visualize:
-        # renderer = mujoco.Renderer(model)
         viewer = mujoco_viewer.MujocoViewer(model, data)
-        # frames = []
 
     for i in range(n_steps):
         if viewer.is_alive:
             mujoco.mj_step(model, data)
-            viewer.render()
-            # renderer.update_scene(data)
 
-        # if visualize:
-            # pixels = renderer.render()
-        # view.render()
-            # frames.append(pixels)
+            if visualize and (i%5==0 or i==0):
+                viewer.render()
 
             if i == 0:
+
                 prev = get_vert_coords(data, geom_id, xyz_local).T
                 start = prev
 
@@ -214,6 +215,7 @@ def generate_data(string, n_steps, visualize=False):
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
 
             if i % 10 == 0:
+
                 xpos = data.geom_xpos[geom_id]
 
                 # Collect position data
@@ -277,7 +279,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
-        # euler = f"0 0 0"
+        euler = f"0 0 0"
         print(euler)
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
@@ -296,7 +298,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Uncomment to create random data
-    n_sims = 2
+    n_sims = 1
     n_steps = 2250
     obj_type = "box"
 
