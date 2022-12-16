@@ -6,6 +6,7 @@ import pickle
 from convert import *
 from pyquaternion import Quaternion
 import mediapy as media
+import mujoco_viewer
 # import copy
 # import torch
 # import roma
@@ -191,77 +192,83 @@ def generate_data(string, n_steps, visualize=False):
 
     if visualize:
         renderer = mujoco.Renderer(model)
-        frames = []
+        viewer = mujoco_viewer.MujocoViewer(model, data)
+        # frames = []
 
     for i in range(n_steps):
-        mujoco.mj_step(model, data)
+        if viewer.is_alive:
+            mujoco.mj_step(model, data)
+            viewer.render()
+            # renderer.update_scene(data)
 
-        if visualize:
-            renderer.update_scene(data)
-            pixels = renderer.render()
-            frames.append(pixels)
+        # if visualize:
+            # pixels = renderer.render()
+        # view.render()
+            # frames.append(pixels)
 
-        if i == 0:
-            prev = get_vert_coords(data, geom_id, xyz_local).T
-            start = prev
-
-            # First difference should be zero
-            dataset["pos_diff_start"][i] = np.zeros((8, 3))
-
-        if i % 10 == 0:
-            xpos = data.geom_xpos[geom_id]
-
-            # Collect position data
-            dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
-
-            # Collect euclidean motion data
-            dataset["eucl_motion"][i // 10] = np.append(
-                get_mat(data, geom_id), xpos
-            )
-
-            quaternion = get_quat(data, geom_id)
-
-            # Collect quaternion data
-            dataset["quat"][i // 10] = np.append(
-                quaternion, xpos
-            )
-
-            # Collect Log Quaternion data
-            dataset["log_quat"][i // 10] = np.append(
-                calculate_log_quat(quaternion), xpos
-            )
-
-            dualQuaternion = get_dualQ(
-                quaternion, xpos
-            )
-
-            # Collect Dual-Quaternion data
-            dataset["dual_quat"][i // 10] = dualQuaternion
-
-            # Collect exp_dualQ data
-            dataset["log_dualQ"][i//10] = logDual(dualQuaternion)
-
-            if i != 0:
-                dataset["pos_diff"][i // 10] = (
-                    get_vert_coords(data, geom_id, xyz_local).T - prev
-                )
-
+            if i == 0:
                 prev = get_vert_coords(data, geom_id, xyz_local).T
+                start = prev
 
-                dataset["pos_diff_start"][i // 10] = (
-                    get_vert_coords(data, geom_id, xyz_local).T - start
+                # First difference should be zero
+                dataset["pos_diff_start"][i] = np.zeros((8, 3))
+
+            if i % 10 == 0:
+                xpos = data.geom_xpos[geom_id]
+
+                # Collect position data
+                dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
+
+                # Collect euclidean motion data
+                dataset["eucl_motion"][i // 10] = np.append(
+                    get_mat(data, geom_id), xpos
                 )
-    
-    if visualize:
-        print("showing")
-        media.show_video(frames, fps=60)
-        media.write_video('/tmp/video1.mp4', frames, fps=10, qp=10)
-        print("closing")
+
+                quaternion = get_quat(data, geom_id)
+
+                # Collect quaternion data
+                dataset["quat"][i // 10] = np.append(
+                    quaternion, xpos
+                )
+
+                # Collect Log Quaternion data
+                dataset["log_quat"][i // 10] = np.append(
+                    calculate_log_quat(quaternion), xpos
+                )
+
+                dualQuaternion = get_dualQ(
+                    quaternion, xpos
+                )
+
+                # Collect Dual-Quaternion data
+                dataset["dual_quat"][i // 10] = dualQuaternion
+
+                # Collect exp_dualQ data
+                dataset["log_dualQ"][i//10] = logDual(dualQuaternion)
+
+                if i != 0:
+                    dataset["pos_diff"][i // 10] = (
+                        get_vert_coords(data, geom_id, xyz_local).T - prev
+                    )
+
+                    prev = get_vert_coords(data, geom_id, xyz_local).T
+
+                    dataset["pos_diff_start"][i // 10] = (
+                        get_vert_coords(data, geom_id, xyz_local).T - start
+                    )
+        else:
+            break
+    # if visualize:
+    #     print("showing")
+    #     with media.set_show_save_dir('/tmp'):
+    #         media.show_video(frames, fps=60)
+    #     media.write_video('/tmp/video1.mp4', frames, fps=10, qp=10)
+    #     print("closing")
 
     dataset["pos_norm"] = (
         dataset["pos"] - np.mean(dataset["pos"], axis=(0, 1))
     ) / np.std(dataset["pos"], axis=(0, 1))
-
+    viewer.close()
     return dataset
 
 
@@ -271,9 +278,11 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
             print(f"sim: {sim_id}/{num_sims}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
         # euler = f"0 0 0"
+        print(euler)
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
         # size = "1 1 1"
+        print(size)
 
         # string = create_string()
         string = create_string(euler, pos, obj_type, size)
