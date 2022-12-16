@@ -279,4 +279,4 @@ if __name__ == "__main__":
     n_steps = 2250
     obj_type = "box"
 
-    write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
+    write_data_nsim(n_sims, n_steps, obj_type, visualize=True)

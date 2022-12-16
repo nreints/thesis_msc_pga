@@ -5,6 +5,7 @@ from create_strings import create_string
 import pickle
 from convert import *
 from pyquaternion import Quaternion
+import mediapy as media
 # import copy
 # import torch
 # import roma
@@ -190,12 +191,15 @@ def generate_data(string, n_steps, visualize=False):
 
     if visualize:
         renderer = mujoco.Renderer(model)
+        frames = []
 
     for i in range(n_steps):
         mujoco.mj_step(model, data)
 
         if visualize:
             renderer.update_scene(data)
+            pixels = renderer.render()
+            frames.append(pixels)
 
         if i == 0:
             prev = get_vert_coords(data, geom_id, xyz_local).T
@@ -247,6 +251,12 @@ def generate_data(string, n_steps, visualize=False):
                 dataset["pos_diff_start"][i // 10] = (
                     get_vert_coords(data, geom_id, xyz_local).T - start
                 )
+    
+    if visualize:
+        print("showing")
+        media.show_video(frames, fps=60)
+        media.write_video('/tmp/video1.mp4', frames, fps=10, qp=10)
+        print("closing")
 
     dataset["pos_norm"] = (
         dataset["pos"] - np.mean(dataset["pos"], axis=(0, 1))
@@ -277,8 +287,8 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Uncomment to create random data
-    n_sims = 2000
+    n_sims = 2
     n_steps = 2250
     obj_type = "box"
 
-    write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
+    write_data_nsim(n_sims, n_steps, obj_type, visualize=True)
