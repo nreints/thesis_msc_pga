@@ -7,7 +7,7 @@ import pickle
 import random
 import wandb
 import time
-
+import os
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -271,5 +271,9 @@ if __name__ == "__main__":
         model_dict = {'config': config,
                     'data_dict': ndata_dict,
                     'model': model.state_dict()}
+
+        if not os.path.exists("models"):
+            os.mkdir("models")
+
 
         torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")

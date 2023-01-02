@@ -8,6 +8,7 @@ from pyquaternion import Quaternion
 import mediapy as media
 import mujoco_viewer
 import random
+import os
 # import copy
 # import torch
 # import roma
@@ -297,9 +298,13 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 
 if __name__ == "__main__":
-    ## Uncomment to create random data
+    ## Create random data
     n_sims = 5
     n_steps = 2250
     obj_type = "box"
+
+    # Create directory if not yet present
+    if not os.path.exists("data"):
+        os.mkdir("data")
 
     write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
