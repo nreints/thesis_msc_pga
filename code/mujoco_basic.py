@@ -9,19 +9,11 @@ import mediapy as media
 import mujoco_viewer
 import random
 import os
-# import copy
-# import torch
-# import roma
-
-
-# def rotVecQuat(v, q):
-#     # From internet MuJoCo
-#     res = np.zeros(3)
-#     mujoco_py.functions.mju_rotVecQuat(res, v, q)
-#     return res
-
 
 def get_quat(data, obj_id):
+    """
+    Returns the quaternion of an object.
+    """
     return data.xquat[obj_id]
 
 
@@ -72,6 +64,9 @@ def calculate_log_quat(quat):
 
 
 def get_dualQ(quat, translation):
+    """
+    Returns the dualquaternion of an object.
+    """
     # https://cs.gmu.edu/~jmlien/teaching/cs451/uploads/Main/dual-quaternion.pdf
     qr = quat
 
@@ -181,18 +176,11 @@ def generate_data(string, n_steps, visualize=False):
     geom_name = "object_geom"
 
     model = mujoco.MjModel.from_xml_string(string)
-    # sim = mujoco_py.MjSim(model)
-    # print(sim.data.qvel)
 
     data = mujoco.MjData(model)
     # qvel 012 -> translational
     # qvel 345 -> rotational
-    # print(len(data.qvel))
-    # data.qvel[2] = 10
-    # data.qvel[3] = 1
-    # data.qvel[4] = 3
-    # data.qvel[5] = 5
-    # print(data.qvel.shape)
+    # Set random initial velocity
     data.qvel = np.random.rand(6) * random.randint(-10, 10)
     geom_id = model.geom(geom_name).id
 
@@ -204,8 +192,6 @@ def generate_data(string, n_steps, visualize=False):
         viewer = mujoco_viewer.MujocoViewer(model, data)
 
     for i in range(n_steps):
-        # if i < 100:
-        #     data.qvel[2] = 10
 
         if not visualize or viewer.is_alive:
             mujoco.mj_step(model, data)
@@ -282,16 +268,17 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
-        # euler = f"0 0 0"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
-        # size = "1 1 1"
 
-        # string = create_string()
         string = create_string(euler, pos, obj_type, size)
         dataset = generate_data(string, n_steps, visualize)
 
         sim_data = {"vars": [euler, pos, obj_type, size], "data": dataset}
+
+        # Create directory if not yet present
+        if not os.path.exists("data"):
+            os.mkdir("data")
         with open(f"data/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
         f.close()
@@ -302,9 +289,5 @@ if __name__ == "__main__":
     n_sims = 5
     n_steps = 2250
     obj_type = "box"
-
-    # Create directory if not yet present
-    if not os.path.exists("data"):
-        os.mkdir("data")
 
     write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
