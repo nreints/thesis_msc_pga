@@ -32,9 +32,9 @@ def load_model(data_type, architecture):
 
     return model, config
 
-def get_random_sim_data(data_type, nr_frames, nr_sims):
+def get_random_sim_data(data_type, nr_frames, nr_sims, i):
     # Select random simulation
-    i = randint(0, nr_sims)
+    # i = randint(0, nr_sims)
 
     print("Using simulation number ", i)
     with open(f'data/sim_{i}.pickle', 'rb') as f:
@@ -119,9 +119,6 @@ def distance_check(converted, predicted, check):
     assert math.isclose(distance_conv, distance_check, rel_tol=0.0001)
 
 def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames):
-    data = data
-    result = result
-
     # Open figure
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -202,20 +199,116 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
     plt.close()
 
 
+def new_plot(plot_data):
+    # Open figure
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    colors = ["b", "g", "r", "m", "k", "c"]
+    data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start"]
+    for i in range(len(data_types)):
+        # Collect init data
+        converted_cube = np.array(plot_data[i][0])
+        print(converted_cube.shape)
+
+        # Scatter the corners
+        ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], linewidth=0.5, color=colors[i], label=data_types[i])
+
+        # Calculate the edges
+        converted_cube_edges = calculate_edges(converted_cube)
+
+        # Plot the edges
+        ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c=colors[i])
+
+    # TODO error?
+    # ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
+    # ax.plot(check_cube_edges[:][0], check_cube_edges[:][1], check_cube_edges[:][2], c="black")
+
+    ax.set_xlim3d(-15, 15)
+    ax.set_ylim(-15, 15)
+    ax.set_zlim(0, 50)
+    ax.legend()
+
+    def update(idx):
+
+        # Remove the previous scatter plot
+        if idx != 0:
+            ax.cla()
+
+        if idx %10 == 0:
+            print(idx)
+
+        for i in range(len(data_types)):
+
+            # Get cube vertice data
+            converted_cube = np.array(plot_data[i][idx])
+
+            # Scatter vertice data
+            ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], color=colors[i], linewidth=0.5)
+
+            # Calculate the edges
+            converted_cube_edges = calculate_edges(converted_cube)
+
+            # Plot the edges
+            ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
+            if idx > 498:
+                print("----", idx, "------")
+                print(data_types[i])
+                print("x", np.max(converted_cube[:, 0]) - np.min(converted_cube[:, 0]))
+                print("y", np.max(converted_cube[:, 1]) - np.min(converted_cube[:, 1]))
+                print("z", np.max(converted_cube[:, 2]) - np.min(converted_cube[:, 2]))
+
+        ax.set_xlim3d(-15, 15)
+        ax.set_ylim3d(-15, 15)
+        ax.set_zlim3d(0, 40)
+
+        ax.set_xlabel('$X$')
+        ax.set_ylabel('$Y$')
+        ax.set_zlabel('$Z$')
+        ax.set_title(f"All Datatypes converted to xyz-position")
+        ax.legend()
+
+
+
+    # Interval : Delay between frames in milliseconds.
+    ani = animation.FuncAnimation(fig, update, nr_frames, interval=100, repeat=False)
+
+    plt.show()
+    plt.close()
+
+
+
 if __name__ == "__main__":
     nr_frames = 500 # See new_mujoco.py
     nr_sims = 50 # See new_mujoco.py
     data_type = "eucl_motion"
     architecture = "fcnn"
 
-    model, config = load_model(data_type, architecture)
+    # model, config = load_model(data_type, architecture)
 
-    plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims)
+    # plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims)
 
-    nr_input_frames = config["n_frames"]
-    if architecture == "fcnn":
-        prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames)
-    elif architecture == "lstm":
-        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, out_is_in=False)
+    # nr_input_frames = config["n_frames"]
+    # if architecture == "fcnn":
+    #     prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames)
+    # elif architecture == "lstm":
+    #     prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, out_is_in=False)
 
-    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
+    # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
+
+
+    plot_data = []
+    pos_data = []
+    i = randint(0, nr_sims-1)
+
+    # Test all data types:
+    for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start"]:
+        result = get_random_sim_data(data_thing, nr_frames, nr_sims, i)
+        plot_data.append(result[0])
+
+    new_plot(plot_data)
+    # plot_data = np.array(plot_data)
+    # pos_data = np.array(pos_data)
+    # start_data = np.array(start_data)
+    # print(plot_data.shape)
+
+
