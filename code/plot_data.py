@@ -1,8 +1,7 @@
 from platform import architecture
 import torch
 import matplotlib.pyplot as plt
-# from mpl_toolkits.mplot3d import Axes3D
-from torch_nn import fcnn
+from fcnn import fcnn
 from lstm import LSTM
 import pickle
 from random import randint
@@ -12,14 +11,12 @@ import matplotlib.animation as animation
 from convert import *
 import math
 
-# from pyquaternion import Quaternion
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
 def load_model(data_type, architecture):
     # Load model
-
     model_dict = torch.load(f"models/{data_type}_{architecture}.pickle", map_location=torch.device(device))
     config = model_dict['config']
     ndata_dict = model_dict['data_dict']
@@ -35,13 +32,14 @@ def load_model(data_type, architecture):
 
     return model, config
 
-def get_random_sim_data(data_type, nr_frames):
+def get_random_sim_data(data_type, nr_frames, nr_sims):
     # Select random simulation
-    i = randint(0, 749)
+    i = randint(0, nr_sims)
 
     print("Using simulation number ", i)
     with open(f'data/sim_{i}.pickle', 'rb') as f:
         file = pickle.load(f)
+        # Load the correct start position repeat for converting
         if data_type == "pos_diff_start":
             start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
@@ -49,47 +47,37 @@ def get_random_sim_data(data_type, nr_frames):
             start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
+        # Load the data in correct data type
         original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
 
-        # Convert to pos data for plotting
+        # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
-        plot_data2 = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
+        # Load original xyz position data as check
+        plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
+    return plot_data, original_data, plot_data_true_pos, start_pos[0]
 
-    print(plot_data.shape)
-    return plot_data, original_data, plot_data2, start_pos[0]
-
-def get_prediction_fcnn(original_data, data_type, xyz_data, start, nr_input_frames):
+def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames):
     result = torch.zeros_like(xyz_data)
 
-    # Get first position
-    start_pos = start[None, :]
-
-    for frame_id in range(20, xyz_data.shape[0]):
-        # Get 20 frames shape: (1, 480)
+    for frame_id in range(nr_input_frames, xyz_data.shape[0]):
+        # Get nr_input_frames frames shape: (nr_input_frames, n_data)
         input_data = original_data[frame_id - nr_input_frames : frame_id]
-
-        input_data = input_data.unsqueeze(dim=0)
-        input_data = input_data.flatten(start_dim=1)
+        # Reshape to (1, nr_input_frames*n_data)
+        input_data = input_data.unsqueeze(dim=0).flatten(start_dim=1)
 
         # Save the prediction in result
-        with torch.no_grad(): # Deactivate gradients for the following code
+        with torch.no_grad():
             prediction = model(input_data)
-            # print(input_data)
-            # # print()
-            # print(prediction)
-            # exit()
             result[frame_id] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)
 
     return result
 
 def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, out_is_in=False):
-    # Collect prediction of model given simulation
     # Result should be xyz data for plot
     frames, vert, dim = xyz_data.shape
 
     # Because LSTM predicts 1 more frame
-    result = torch.zeros((frames+1, vert, dim))
-
+    result = torch.zeros((frames + 1, vert, dim))
 
     # Get first position
     start_pos = start[None, :]
@@ -102,20 +90,16 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
             input_data = original_data[frame_id : frame_id + nr_frames]
             input_data = input_data.unsqueeze(dim=0)
 
-        # print("in", input_data.shape)
         # Save the prediction in result
         with torch.no_grad(): # Deactivate gradients for the following code
             prediction, (hidden, cell) = model(input_data, (hidden, cell))
-            # print("pred", prediction.shape)
             if out_is_in:
                 input_data = prediction
 
             out_shape = result[frame_id + 1 : frame_id + 21].shape
-            # print("out", convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :].shape)
             result[frame_id + 1 : frame_id + nr_frames + 1] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :]
 
     return result
-
 
 def calculate_edges(cube):
     list_ind = [1, 3, 2, 0, 4, 6, 2, 3, 7, 5, 1, 5, 4, 6, 7]
@@ -131,11 +115,10 @@ def distance_check(converted, predicted, check):
     distance_predicted = ((X_pred[0] - X_pred[1])**2 + (Y_pred[0] - Y_pred[1])**2 + (Z_pred[0] - Z_pred[1])**2)**0.5
     distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
 
-    print(distance_check, distance_predicted)
-    assert math.isclose(distance_conv, distance_predicted, abs_tol=0.001)
+    # print(distance_conv, distance_check)
+    assert math.isclose(distance_conv, distance_check, rel_tol=0.0001)
 
-def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
-    print("data", data.shape, result.shape, real_pos_data.shape)
+def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames):
     data = data
     result = result
 
@@ -154,7 +137,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
     # Scatter the corners
     ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], linewidth=0.5, color='b', label="converted pos")
     ax.scatter(predicted_cube[:, 0], predicted_cube[:, 1], predicted_cube[:, 2], color='r', label="prediction")
-    ax.scatter(check_cube[:, 0], check_cube[:, 1], check_cube[:, 2], color="black", label="real pos")
+    ax.scatter(check_cube[:, 0], check_cube[:, 1],  check_cube[:, 2], color="black", label="real pos")
 
     # Calculate the edges
     converted_cube_edges = calculate_edges(converted_cube)
@@ -183,7 +166,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
         check_cube = real_pos_data[idx]
 
         # TODO
-        # distance_check(converted_cube, predicted_cube, check_cube)
+        distance_check(converted_cube, predicted_cube, check_cube)
 
         # Scatter vertice data
         ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], color='b', linewidth=0.5)
@@ -197,9 +180,11 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
 
         # Plot the edges
         ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label="converted pos")
-        ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r", label="prediction")
+        # ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r", label="prediction")
         ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black", label="real pos")
-
+        print("X\n", check_cube[:, 0])
+        print("Y\n", check_cube[:, 1])
+        print("Z\n", check_cube[:, 2])
         ax.set_xlim3d(-15, 15)
         ax.set_ylim3d(-15, 15)
         ax.set_zlim3d(0, 40)
@@ -211,24 +196,26 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture):
         ax.legend()
 
     # Interval : Delay between frames in milliseconds.
-    ani = animation.FuncAnimation(fig, update, 225, interval=100, repeat=False)
+    ani = animation.FuncAnimation(fig, update, nr_frames, interval=100, repeat=False)
 
     plt.show()
+    plt.close()
 
 
 if __name__ == "__main__":
-    nr_frames = 225 # See new_mujoco.py
-    data_type = "log_dualQ"
+    nr_frames = 500 # See new_mujoco.py
+    nr_sims = 50 # See new_mujoco.py
+    data_type = "eucl_motion"
     architecture = "fcnn"
 
     model, config = load_model(data_type, architecture)
 
-    nr_input_frames = config["n_frames"]
-    plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames)
+    plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims)
 
+    nr_input_frames = config["n_frames"]
     if architecture == "fcnn":
         prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames)
     elif architecture == "lstm":
-        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, 5, out_is_in=False)
+        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, out_is_in=False)
 
-    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture)
+    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)

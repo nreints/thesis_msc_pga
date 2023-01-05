@@ -5,25 +5,22 @@ from create_strings import create_string
 import pickle
 from convert import *
 from pyquaternion import Quaternion
-import mediapy as media
 import mujoco_viewer
 import random
 import os
 
-def get_quat(data, obj_id):
-    """
-    Returns the quaternion of an object.
-    """
-    return data.xquat[obj_id]
 
 
 def get_mat(data, obj_id):
+    """
+    Returns the rotation matrix of an object.
+    """
+    # Correct reshape according to converter.
     return data.xmat[obj_id]
-
 
 def get_vert_local(model, obj_id):
     """
-    Returns the initial locations of the vertices
+    Returns the locations of the vertices centered around zero.
     """
     obj_size = model.geom_size[obj_id]
     offsets = np.array([-1, 1]) * obj_size[:, None]
@@ -34,12 +31,22 @@ def get_vert_coords(data, obj_id, xyz_local):
     """
     Returns the locations of the vertices during simulation
     """
-    # Translation Vector
+    # Translation vector
     obj_pos = data.geom_xpos[obj_id]
+
     # Rotation Matrix
     obj_mat = data.geom_xmat[obj_id].reshape(3, 3)
-    return obj_pos[:, None] + obj_mat @ xyz_local
 
+    # R @ v + t
+    return obj_mat @ xyz_local + obj_pos[:, None]
+
+def get_quat(data, obj_id):
+    """
+    Returns the quaternion of an object.
+    """
+    # MUJOCO DOCS Cartesian orientation of body frame 
+    # a bi cj dk convention (when no rotation 1 0 0 0)
+    return data.xquat[obj_id]
 
 def calculate_log_quat(quat):
     """
@@ -79,55 +86,6 @@ def get_dualQ(quat, translation):
 
     dual = np.append(qr, qd)
     return dual
-
-
-# def normalize(x):
-#     """
-#     Normalize an even element X on the basis [1,e01,e02,e03,e12,e31,e23,e0123]
-#     """
-#     a = 1 / (x[0] * x[0] + x[4] * x[4] + x[5] * x[5] + x[6] * x[6])**0.5
-#     b = (x[7] * x[0] - (x[1] * x[6] + x[2] * x[5] + x[3] * x[4])) * a * a * a
-#     return np.array([
-#                     a*x[0],
-#                     a*x[1]+b*x[6],
-#                     a*x[2]+b*x[5],
-#                     a*x[3]+b*x[4],
-#                     a*x[4],
-#                     a*x[5],
-#                     a*x[6],
-#                     a*x[7]-b*x[0]
-#                 ])
-
-# def square_root(r):
-#     """
-#     Square root of a rotor R
-#     """
-#     return normalize(1 + r)
-
-def exp_biv(b):
-    """
-    Input bivector (6 numbers) returns rotor (=exp of bivector) (8 numbers)
-    (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
-    """
-    l = b[3] * b[3] + b[4] * b[4] + b[5] * b[5]
-    if l == 0:
-        return np.array([1, 0, 0, 0, 0, -b[0], -b[1], -b[2]])
-
-    m = b[0] * b[5] + b[1] * b[4] + b[2] * b[3]
-    a = np.sqrt(l)
-    c = np.cos(a)
-    s = np.sin(a) / a
-    t = m / l * (c - s)
-    return np.array([
-                    c,
-                    s * b[5],
-                    s * b[4],
-                    s * b[3],
-                    m * s,
-                    -s * b[0] - t * b[5],
-                    -s * b[1] - t * b[4],
-                    -s * b[2] - t * b[3]
-                ])
 
 
 def logDual(r):
@@ -181,10 +139,12 @@ def generate_data(string, n_steps, visualize=False):
     # qvel 012 -> translational
     # qvel 345 -> rotational
     # Set random initial velocity
-    data.qvel = np.random.rand(6) * random.randint(-10, 10)
+    # TODO
+    # data.qvel = np.random.rand(6) * random.randint(-5, 5)
     geom_id = model.geom(geom_name).id
 
     xyz_local = get_vert_local(model, geom_id)
+    # print("local", xyz_local.T)
 
     dataset = create_empty_dataset(xyz_local)
 
@@ -213,12 +173,16 @@ def generate_data(string, n_steps, visualize=False):
 
                 # Collect position data
                 dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
+                # print("pos", get_vert_coords(data, geom_id, xyz_local).T)
 
                 # Collect euclidean motion data
                 dataset["eucl_motion"][i // 10] = np.append(
                     get_mat(data, geom_id), xpos
                 )
+                # print("Rotation Mat\n", 
+                #     get_mat(data, geom_id).reshape(3,3))
 
+                # Quaternion w ai bj ck convention
                 quaternion = get_quat(data, geom_id)
 
                 # Collect quaternion data
@@ -239,7 +203,7 @@ def generate_data(string, n_steps, visualize=False):
                 dataset["dual_quat"][i // 10] = dualQuaternion
 
                 # Collect exp_dualQ data
-                dataset["log_dualQ"][i//10] = logDual(dualQuaternion)
+                dataset["log_dualQ"][i // 10] = logDual(dualQuaternion)
 
                 if i != 0:
                     dataset["pos_diff"][i // 10] = (
@@ -260,17 +224,21 @@ def generate_data(string, n_steps, visualize=False):
 
     if visualize:
         viewer.close()
+
     return dataset
 
 
 def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
     for sim_id in range(num_sims):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
-            print(f"sim: {sim_id}/{num_sims}")
+            print(f"sim: {sim_id}/{num_sims-1}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
+        # euler = "0 80 0"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
+        # pos = "10 10 10"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
-
+        size = "3 3 5"
+        # print(euler)
         string = create_string(euler, pos, obj_type, size)
         dataset = generate_data(string, n_steps, visualize)
 
@@ -284,10 +252,11 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         f.close()
 
 
+
 if __name__ == "__main__":
     ## Create random data
-    n_sims = 5
-    n_steps = 2250
+    n_sims = 50
+    n_steps = 5000
     obj_type = "box"
 
     write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
