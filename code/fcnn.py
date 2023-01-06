@@ -335,14 +335,12 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 if __name__ == "__main__":
     for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start"]:
-        n_sims = 50
+        n_sims = 5000
         # Divide the train en test dataset
         sims = {i for i in range(n_sims)}
         train_sims = set(random.sample(sims, int(0.8 * n_sims)))
         test_sims = sims - train_sims
         # Set config
-        print(len(train_sims[0]))
-        exit()
         config = dict(
             learning_rate=0.01,
             epochs=30,

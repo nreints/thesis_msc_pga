@@ -56,7 +56,7 @@ def get_random_sim_data(data_type, nr_frames, nr_sims, i):
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
     return plot_data, original_data, plot_data_true_pos, start_pos[0]
 
-def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames):
+def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames, model):
     result = torch.zeros_like(xyz_data)
 
     for frame_id in range(nr_input_frames, xyz_data.shape[0]):
@@ -277,17 +277,17 @@ if __name__ == "__main__":
     data_type = "eucl_motion"
     architecture = "fcnn"
 
-    # model, config = load_model(data_type, architecture)
+    model, config = load_model(data_type, architecture)
 
-    # plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims)
+    plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims)
 
-    # nr_input_frames = config["n_frames"]
-    # if architecture == "fcnn":
-    #     prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames)
-    # elif architecture == "lstm":
-    #     prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, out_is_in=False)
+    nr_input_frames = config["n_frames"]
+    if architecture == "fcnn":
+        prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames, model)
+    elif architecture == "lstm":
+        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, out_is_in=False)
 
-    # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
+    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
 
 
 

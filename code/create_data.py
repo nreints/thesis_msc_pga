@@ -138,7 +138,7 @@ def generate_data(string, n_steps, visualize=False):
     # qvel 345 -> rotational
     # Set random initial velocity
     # TODO
-    data.qvel = np.random.rand(6) * random.randint(-5, 5)
+    data.qvel = np.random.rand(6) * random.randint(-2, 2)
     geom_id = model.geom(geom_name).id
 
     xyz_local = get_vert_local(model, geom_id)
@@ -263,8 +263,8 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Create random data
-    n_sims = 50
-    n_steps = 5000
+    n_sims = 5000
+    n_steps = 2500
     obj_type = "box"
 
     write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
