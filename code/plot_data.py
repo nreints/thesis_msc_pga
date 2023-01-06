@@ -235,7 +235,7 @@ def new_plot(plot_data):
             ax.cla()
 
         if idx %10 == 0:
-            print(idx)
+            print("step ", idx)
 
         for i in range(len(data_types)):
 
@@ -256,6 +256,8 @@ def new_plot(plot_data):
                 print("x", np.max(converted_cube[:, 0]) - np.min(converted_cube[:, 0]))
                 print("y", np.max(converted_cube[:, 1]) - np.min(converted_cube[:, 1]))
                 print("z", np.max(converted_cube[:, 2]) - np.min(converted_cube[:, 2]))
+                if data_types[i] == "quat" or data_types[i] == "pos":
+                    print(converted_cube)
 
         ax.set_xlim3d(-15, 15)
         ax.set_ylim3d(-15, 15)
