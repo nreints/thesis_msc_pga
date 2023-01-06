@@ -9,7 +9,7 @@ def create_string(euler_obj, pos_obj, type_obj, size_obj):
         <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
             <joint name="joint1" type="free"/>
-            <geom name="object_geom" type="{type_obj}" xyaxes="0 -1 0 0 0 1" size="{size_obj}" rgba="1 0 0 1"/>
+            <geom name="object_geom" type="{type_obj}" size="{size_obj}" rgba="1 0 0 1"/>
         </body>
     </worldbody>
     </mujoco>

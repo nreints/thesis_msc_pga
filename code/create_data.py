@@ -44,7 +44,7 @@ def get_quat(data, obj_id):
     """
     Returns the quaternion of an object.
     """
-    # MUJOCO DOCS Cartesian orientation of body frame 
+    # MUJOCO DOCS Cartesian orientation of body frame
     # a bi cj dk convention (when no rotation 1 0 0 0)
     return data.xquat[obj_id]
 
@@ -138,7 +138,7 @@ def generate_data(string, n_steps, visualize=False):
     # qvel 345 -> rotational
     # Set random initial velocity
     # TODO
-    # data.qvel = np.random.rand(6) * random.randint(-5, 5)
+    data.qvel = np.random.rand(6) * random.randint(-5, 5)
     geom_id = model.geom(geom_name).id
 
     xyz_local = get_vert_local(model, geom_id)
@@ -241,7 +241,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
-        euler = "0 0 0"
+        euler = "0 80 0"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         # pos = "10 10 10"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"

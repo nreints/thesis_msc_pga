@@ -199,7 +199,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
     plt.close()
 
 
-def new_plot(plot_data):
+def plot_datatypes(plot_data):
     # Open figure
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -250,14 +250,6 @@ def new_plot(plot_data):
 
             # Plot the edges
             ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
-            if idx > 498:
-                print("----", idx, "------")
-                print(data_types[i])
-                print("x", np.max(converted_cube[:, 0]) - np.min(converted_cube[:, 0]))
-                print("y", np.max(converted_cube[:, 1]) - np.min(converted_cube[:, 1]))
-                print("z", np.max(converted_cube[:, 2]) - np.min(converted_cube[:, 2]))
-                if data_types[i] == "quat" or data_types[i] == "pos":
-                    print(converted_cube)
 
         ax.set_xlim3d(-15, 15)
         ax.set_ylim3d(-15, 15)
@@ -272,7 +264,7 @@ def new_plot(plot_data):
 
 
     # Interval : Delay between frames in milliseconds.
-    ani = animation.FuncAnimation(fig, update, nr_frames, interval=100, repeat=False)
+    ani = animation.FuncAnimation(fig, update, nr_frames, interval=50, repeat=False)
 
     plt.show()
     plt.close()
@@ -298,6 +290,8 @@ if __name__ == "__main__":
     # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
 
 
+
+    # Below the test for all datatypes
     plot_data = []
     pos_data = []
     i = randint(0, nr_sims-1)
@@ -307,10 +301,6 @@ if __name__ == "__main__":
         result = get_random_sim_data(data_thing, nr_frames, nr_sims, i)
         plot_data.append(result[0])
 
-    new_plot(plot_data)
-    # plot_data = np.array(plot_data)
-    # pos_data = np.array(pos_data)
-    # start_data = np.array(start_data)
-    # print(plot_data.shape)
+    plot_datatypes(plot_data)
 
 
