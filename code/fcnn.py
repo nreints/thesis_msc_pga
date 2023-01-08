@@ -120,7 +120,7 @@ def train_log(loss, epoch):
     Log the train loss to Weights and Biases
     """
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
-    print(f"Loss : {loss:.3f}")
+    # print(f"Loss : {loss:.3f}")
 
 
 def train_model(
@@ -186,34 +186,34 @@ def train_model(
             # print("total_time", time.time() - start)
 
         # Log and print epoch every 10 epochs
-        if epoch % 10 == 0 or epoch == (num_epochs - 1):
-            # Log to W&B
-            train_log(loss_epoch / len(data_loader), epoch)
+        # if epoch % 10 == 0 or epoch == (num_epochs - 1):
+        # Log to W&B
+        train_log(loss_epoch / len(data_loader), epoch)
 
-            # Evaluate model
-            true_loss, convert_loss = eval_model(model, test_loader, loss_module, config)
+        # Evaluate model
+        true_loss, convert_loss = eval_model(model, test_loader, loss_module, config)
 
-            # Set model to train mode
-            model.train()
+        # Set model to train mode
+        model.train()
 
-            print(
-                epoch,
-                round(loss_epoch.item() / len(data_loader), 10),
-                "\t",
-                round(convert_loss, 10),
-            )
+        print(
+            epoch,
+            round(loss_epoch.item() / len(data_loader), 10),
+            "\t",
+            round(convert_loss, 10),
+        )
 
-            # Write to file
-            f = open(
-                f"results/{config.data_type}/{num_epochs}_{config.learning_rate}_{loss_type}.txt",
-                "a",
-            )
-            f.write(
-                f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n"
-            )
-            f.write("\n")
-            f.close()
-        print("epoch_time", time.time() - epoch_time)
+        # Write to file
+    # f = open(
+        #     f"results/{config.data_type}/{num_epochs}_{config.learning_rate}_{loss_type}.txt",
+        #     "a",
+        # )
+        # f.write(
+        #     f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n"
+        # )
+        # f.write("\n")
+        # f.close()
+        print("epoch_time; ", time.time() - epoch_time)
 
 
 def eval_model(model, data_loader, loss_module, config):

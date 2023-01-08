@@ -94,7 +94,7 @@ class MyDataset(data.Dataset):
 
 def train_log(loss, epoch):
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
-    print(f"Loss after " + f" examples: {loss:.3f}")
+    # print(f"Loss after " + f" examples: {loss:.3f}")
 
 def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epochs, config):
     # Set model to train mode
@@ -141,18 +141,17 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
 
             # print("total_time", time.time() - start)
 
-        if epoch % 10 == 0 or epoch == num_epochs - 1:
-            train_log(loss_epoch/len(data_loader), epoch)
+        train_log(loss_epoch/len(data_loader), epoch)
 
-            convert_loss = eval_model(model, test_loader, loss_module, config)
-            model.train()
-            print(epoch, round(loss_epoch.item()/len(data_loader), 10), '\t', round(convert_loss, 10))
+        convert_loss = eval_model(model, test_loader, loss_module, config)
+        model.train()
+        print(epoch, round(loss_epoch.item()/len(data_loader), 10), '\t', round(convert_loss, 10))
 
-            # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
-            # f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
-            # f.write("\n")
-            # f.close()
-        print("epoch_time", time.time() - epoch_time)
+        # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
+        # f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
+        # f.write("\n")
+        # f.close()
+        print("epoch_time; ", time.time() - epoch_time)
 
 
 
