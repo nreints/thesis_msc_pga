@@ -241,11 +241,11 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
-        euler = "0 80 0"
+        # euler = "0 80 0"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         # pos = "10 10 10"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
-        size = "3 6 18"
+        # size = "3 6 18"
         # print(euler)
         string = create_string(euler, pos, obj_type, size)
         dataset = generate_data(string, n_steps, visualize)

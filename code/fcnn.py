@@ -334,7 +334,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 
 if __name__ == "__main__":
-    for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start"]:
+    for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
         n_sims = 5000
         # Divide the train en test dataset
         sims = {i for i in range(n_sims)}
