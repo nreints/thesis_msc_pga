@@ -32,9 +32,24 @@ def load_model(data_type, architecture):
     return model, config
 
 def get_random_sim_data(data_type, nr_frames, nr_sims, i=None):
+    """
+    Collects the data from a random simulation.
+    Input:
+        - data_type: type of the data that needs to be collected.
+        - nr_frames: number of frames to collect.
+        - nr_sims: total number of available simulations ().
+        - i: id of simulation to select, default; select random simulation.
+    Output:
+        - plot_data; xyz data converted from data in data_type.
+        - original_data; data in the format of data_type.
+        - plot_data_true_pos; original xyz data.
+        - start_pos[0]; start position (xyz) of the simulation.
+    """
     # Select random simulation
     if not i:
         i = randint(0, nr_sims)
+    else:
+        raise Exception("No simulation id selected. Please enter a valid simulation id")
 
     print("Using simulation number ", i)
     with open(f'data/sim_{i}.pickle', 'rb') as f:
@@ -52,11 +67,24 @@ def get_random_sim_data(data_type, nr_frames, nr_sims, i=None):
 
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
-        # Load original xyz position data as check
+        # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
+
     return plot_data, original_data, plot_data_true_pos, start_pos[0]
 
 def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames, model):
+    """
+    Gets prediction of the pre-trained fcnn.
+    Input:
+        - original_data: input data in data_type.
+        - data_type: data type currently used.
+        - xyz_data: xyz data.
+        - start_pos: start position of the simulation.
+        - nr_input_frames: number of frames the fcnn is trained on.
+        - model: the trained model.
+    Output:
+        - result: converted to xyz positions output of the model based on original_data and start_pos.
+    """
     result = torch.zeros_like(xyz_data)
 
     for frame_id in range(nr_input_frames, xyz_data.shape[0]):
@@ -72,7 +100,22 @@ def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_
 
     return result
 
-def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, out_is_in=False):
+def get_prediction_lstm(original_data, data_type, xyz_data, start_pos, nr_input_frames, model, out_is_in=False):
+    """
+    Gets prediction of the pre-trained lstm.
+    Input:
+        - original_data: input data in data_type.
+        - data_type: data type currently used.
+        - xyz_data: xyz data.
+        - start_pos: start position of the simulation.
+        - nr_input_frames: number of frames the fcnn is trained on.
+        - model: the trained model.
+        - out_is_in:
+                    False; do not use output of the model as input.
+                    True; do use output of the model as input.
+    Output:
+        - result: converted to xyz positions output of the model based on original_data and start_pos.
+    """
     # Result should be xyz data for plot
     frames, vert, dim = xyz_data.shape
 
@@ -80,14 +123,14 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
     result = torch.zeros((frames + 1, vert, dim))
 
     # Get first position
-    start_pos = start[None, :]
+    start_pos = start_pos[None, :]
     hidden = torch.zeros(1, 1, 96)
     cell = torch.zeros(1, 1, 96) #TODO
 
-    for frame_id in range(0, xyz_data.shape[0], nr_frames):
+    for frame_id in range(0, xyz_data.shape[0], nr_input_frames):
         # Get 20 frames shape: (1, 480)
         if not out_is_in or frame_id == 0:
-            input_data = original_data[frame_id : frame_id + nr_frames]
+            input_data = original_data[frame_id : frame_id + nr_input_frames]
             input_data = input_data.unsqueeze(dim=0)
 
         # Save the prediction in result
@@ -96,28 +139,46 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start, nr_frames, ou
             if out_is_in:
                 input_data = prediction
 
-            out_shape = result[frame_id + 1 : frame_id + nr_frames + 1].shape
-            result[frame_id + 1 : frame_id + nr_frames + 1] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :]
+            out_shape = result[frame_id + 1 : frame_id + nr_input_frames + 1].shape
+            result[frame_id + 1 : frame_id + nr_input_frames + 1] = convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[:out_shape[0], :, :]
 
     return result
 
 def calculate_edges(cube):
+    """
+    Determines the edges of a cube.
+    Input:
+        - cube: xyz position of the vertices of the cube.
+    Output:
+        - edges: the edges of the cube.
+    """
     list_ind = [1, 3, 2, 0, 4, 6, 2, 3, 7, 5, 1, 5, 4, 6, 7]
-    edges = [cube[i, :] for i in list_ind]
-    return np.append(cube[0, :], edges).reshape(-1,3)
+    edges_part = [cube[i, :] for i in list_ind]
+    edges = np.append(cube[0, :], edges_part).reshape(-1,3)
+    return edges
 
 def distance_check(converted, check):
+    """
+    Checks whether the converted cube is close to the validation cube.
+    Input:
+        - converted: the xyz vertice positions of the converted cube.
+        - check: the xyz vertice positions of the validation cube.
+    Output: None
+    """
     X_conv, Y_conv, Z_conv = converted[:, 0], converted[:, 1], converted[:, 2]
     # X_pred, Y_pred, Z_pred = predicted[:, 0], predicted[:, 1], predicted[:, 2]
     X_check, Y_check, Z_check = check[:, 0], check[:, 1], check[:, 2]
 
-    distance_conv = ((X_conv[0] - X_conv[1])**2 + (Y_conv[0] - Y_conv[1])**2 + (Z_conv[0] - Z_conv[1])**2)**0.5
+    distance_conv = ((X_conv[0] - X_conv[1])**2 + (Y_conv[0] - Y_conv[1])**2 + (Z_conv[0] - Z_conv[1])**2)
     # distance_predicted = ((X_pred[0] - X_pred[1])**2 + (Y_pred[0] - Y_pred[1])**2 + (Z_pred[0] - Z_pred[1])**2)**0.5
-    distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)**0.5
+    distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)
 
     assert math.isclose(distance_conv, distance_check, rel_tol=0.0001)
 
 def plot_cubes(conv_cube, pred_cube, check_cube, ax):
+    """
+    Plots the cubes.
+    """
     # Scatter the corners
     ax.scatter(conv_cube[:, 0], conv_cube[:, 1], conv_cube[:, 2], linewidth=0.5, color='b', label="converted pos")
     ax.scatter(pred_cube[:, 0], pred_cube[:, 1], pred_cube[:, 2], color='r', label="prediction")
@@ -130,15 +191,24 @@ def plot_cubes(conv_cube, pred_cube, check_cube, ax):
 
     # Plot the edges
     ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c="b")
-    # ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
-    # ax.plot(check_cube_edges[:][0], check_cube_edges[:][1], check_cube_edges[:][2], c="black")
+    ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
+    ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black")
 
 
 def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames):
+    """
+    Plots 3D animation of the cubes.
+    Input:
+        - data: converted xyz vertice positions.
+        - result: predicted xyz vertice positions.
+        - real_pos_data: original xyz vertice positions.
+        - data_type: original data type of data.
+        - architecture: architecture of the pretrained model.
+        - nr_frames: total number of frames in the simulation.
+    """
     # Open figure
     fig = plt.figure()
     fig.suptitle(f"{data_type} trained with {architecture}")
-
     ax = fig.add_subplot(111, projection='3d')
 
     # Collect init data
@@ -155,8 +225,6 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
     ax.set_zlim(0, 50)
 
     def update(idx):
-        if idx % 5 == 0:
-            print(f"Plotting {idx} / {nr_frames}")
         # Remove the previous scatter plot
         if idx != 0:
             ax.cla()
@@ -185,12 +253,14 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
     plt.show()
 
 
-def plot_datatypes(plot_data):
+def plot_datatypes(plot_data, data_types):
+    """
+    Plots 3D animation of the cubes in all data types
+    """
     # Open figure
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     colors = ["b", "g", "r", "m", "k", "c"]
-    data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start"]
     for i in range(len(data_types)):
         # Collect init data
         converted_cube = np.array(plot_data[i][0])
@@ -204,9 +274,6 @@ def plot_datatypes(plot_data):
         # Plot the edges
         ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c=colors[i])
 
-    # TODO error?
-    # ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
-    # ax.plot(check_cube_edges[:][0], check_cube_edges[:][1], check_cube_edges[:][2], c="black")
 
     ax.set_xlim3d(-15, 15)
     ax.set_ylim(-15, 15)
@@ -219,7 +286,7 @@ def plot_datatypes(plot_data):
         if idx != 0:
             ax.cla()
 
-        if idx %10 == 0:
+        if idx % 10 == 0:
             print("step ", idx)
 
         for i in range(len(data_types)):
@@ -246,14 +313,11 @@ def plot_datatypes(plot_data):
         ax.set_title(f"All Datatypes converted to xyz-position")
         ax.legend()
 
-
-
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, nr_frames, interval=50, repeat=False)
 
     plt.show()
     plt.close()
-
 
 
 if __name__ == "__main__":
@@ -271,7 +335,7 @@ if __name__ == "__main__":
     if architecture == "fcnn":
         prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames, model)
     elif architecture == "lstm":
-        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, out_is_in=False)
+        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, model, out_is_in=False)
 
     plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
 
@@ -283,10 +347,11 @@ if __name__ == "__main__":
     # i = randint(0, nr_sims-1)
 
     # # Test all data types:
-    # for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start"]:
+    # data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start"]
+    # for data_thing in data_types:
     #     result = get_random_sim_data(data_thing, nr_frames, nr_sims, i)
     #     plot_data.append(result[0])
 
-    # plot_datatypes(plot_data)
+    # plot_datatypes(plot_data, data_types)
 
 
