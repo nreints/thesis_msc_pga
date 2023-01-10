@@ -181,7 +181,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
         ax.legend()
 
     # Interval : Delay between frames in milliseconds.
-    ani = animation.FuncAnimation(fig, update, nr_frames, interval=100, repeat=False)
+    ani = animation.FuncAnimation(fig, update, nr_frames, interval=75, repeat=False)
     plt.show()
 
 
