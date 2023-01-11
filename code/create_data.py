@@ -5,7 +5,7 @@ from create_strings import create_string
 import pickle
 from convert import *
 from pyquaternion import Quaternion
-import mujoco_viewer
+# import mujoco_viewer
 import random
 import os
 
@@ -146,8 +146,8 @@ def generate_data(string, n_steps, visualize=False):
 
     dataset = create_empty_dataset(xyz_local)
 
-    if visualize:
-        viewer = mujoco_viewer.MujocoViewer(model, data)
+    # if visualize:
+    #     viewer = mujoco_viewer.MujocoViewer(model, data)
 
     for i in range(n_steps):
 
@@ -230,8 +230,8 @@ def generate_data(string, n_steps, visualize=False):
         dataset["pos"] - np.mean(dataset["pos"], axis=(0, 1))
     ) / np.std(dataset["pos"], axis=(0, 1))
 
-    if visualize:
-        viewer.close()
+    # if visualize:
+    #     viewer.close()
 
     return dataset
 
@@ -263,8 +263,8 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
 
 if __name__ == "__main__":
     ## Create random data
-    n_sims = 5000
-    n_steps = 2500
+    n_sims = 5
+    n_steps = 1000
     obj_type = "box"
 
     write_data_nsim(n_sims, n_steps, obj_type, visualize=False)

@@ -53,17 +53,17 @@ class fcnn(nn.Module):
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, sims, n_frames, n_data, data_type):
+    def __init__(self, n_sims, n_frames, n_data, data_type):
         """
         Inputs:
-            n_sims -
+            n_sims - Number of simulations.
             size - Number of data points we want to generate
             std - Standard deviation of the noise (see generate_continuous_xor function)
         """
         super().__init__()
         self.n_frames_perentry = n_frames
         self.n_datap_perframe = n_data
-        self.sims = sims
+        self.sims = n_sims
         self.data_type = data_type
         self.collect_data()
 
@@ -83,7 +83,7 @@ class MyDataset(data.Dataset):
                 pos_data = data_all["pos"]
                 # Add data and targets
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    # Always save the start_position for converting
+                    # Always save the start position for converting
                     if self.data_type == "pos_diff_start":
                         self.start_pos.append(data_all["pos"][0].flatten())
                     else:
@@ -96,7 +96,6 @@ class MyDataset(data.Dataset):
 
                     self.pos_target.append(pos_data[train_end + 1].flatten())
 
-        # TODO CUDA torch.cuda.FloatTensor
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
         self.pos_target = torch.FloatTensor(np.asarray(self.pos_target))
@@ -120,7 +119,6 @@ def train_log(loss, epoch):
     Log the train loss to Weights and Biases
     """
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
-    # print(f"Loss : {loss:.3f}")
 
 
 def train_model(

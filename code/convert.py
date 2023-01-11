@@ -1,6 +1,6 @@
 import torch
 import roma
-import time
+# import time
 
 
 def eucl2pos(eucl_motion, start_pos):
@@ -188,7 +188,6 @@ def dualQ2pos(dualQ, start_pos):
             Shape (batch_size x * x 8 x 3)
 
             (* is only present for lstm)
-
     Output:
         - Converted Dual-quaternion to current position
     """
@@ -262,10 +261,8 @@ def diff_pos_start2pos(true_preds, start_pos):
             Shape [batch_size, frames, datapoints]
         - start_pos: Start position of simulation
             Shape [batch_size, datapoints]
-
     Output:
         - Converted difference to current position
-
     """
 
     if len(true_preds.shape) == 2:
@@ -284,10 +281,8 @@ def convert(true_preds, start_pos, data_type):
         - true_preds: Prediction of model
         - start_pos: Start position of simulation
         - data_type: Datatype of predictions
-
     Output:
         - Converted true predictions.
-
     """
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
