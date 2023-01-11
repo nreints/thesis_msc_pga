@@ -221,7 +221,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 
 if __name__ == "__main__":
-    for data_thing in ["quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
+    for data_thing in ["eucl_motion", "quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
         n_sims = 1000
         sims = {i for i in range(n_sims)}
         train_sims = set(random.sample(sims, int(0.8 * n_sims)))

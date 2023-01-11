@@ -4,20 +4,19 @@ import time
 
 
 def eucl2pos(eucl_motion, start_pos):
-    # print(eucl.shape, start_pos.shape)
-    # NN
-    # (128 x 12), (128 x 8 x 3)
-    # LSTM
-    # (128 x 20 x 12), (128 x 8 x 3)
     """
     Input:
         eucl_motion: Original predictions (euclidean motion)
+            (batch x 12)
+            (batch x frames x 20)
         start_pos: Start position of simulation
-
+            (batch x 8 x 3)
+            (batch x frames x 8 x 3)
     Output:
         Converted eucledian motion to current xyz position
+            (batch x 8 x 3)
+            (batch x frames x 8 x 3)
     """
-
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
 
@@ -30,14 +29,9 @@ def eucl2pos(eucl_motion, start_pos):
 
     # In case of LSTM
     else:
-
         rotations = eucl_motion[..., :9].reshape(eucl_motion.shape[0], eucl_motion.shape[1], 3, 3)
         flat_rotations = rotations.flatten(end_dim=1)
 
-
-        #TODO TODO FIX in plot_data
-        if len(start_pos.shape) != 3:
-            start_pos = start_pos[:, None, :]
         correct_start_pos = start_pos.repeat(1, eucl_motion.shape[1], 1).flatten(end_dim=1)
         mult = torch.bmm(flat_rotations, correct_start_pos.reshape(-1, 8, 3).mT).mT
 
@@ -78,13 +72,12 @@ def quat2pos(quat, start_pos):
 
     """
     Input:
-        quat: Original predictions (quaternion motion)
+        - quat: Original predictions (quaternion motion)
             (batch, .., 7)
-        start_pos: Start position of simulation
+        - start_pos: Start position of simulation
             (batch, .., 8, 3)
-
     Output:
-        Converted quaternion to current xyz position
+        - Converted quaternion to current xyz position
     """
 
     device = quat.device
@@ -127,12 +120,12 @@ def log_quat2pos(log_quat, start_pos):
     # (128 x 20 x 7), (128 x 8 x 3)
     """
     Input:
-        log_quat: Original predictions (log quaternion motion)
+        - log_quat: Original predictions (log quaternion motion)
             Shape:
-        start_pos: Start position of simulation
+        - start_pos: Start position of simulation
             Shape:
     Output:
-        Converted log quaternion to current xyz position
+        - Converted log quaternion to current xyz position
 
         a bi cj dk = a vec{v}
     """
@@ -189,15 +182,15 @@ def log_quat2pos(log_quat, start_pos):
 def dualQ2pos(dualQ, start_pos):
     """
     Input:
-        dualQ: Original predictions (Dual quaternion)
+        - dualQ: Original predictions (Dual quaternion)
             Shape (batch_size x * x 8)
-        start_pos: Start position of simulation
+        - start_pos: Start position of simulation
             Shape (batch_size x * x 8 x 3)
 
             (* is only present for lstm)
 
     Output:
-        Converted Dual-quaternion to current position
+        - Converted Dual-quaternion to current position
     """
     device = dualQ.device
 
@@ -265,13 +258,13 @@ def log_dualQ2pos(logDualQ_in, start_pos):
 def diff_pos_start2pos(true_preds, start_pos):
     """
     Input:
-        true_preds: Original predictions (difference compared to start)
+        - true_preds: Original predictions (difference compared to start)
             Shape [batch_size, frames, datapoints]
-        start_pos: Start position of simulation
+        - start_pos: Start position of simulation
             Shape [batch_size, datapoints]
 
     Output:
-        Converted difference to current position
+        - Converted difference to current position
 
     """
 
@@ -288,12 +281,12 @@ def convert(true_preds, start_pos, data_type):
     """
     Converts true predictions given data type.
     Input:
-        true_preds: Prediction of model
-        start_pos: Start position of simulation
-        data_type: Datatype of predictions
+        - true_preds: Prediction of model
+        - start_pos: Start position of simulation
+        - data_type: Datatype of predictions
 
     Output:
-        Converted true predictions.
+        - Converted true predictions.
 
     """
     if data_type == "pos" or data_type == "pos_norm":

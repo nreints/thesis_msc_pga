@@ -203,7 +203,6 @@ def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
     ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black")
 
-
 def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames):
     """
     Plots 3D animation of the cubes.
@@ -260,7 +259,6 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, nr_frames, interval=75, repeat=False)
     plt.show()
-
 
 def plot_datatypes(plot_data, data_types):
     """
@@ -327,7 +325,6 @@ def plot_datatypes(plot_data, data_types):
 
     plt.show()
     plt.close()
-
 
 if __name__ == "__main__":
     nr_frames = 250 # See create_data.py
