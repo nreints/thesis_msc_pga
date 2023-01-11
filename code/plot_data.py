@@ -16,6 +16,15 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 
 
 def load_model(data_type, architecture):
+    """
+    Loads a pretrained model.
+    Input:
+        - data_type: current data type.
+        - architecture: architecture of the pretrained model.
+    Output:
+        - model: pretrained model.
+        - config: config of the model.
+    """
     # Load model
     model_dict = torch.load(f"models/{data_type}_{architecture}.pickle", map_location=torch.device(device))
     config = model_dict['config']
@@ -324,7 +333,7 @@ if __name__ == "__main__":
     nr_frames = 250 # See create_data.py
     nr_sims = 5000
     # ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
-    data_type = "log_dualQ"
+    data_type = "quat"
     architecture = "lstm"
     print(f"Visualizing {architecture} trained on {data_type}")
 
