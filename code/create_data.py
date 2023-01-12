@@ -15,7 +15,6 @@ def get_mat(data, obj_id):
     """
     Returns the rotation matrix of an object.
     """
-    # Correct reshape according to converter.
     return data.xmat[obj_id]
 
 def get_vert_local(model, obj_id):
@@ -124,7 +123,7 @@ def create_empty_dataset(local_start):
     }
 
 
-def generate_data(string, n_steps, visualize=False):
+def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
     """
     Create the dataset of data_type for n//10 steps.
     """
@@ -137,17 +136,18 @@ def generate_data(string, n_steps, visualize=False):
     # qvel 012 -> translational
     # qvel 345 -> rotational
     # Set random initial velocity
-    # TODO
-    data.qvel = np.random.rand(6) * random.randint(-2, 2)
+    # TODO 
+    data.qvel[0:3] = np.random.rand(3) * random.randint(qvel_range_t[0], qvel_range_t[1])
+    data.qvel[3:6] = np.random.rand(3) * random.randint(qvel_range_r[0], qvel_range_r[1])
     geom_id = model.geom(geom_name).id
 
     xyz_local = get_vert_local(model, geom_id)
-    # print("local", xyz_local.T)
 
     dataset = create_empty_dataset(xyz_local)
 
-    # if visualize:
-    #     viewer = mujoco_viewer.MujocoViewer(model, data)
+    if visualize:
+        import mujoco_viewer
+        viewer = mujoco_viewer.MujocoViewer(model, data)
 
     for i in range(n_steps):
 
@@ -155,6 +155,7 @@ def generate_data(string, n_steps, visualize=False):
             mujoco.mj_step(model, data)
 
             if visualize and (i%5==0 or i==0):
+
                 viewer.render()
 
             if i == 0:
@@ -172,23 +173,10 @@ def generate_data(string, n_steps, visualize=False):
                 # Collect position data
                 dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
 
-                position = get_vert_coords(data, geom_id, xyz_local).T
-                # print("local", xyz_local.T)
-                # print(abs(max(xyz_local.T[:,0])- min(xyz_local.T[:,0])))
-                # print(abs(max(xyz_local.T[:,1])- min(xyz_local.T[:,1])))
-                # print(abs(max(xyz_local.T[:,2])- min(xyz_local.T[:,2])))
-                # print("pos", get_vert_coords(data, geom_id, xyz_local).T)
-                # print(abs(max(position[:,0])- min(position[:,0])))
-                # print(abs(max(position[:,1])- min(position[:,1])))
-                # print(abs(max(position[:,2])- min(position[:,2])))
-                # exit()
-
                 # Collect euclidean motion data
                 dataset["eucl_motion"][i // 10] = np.append(
                     get_mat(data, geom_id), xpos
                 )
-                # print("Rotation Mat\n", 
-                #     get_mat(data, geom_id).reshape(3,3))
 
                 # Quaternion w ai bj ck convention
                 quaternion = get_quat(data, geom_id)
@@ -236,7 +224,7 @@ def generate_data(string, n_steps, visualize=False):
     return dataset
 
 
-def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
+def write_data_nsim(num_sims, n_steps, obj_type, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
     for sim_id in range(num_sims):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
@@ -246,9 +234,8 @@ def write_data_nsim(num_sims, n_steps, obj_type, visualize=False):
         # pos = "10 10 10"
         size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
         # size = "3 6 18"
-        # print(euler)
         string = create_string(euler, pos, obj_type, size)
-        dataset = generate_data(string, n_steps, visualize)
+        dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
 
         sim_data = {"vars": [euler, pos, obj_type, size], "data": dataset}
 
@@ -267,4 +254,4 @@ if __name__ == "__main__":
     n_steps = 1000
     obj_type = "box"
 
-    write_data_nsim(n_sims, n_steps, obj_type, visualize=False)
+    write_data_nsim(n_sims, n_steps, obj_type, visualize=False, qvel_range_t=(-5,5), qvel_range_r=(0,0))

@@ -32,7 +32,7 @@ def load_model(data_type, architecture):
 
     if architecture == "fcnn":
         model = fcnn(ndata_dict[config['data_type']], config)
-    elif architecture == "lstm":
+    elif architecture == "lstm" or architecture == "quaternet":
         model = LSTM(ndata_dict[config['data_type']], config)
 
     model.load_state_dict(model_dict['model'])
@@ -330,8 +330,8 @@ if __name__ == "__main__":
     nr_frames = 250 # See create_data.py
     nr_sims = 5000
     # ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
-    data_type = "quat"
-    architecture = "lstm"
+    data_type = "dual_quat"
+    architecture = "fcnn"
     print(f"Visualizing {architecture} trained on {data_type}")
 
     model, config = load_model(data_type, architecture)
@@ -340,7 +340,7 @@ if __name__ == "__main__":
     nr_input_frames = config["n_frames"]
     if architecture == "fcnn":
         prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames, model)
-    elif architecture == "lstm":
+    elif architecture == "lstm" or architecture == "quaternet":
         prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, model, out_is_in=False)
 
     plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
