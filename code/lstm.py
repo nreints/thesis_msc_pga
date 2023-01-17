@@ -8,6 +8,7 @@ import random
 import wandb
 import time
 import os
+import argparse
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -39,7 +40,7 @@ class LSTM(nn.Module):
 
 class MyDataset(data.Dataset):
 
-    def __init__(self, sims, n_frames, n_data, data_type):
+    def __init__(self, sims, n_frames, n_data, data_type, dir):
         """
         Inputs:
             n_sims -
@@ -51,6 +52,7 @@ class MyDataset(data.Dataset):
         self.n_datap_perframe = n_data
         self.sims = sims
         self.data_type = data_type
+        self.dir = dir
         self.collect_data()
 
     def collect_data(self):
@@ -60,7 +62,7 @@ class MyDataset(data.Dataset):
         self.start_pos = []
 
         for i in self.sims:
-            with open(f'data/sim_{i}.pickle', 'rb') as f:
+            with open(f'{self.dir}/sim_{i}.pickle', 'rb') as f:
                 data_all = pickle.load(f)["data"]
                 data = data_all[self.data_type]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
@@ -182,15 +184,15 @@ def eval_model(model, data_loader, loss_module, config):
 
 
 
-def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
+def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, data_dir, mode_wandb):
     # tell wandb to get started
-    with wandb.init(project="thesis", config=hyperparameters):
+    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb):
       # access all HPs through wandb.config, so logging matches execution!
       config = wandb.config
       wandb.run.name = f"{config.architecture}/{config.data_type}"
 
       # make the model, data, and optimization problem
-      model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
+      model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict, data_dir)
       print(model)
 
       # and use them to train the model
@@ -201,10 +203,10 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict):
 
     return model
 
-def make(config, ndata_dict, loss_dict, optimizer_dict):
+def make(config, ndata_dict, loss_dict, optimizer_dict, data_dir):
     # Make the data
-    data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
-    data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type)
+    data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=data_dir)
+    data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=data_dir)
 
     train_data_loader = data.DataLoader(data_set_train, batch_size=config.batch_size, shuffle=True)
     test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
@@ -221,58 +223,65 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 
 if __name__ == "__main__":
-    for data_thing in ["eucl_motion", "quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
-        n_sims = 1000
-        sims = {i for i in range(n_sims)}
-        train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-        test_sims = sims - train_sims
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
+    args = parser.parse_args()
 
-        config = dict(
-            learning_rate = 0.005,
-            epochs = 30,
-            batch_size = 1024,
-            dropout = 0,
-            loss_type = "L1",
-            loss_reduction_type = "mean",
-            optimizer = "Adam",
-            data_type = data_thing,
-            architecture = "lstm",
-            train_sims = list(train_sims),
-            test_sims = list(test_sims),
-            n_frames = 30,
-            n_sims = n_sims,
-            n_layers = 2,
-            hidden_size = 96
-            )
+    for data_dir in [f"data_t(0, 0)_r(0, 0)", f"data_t(-5, 5)_r(0, 0)", f"data_t(0, 0)_r(-5, 5)", f"data_t(-5, 5)_r(-5, 5)"]:
 
-        loss_dict = {
-                    'L1': nn.L1Loss,
-                    'L2': nn.MSELoss
-                    }
+        for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
+            n_sims = 3000
+            sims = {i for i in range(n_sims)}
+            train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+            test_sims = sims - train_sims
 
-        optimizer_dict = {'Adam': torch.optim.Adam}
+            config = dict(
+                learning_rate = 0.005,
+                epochs = 30,
+                batch_size = 1024,
+                dropout = 0,
+                loss_type = "L1",
+                loss_reduction_type = "mean",
+                optimizer = "Adam",
+                data_type = data_thing,
+                architecture = "lstm",
+                train_sims = list(train_sims),
+                test_sims = list(test_sims),
+                n_frames = 30,
+                n_sims = n_sims,
+                n_layers = 1,
+                hidden_size = 96,
+                data_dir=data_dir
+                )
 
-        ndata_dict = {
-                        "pos": 24,
-                        "eucl_motion": 12,
-                        "quat": 7,
-                        "log_quat": 7,
-                        "dual_quat": 8,
-                        "pos_diff": 24,
-                        "pos_diff_start": 24,
-                        "log_dualQ": 6
-                    }
-        start_time = time.time()
-        print(config["data_type"])
-        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict)
-        print("It took ", time.time() - start_time, " seconds.")
+            loss_dict = {
+                        'L1': nn.L1Loss,
+                        'L2': nn.MSELoss
+                        }
 
-        model_dict = {'config': config,
-                    'data_dict': ndata_dict,
-                    'model': model.state_dict()}
+            optimizer_dict = {'Adam': torch.optim.Adam}
 
-        if not os.path.exists("models"):
-            os.mkdir("models")
+            ndata_dict = {
+                            "pos": 24,
+                            "eucl_motion": 12,
+                            "quat": 7,
+                            "log_quat": 7,
+                            "dual_quat": 8,
+                            "pos_diff": 24,
+                            "pos_diff_start": 24,
+                            "log_dualQ": 6
+                        }
+            start_time = time.time()
+            print(config["data_type"])
+            model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, data_dir, args.mode_wandb)
+            print("It took ", time.time() - start_time, " seconds.")
+
+            model_dict = {'config': config,
+                        'data_dict': ndata_dict,
+                        'model': model.state_dict()}
+
+            if not os.path.exists("models"):
+                os.mkdir("models")
 
 
-        torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")
+            torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")

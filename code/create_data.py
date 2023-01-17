@@ -8,8 +8,7 @@ from pyquaternion import Quaternion
 # import mujoco_viewer
 import random
 import os
-
-
+import argparse
 
 def get_mat(data, obj_id):
     """
@@ -44,7 +43,7 @@ def get_quat(data, obj_id):
     Returns the quaternion of an object.
     """
     # MUJOCO DOCS Cartesian orientation of body frame
-    # a bi cj dk convention (when no rotation 1 0 0 0)
+    # a bi cj dk convention (identity: 1 0 0 0)
     return data.xquat[obj_id]
 
 def calculate_log_quat(quat):
@@ -122,7 +121,6 @@ def create_empty_dataset(local_start):
         "log_dualQ": np.empty((n_steps // 10, 6))
     }
 
-
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
     """
     Create the dataset of data_type for n//10 steps.
@@ -136,7 +134,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     # qvel 012 -> translational
     # qvel 345 -> rotational
     # Set random initial velocity
-    # TODO 
+    # TODO
     data.qvel[0:3] = np.random.rand(3) * random.randint(qvel_range_t[0], qvel_range_t[1])
     data.qvel[3:6] = np.random.rand(3) * random.randint(qvel_range_r[0], qvel_range_r[1])
     geom_id = model.geom(geom_name).id
@@ -224,34 +222,51 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     return dataset
 
 
-def write_data_nsim(num_sims, n_steps, obj_type, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
+def write_data_nsim(num_sims, n_steps, obj_type, square_box, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
     for sim_id in range(num_sims):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
-        # euler = "0 80 0"
+        if square_box:
+            size = np.random.uniform(0.5, 5)
+            sizes = f"{size} {size} {size}"
+        else:
+            sizes = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
-        # pos = "10 10 10"
-        size = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
-        # size = "3 6 18"
-        string = create_string(euler, pos, obj_type, size)
+        string = create_string(euler, pos, obj_type, sizes)
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
 
-        sim_data = {"vars": [euler, pos, obj_type, size], "data": dataset}
-
+        sim_data = {"vars": [euler, pos, obj_type, sizes], "data": dataset}
+        dir = f"data_t{qvel_range_t}_r{qvel_range_r}"
         # Create directory if not yet present
-        if not os.path.exists("data"):
-            os.mkdir("data")
-        with open(f"data/sim_{sim_id}.pickle", "wb") as f:
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+        with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
         f.close()
 
 
 
 if __name__ == "__main__":
-    ## Create random data
-    n_sims = 500
-    n_steps = 1000
-    obj_type = "box"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
+    parser.add_argument("-square", type=bool, help="square box", default=False)
+    parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
+    parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
+    parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
+    parser.add_argument("-r_max", type=int, help="rotation qvel max", default=0)
+    args = parser.parse_args()
 
-    write_data_nsim(n_sims, n_steps, obj_type, visualize=False, qvel_range_t=(-5,5), qvel_range_r=(0,0))
+    ## Create random data
+    n_sims = args.n_sims
+    n_steps = args.n_frames
+    t_min = args.t_min
+    t_max = args.t_max
+    r_min = args.r_min
+    r_max = args.r_max
+    obj_type = "box"
+    print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
+    write_data_nsim(n_sims, n_steps, obj_type, args.square, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(r_min,r_max))
+
+    # write_data_nsim(n_sims, n_steps, obj_type, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(0,0))

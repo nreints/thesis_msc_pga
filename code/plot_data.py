@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from convert import *
 import math
+import argparse
+import os
 
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -40,7 +42,7 @@ def load_model(data_type, architecture):
 
     return model, config
 
-def get_random_sim_data(data_type, nr_frames, nr_sims, i=None):
+def get_random_sim_data(data_type, nr_frames, nr_sims, data_dir, i=None):
     """
     Collects the data from a random simulation.
     Input:
@@ -61,7 +63,7 @@ def get_random_sim_data(data_type, nr_frames, nr_sims, i=None):
         raise Exception("No simulation id selected. Please enter a valid simulation id")
 
     print("Using simulation number ", i)
-    with open(f'data/sim_{i}.pickle', 'rb') as f:
+    with open(f'{data_dir}/sim_{i}.pickle', 'rb') as f:
         file = pickle.load(f)
         # Load the correct start position repeat for converting
         if data_type == "pos_diff_start":
@@ -327,15 +329,27 @@ def plot_datatypes(plot_data, data_types):
     plt.close()
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
+    # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
+    parser.add_argument("-data_dir_train", type=str, help="data_directory", default="data_t(0, 0)_r(0, 0)")
+    args = parser.parse_args()
+    if not os.path.exists(args.data_dir):
+        raise("Not such a directory")
+
+
+
     nr_frames = 250 # See create_data.py
-    nr_sims = 5000
+    nr_sims = len(os.listdir(args.data_dir))
+    if nr_sims == 0:
+        raise(f"No simulations in {args.data_dir}")
     # ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
     data_type = "dual_quat"
     architecture = "fcnn"
     print(f"Visualizing {architecture} trained on {data_type}")
 
     model, config = load_model(data_type, architecture)
-    plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims)
+    plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims, args.data_dir)
 
     nr_input_frames = config["n_frames"]
     if architecture == "fcnn":
@@ -355,7 +369,7 @@ if __name__ == "__main__":
     # # Test all data types:
     # data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start"]
     # for data_thing in data_types:
-    #     result = get_random_sim_data(data_thing, nr_frames, nr_sims, i)
+    #     result = get_random_sim_data(data_thing, nr_frames, nr_sims, args.data_dir, i)
     #     plot_data.append(result[0])
 
     # plot_datatypes(plot_data, data_types)
