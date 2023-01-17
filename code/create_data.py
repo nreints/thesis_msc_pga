@@ -131,12 +131,12 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     model = mujoco.MjModel.from_xml_string(string)
 
     data = mujoco.MjData(model)
-    # qvel 012 -> translational
-    # qvel 345 -> rotational
-    # Set random initial velocity
+    # qvel 012 -> linear velocity
+    # qvel 345 -> angular velocity
+    # Set random initial velocities
     # TODO
-    data.qvel[0:3] = np.random.rand(3) * random.randint(qvel_range_t[0], qvel_range_t[1])
-    data.qvel[3:6] = np.random.rand(3) * random.randint(qvel_range_r[0], qvel_range_r[1])
+    data.qvel[0:3] = np.random.rand(3) * [random.randint(qvel_range_t[0], qvel_range_t[1]) for _ in range(3)]
+    data.qvel[3:6] = np.random.rand(3) * [random.randint(qvel_range_r[0], qvel_range_r[1]) for _ in range(3)]
     geom_id = model.geom(geom_name).id
 
     xyz_local = get_vert_local(model, geom_id)
@@ -223,6 +223,12 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
 
 def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
+    dir = f"data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}"
+    if not os.path.exists(dir):
+            os.mkdir(dir)
+    elif len(os.listdir(dir)) > num_sims:
+        print(f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory.")
+        exit()
     for sim_id in range(num_sims):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
@@ -235,7 +241,6 @@ def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel
             size01 = np.random.uniform(0.5, 5)
             size2 = np.random.uniform(size01+1e-1, 5+size01)
             sizes = f"{size01} {size01} {size2}"
-            print(sizes)
         elif symmetry == "none":
             sizes = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
         else:
@@ -247,18 +252,14 @@ def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
 
         sim_data = {"vars": [euler, pos, obj_type, sizes], "data": dataset}
-        dir = f"data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}"
         # Create directory if not yet present
-        if not os.path.exists(dir):
-            os.mkdir(dir)
         with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
         f.close()
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=5)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=1000)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=2000)
     parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;none: random lengths", default="full")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)

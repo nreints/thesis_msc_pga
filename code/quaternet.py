@@ -298,7 +298,7 @@ if __name__ == "__main__":
     for data_dir in [f"data_t(0, 0)_r(0, 0)", f"data_t(-5, 5)_r(0, 0)", f"data_t(0, 0)_r(-5, 5)", f"data_t(-5, 5)_r(-5, 5)"]:
 
         for data_thing in ["quat"]:
-            n_sims = 1000
+            n_sims = len(os.listdir(args.data_dir_train))
             sims = {i for i in range(n_sims)}
             train_sims = set(random.sample(sims, int(0.8 * n_sims)))
             test_sims = sims - train_sims

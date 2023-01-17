@@ -332,9 +332,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Run all
-    for data_dir in [f"data_t(0, 0)_r(0, 0)", f"data_t(-5, 5)_r(0, 0)", f"data_t(0, 0)_r(-5, 5)", f"data_t(-5, 5)_r(-5, 5)"]:
+    for data_dir in [f"data_t(0, 0)_r(0, 0)_none", f"data_t(-10, 10)_r(-5, 5)_none"]:
         for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
-            n_sims = 1000 #TODO fix number of simulations in directory
+            n_sims = len(os.listdir(data_dir))
             # TODO fix different test en train set
             # Divide the train en test dataset
             sims = {i for i in range(n_sims)}

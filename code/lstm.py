@@ -236,7 +236,7 @@ if __name__ == "__main__":
     print(args.data_dir_train)
     # for data_dir in args.data_dir_train:
     for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
-        n_sims = 3000
+        n_sims = len(os.listdir(args.data_dir_train))
         sims = {i for i in range(n_sims)}
         train_sims = set(random.sample(sims, int(0.8 * n_sims)))
         test_sims = sims - train_sims
