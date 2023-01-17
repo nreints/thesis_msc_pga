@@ -222,22 +222,32 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     return dataset
 
 
-def write_data_nsim(num_sims, n_steps, obj_type, square_box, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
+def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
     for sim_id in range(num_sims):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
-        if square_box:
+
+        if symmetry == "full":
             size = np.random.uniform(0.5, 5)
             sizes = f"{size} {size} {size}"
-        else:
+        elif symmetry == "semi": #TODO think whether it needs to be more random
+            size01 = np.random.uniform(0.5, 5)
+            size2 = np.random.uniform(size01+1e-1, 5+size01)
+            sizes = f"{size01} {size01} {size2}"
+            print(sizes)
+        elif symmetry == "none":
             sizes = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
+        else:
+            raise(f"Not a valid string for argument symmetry: {symmetry}")
+
+        #TODO fix no flying boxes
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
         string = create_string(euler, pos, obj_type, sizes)
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
 
         sim_data = {"vars": [euler, pos, obj_type, sizes], "data": dataset}
-        dir = f"data_t{qvel_range_t}_r{qvel_range_r}"
+        dir = f"data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}"
         # Create directory if not yet present
         if not os.path.exists(dir):
             os.mkdir(dir)
@@ -246,12 +256,11 @@ def write_data_nsim(num_sims, n_steps, obj_type, square_box, visualize=False, qv
         f.close()
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
-    parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
-    parser.add_argument("-square", type=bool, help="square box", default=False)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=5)
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=2000)
+    parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;none: random lengths", default="full")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
     parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
     parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
@@ -267,6 +276,6 @@ if __name__ == "__main__":
     r_max = args.r_max
     obj_type = "box"
     print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
-    write_data_nsim(n_sims, n_steps, obj_type, args.square, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(r_min,r_max))
+    write_data_nsim(n_sims, n_steps, obj_type, args.symmetry, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(r_min,r_max))
 
     # write_data_nsim(n_sims, n_steps, obj_type, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(0,0))

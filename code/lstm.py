@@ -225,63 +225,69 @@ def make(config, ndata_dict, loss_dict, optimizer_dict, data_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
+    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default=f"data_t(0, 0)_r(0, 0)")
+    parser.add_argument("-data_dir_test", type=str, help="directory of the test data", default=None)
     args = parser.parse_args()
+    if not os.path.exists(args.data_dir_train):
+        raise("No directory for the train data {args.data_dir_train}")
+    # TODO FIX DIFFERENT train test data
+    # if not args.data_dir_test or not os.path.exists(args.data_dir_test):
+    #     raise("No directory for the test data {args.data_dir_test}")
+    print(args.data_dir_train)
+    # for data_dir in args.data_dir_train:
+    for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
+        n_sims = 3000
+        sims = {i for i in range(n_sims)}
+        train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+        test_sims = sims - train_sims
 
-    for data_dir in [f"data_t(0, 0)_r(0, 0)", f"data_t(-5, 5)_r(0, 0)", f"data_t(0, 0)_r(-5, 5)", f"data_t(-5, 5)_r(-5, 5)"]:
+        config = dict(
+            learning_rate = 0.005,
+            epochs = 30,
+            batch_size = 1024,
+            dropout = 0,
+            loss_type = "L1",
+            loss_reduction_type = "mean",
+            optimizer = "Adam",
+            data_type = data_thing,
+            architecture = "lstm",
+            train_sims = list(train_sims),
+            test_sims = list(test_sims),
+            n_frames = 30,
+            n_sims = n_sims,
+            n_layers = 1,
+            hidden_size = 96,
+            data_dir=args.data_dir_train
+            )
 
-        for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
-            n_sims = 3000
-            sims = {i for i in range(n_sims)}
-            train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-            test_sims = sims - train_sims
+        loss_dict = {
+                    'L1': nn.L1Loss,
+                    'L2': nn.MSELoss
+                    }
 
-            config = dict(
-                learning_rate = 0.005,
-                epochs = 30,
-                batch_size = 1024,
-                dropout = 0,
-                loss_type = "L1",
-                loss_reduction_type = "mean",
-                optimizer = "Adam",
-                data_type = data_thing,
-                architecture = "lstm",
-                train_sims = list(train_sims),
-                test_sims = list(test_sims),
-                n_frames = 30,
-                n_sims = n_sims,
-                n_layers = 1,
-                hidden_size = 96,
-                data_dir=data_dir
-                )
+        optimizer_dict = {'Adam': torch.optim.Adam}
 
-            loss_dict = {
-                        'L1': nn.L1Loss,
-                        'L2': nn.MSELoss
-                        }
+        ndata_dict = {
+                        "pos": 24,
+                        "eucl_motion": 12,
+                        "quat": 7,
+                        "log_quat": 7,
+                        "dual_quat": 8,
+                        "pos_diff": 24,
+                        "pos_diff_start": 24,
+                        "log_dualQ": 6
+                    }
+        start_time = time.time()
+        print(config["data_type"])
+        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.data_dir_train, args.mode_wandb)
+        print("It took ", time.time() - start_time, " seconds.")
 
-            optimizer_dict = {'Adam': torch.optim.Adam}
+        model_dict = {'config': config,
+                    'data_dict': ndata_dict,
+                    'model': model.state_dict()}
 
-            ndata_dict = {
-                            "pos": 24,
-                            "eucl_motion": 12,
-                            "quat": 7,
-                            "log_quat": 7,
-                            "dual_quat": 8,
-                            "pos_diff": 24,
-                            "pos_diff_start": 24,
-                            "log_dualQ": 6
-                        }
-            start_time = time.time()
-            print(config["data_type"])
-            model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, data_dir, args.mode_wandb)
-            print("It took ", time.time() - start_time, " seconds.")
-
-            model_dict = {'config': config,
-                        'data_dict': ndata_dict,
-                        'model': model.state_dict()}
-
-            if not os.path.exists("models"):
-                os.mkdir("models")
+        if not os.path.exists("models"):
+            os.mkdir("models")
 
 
-            torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")
+        torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")

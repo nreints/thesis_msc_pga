@@ -145,14 +145,8 @@ def train_model(
             # Get predictions
             preds = model(data_inputs)
 
-            # print("inputs", data_inputs.shape)
-            # print("labels", data_labels.shape)
-
-            # print("prediction", preds)
-            # print("pos_target", pos_target)
-
-            # Convert predictions to xyz-data
             # conv_time = time.time()
+            # Convert predictions to xyz-data
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
 
             # print("conv_time", time.time() - conv_time)
@@ -184,7 +178,6 @@ def train_model(
             # print("total_time", time.time() - start)
 
         # Log and print epoch every 10 epochs
-        # if epoch % 10 == 0 or epoch == (num_epochs - 1):
         # Log to W&B
         train_log(loss_epoch / len(data_loader), epoch)
 
