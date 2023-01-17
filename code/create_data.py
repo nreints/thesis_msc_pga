@@ -223,12 +223,15 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
 
 def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
+    
     dir = f"data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}"
     if not os.path.exists(dir):
-            os.mkdir(dir)
+            os.mkdir(dir) #TODO mkdir args
     elif len(os.listdir(dir)) > num_sims:
         print(f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory.")
-        exit()
+        # exit()
+        raise IndexError("diwhqodi")
+
     for sim_id in range(num_sims):
         if sim_id % 10 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
@@ -240,11 +243,11 @@ def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel
         elif symmetry == "semi": #TODO think whether it needs to be more random
             size01 = np.random.uniform(0.5, 5)
             size2 = np.random.uniform(size01+1e-1, 5+size01)
-            sizes = f"{size01} {size01} {size2}"
+            sizes = f"{size01} {size01} {size2}" #TODO random volgorde list shuffle
         elif symmetry == "none":
             sizes = f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
         else:
-            raise(f"Not a valid string for argument symmetry: {symmetry}")
+            raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}") #TODO baseExeption
 
         #TODO fix no flying boxes
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
