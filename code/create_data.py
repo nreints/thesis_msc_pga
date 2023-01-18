@@ -226,6 +226,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel
     
     dir = f"data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}"
     if not os.path.exists(dir):
+            print("Creating directory")
             os.mkdir(dir) #TODO mkdir args
     elif len(os.listdir(dir)) > num_sims:
         print(f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory.")
@@ -264,7 +265,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=1000)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=2000)
-    parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;none: random lengths", default="full")
+    parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;none: random lengths", default="none")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
     parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
     parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
