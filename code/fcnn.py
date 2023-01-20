@@ -295,14 +295,14 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         n_frames=config.n_frames,
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
-        dir=config.data_dir
+        dir=config.data_dir_train
     )
     data_set_test = MyDataset(
         sims=config.test_sims,
         n_frames=config.n_frames,
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
-        dir=config.data_dir
+        dir=config.data_dir_test
     )
 
     train_data_loader = data.DataLoader(
@@ -334,7 +334,10 @@ if __name__ == "__main__":
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
     args = parser.parse_args()
     data_dir_train = "data/" + args.data_dir_train
-    data_dir_test = "data/" + args.data_dir_test
+    if args.data_dir_test == "":
+        data_dir_test = data_dir_train
+    else:
+        data_dir_test = "data/" + args.data_dir_test
 
     for i in range(10):
         n_sims = len(os.listdir(data_dir_train))
@@ -363,7 +366,8 @@ if __name__ == "__main__":
             dropout=[0.2, 0.4],
             batch_norm=[True, True, True],
             lam=0.01,
-            data_dir=data_dir_train
+            data_dir_train=data_dir_train,
+            data_dir_test=data_dir_test
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
