@@ -257,7 +257,7 @@ def eval_model(model, data_loader, loss_module, config):
         data_loader
     )
 
-def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, data_dir, mode_wandb):
+def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb):
     # tell wandb to get started
     with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb):
         # access all HPs through wandb.config, so logging matches execution!
@@ -266,7 +266,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, data_
 
         # make the model, data, and optimization problem
         model, train_loader, test_loader, criterion, optimizer = make(
-            config, ndata_dict, loss_dict, optimizer_dict, data_dir
+            config, ndata_dict, loss_dict, optimizer_dict,
         )
         print(config["data_type"])
         print(model)
@@ -288,21 +288,21 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, data_
     return model
 
 
-def make(config, ndata_dict, loss_dict, optimizer_dict, data_dir):
+def make(config, ndata_dict, loss_dict, optimizer_dict):
     # Make the data
     data_set_train = MyDataset(
         sims=config.train_sims,
         n_frames=config.n_frames,
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
-        dir=data_dir
+        dir=config.data_dir
     )
     data_set_test = MyDataset(
         sims=config.test_sims,
         n_frames=config.n_frames,
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
-        dir=data_dir
+        dir=config.data_dir
     )
 
     train_data_loader = data.DataLoader(
@@ -329,69 +329,72 @@ if __name__ == "__main__":
     # parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
+    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default=f"data_t(0, 0)_r(0, 0)_none")
+    parser.add_argument("-data_dir_test", type=str, help="directory of the test data", default="")
+    parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
     args = parser.parse_args()
+    data_dir_train = "data/" + args.data_dir_train
+    data_dir_test = "data/" + args.data_dir_test
 
-    # Run all
-    for data_dir in [f"data_t(0, 0)_r(0, 0)_none", f"data_t(-10, 10)_r(-5, 5)_none"]:
-        for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
-            n_sims = len(os.listdir(data_dir))
-            # TODO fix different test en train set
-            # Divide the train en test dataset
-            sims = {i for i in range(n_sims)}
-            train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-            test_sims = sims - train_sims
+    for i in range(10):
+        n_sims = len(os.listdir(data_dir_train))
+        # TODO fix different test en train set
+        # Divide the train en test dataset
+        sims = {i for i in range(n_sims)}
+        train_sims = set(random.sample(sims, int(0.8 * n_sims)))
+        test_sims = sims - train_sims
 
-            # Set config
-            config = dict(
-                learning_rate=0.01,
-                epochs=30,
-                batch_size=1024,
-                loss_type="L1",
-                loss_reduction_type="mean",
-                optimizer="Adam",
-                data_type=data_thing,
-                architecture="fcnn",
-                train_sims=list(train_sims),
-                test_sims=list(test_sims),
-                n_frames=10,
-                n_sims=n_sims,
-                hidden_sizes=[128, 256],
-                activation_func=["ReLU", "ReLU"],
-                dropout=[0.2, 0.4],
-                batch_norm=[True, True, True],
-                lam=0.01,
-                data_direc=data_dir
-            )
+        # Set config
+        config = dict(
+            learning_rate=0.01,
+            epochs=30,
+            batch_size=1024,
+            loss_type="L1",
+            loss_reduction_type="mean",
+            optimizer="Adam",
+            data_type=args.data_type,
+            architecture="fcnn",
+            train_sims=list(train_sims),
+            test_sims=list(test_sims),
+            n_frames=10,
+            n_sims=n_sims,
+            hidden_sizes=[128, 256],
+            activation_func=["ReLU", "ReLU"],
+            dropout=[0.2, 0.4],
+            batch_norm=[True, True, True],
+            lam=0.01,
+            data_dir=data_dir_train
+        )
 
-            loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
+        loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
 
-            optimizer_dict = {"Adam": torch.optim.Adam}
+        optimizer_dict = {"Adam": torch.optim.Adam}
 
-            ndata_dict = {
-                "pos": 24,
-                "eucl_motion": 12,
-                "quat": 7,
-                "log_quat": 7,
-                "dual_quat": 8,
-                "pos_diff": 24,
-                "pos_diff_start": 24,
-                "pos_norm": 24,
-                "log_dualQ": 6
-            }
+        ndata_dict = {
+            "pos": 24,
+            "eucl_motion": 12,
+            "quat": 7,
+            "log_quat": 7,
+            "dual_quat": 8,
+            "pos_diff": 24,
+            "pos_diff_start": 24,
+            "pos_norm": 24,
+            "log_dualQ": 6
+        }
 
-            start_time = time.time()
-            model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, data_dir, args.mode_wandb)
-            print("It took", time.time() - start_time, "seconds.")
+        start_time = time.time()
+        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb)
+        print("It took", time.time() - start_time, "seconds.")
 
-            # Save model
-            model_dict = {
-                "config": config,
-                "data_dict": ndata_dict,
-                "model": model.state_dict(),
-            }
-            if not os.path.exists("models"):
-                os.mkdir("models")
+        # Save model
+        model_dict = {
+            "config": config,
+            "data_dict": ndata_dict,
+            "model": model.state_dict(),
+        }
+        if not os.path.exists("models"):
+            os.mkdir("models")
 
-            torch.save(
-                model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle"
-            )
+        torch.save(
+            model_dict, f"models/fcnn/{config['data_type']}_{config['architecture']}.pickle"
+        )

@@ -225,18 +225,21 @@ def make(config, ndata_dict, loss_dict, optimizer_dict, data_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
-    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default=f"data_t(0, 0)_r(0, 0)")
-    parser.add_argument("-data_dir_test", type=str, help="directory of the test data", default=None)
+    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default=f"data_t(0, 0)_r(0, 0)_none")
+    parser.add_argument("-data_dir_test", type=str, help="directory of the test data", default="")
     args = parser.parse_args()
-    if not os.path.exists(args.data_dir_train):
+    data_dir_train = "data/" + args.data_dir_train
+    data_dir_test = "data/" + args.data_dir_test
+
+    if not os.path.exists(data_dir_train):
         raise("No directory for the train data {args.data_dir_train}")
     # TODO FIX DIFFERENT train test data
     # if not args.data_dir_test or not os.path.exists(args.data_dir_test):
     #     raise("No directory for the test data {args.data_dir_test}")
-    print(args.data_dir_train)
+    print(data_dir_train)
     # for data_dir in args.data_dir_train:
     for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
-        n_sims = len(os.listdir(args.data_dir_train))
+        n_sims = len(os.listdir(data_dir_train))
         sims = {i for i in range(n_sims)}
         train_sims = set(random.sample(sims, int(0.8 * n_sims)))
         test_sims = sims - train_sims
@@ -257,7 +260,7 @@ if __name__ == "__main__":
             n_sims = n_sims,
             n_layers = 1,
             hidden_size = 96,
-            data_dir=args.data_dir_train
+            data_dir=data_dir_train
             )
 
         loss_dict = {
@@ -279,7 +282,7 @@ if __name__ == "__main__":
                     }
         start_time = time.time()
         print(config["data_type"])
-        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.data_dir_train, args.mode_wandb)
+        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, data_dir_train, args.mode_wandb)
         print("It took ", time.time() - start_time, " seconds.")
 
         model_dict = {'config': config,
@@ -290,4 +293,4 @@ if __name__ == "__main__":
             os.mkdir("models")
 
 
-        torch.save(model_dict, f"models/{config['data_type']}_{config['architecture']}.pickle")
+        torch.save(model_dict, f"models/lstm/{config['data_type']}_{config['architecture']}.pickle")
