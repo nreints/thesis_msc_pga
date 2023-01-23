@@ -329,30 +329,44 @@ if __name__ == "__main__":
     # parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
-    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default=f"data_t(0, 0)_r(0, 0)_none")
+    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default="data_t(0, 0)_r(0, 0)_none")
     parser.add_argument("-data_dir_test", type=str, help="directory of the test data", default="")
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
+    parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
     args = parser.parse_args()
+
+
     data_dir_train = "data/" + args.data_dir_train
     if args.data_dir_test == "":
         data_dir_test = data_dir_train
     else:
         data_dir_test = "data/" + args.data_dir_test
 
-    for i in range(10):
-        n_sims = len(os.listdir(data_dir_train))
-        # TODO fix different test en train set
-        # Divide the train en test dataset
-        sims = {i for i in range(n_sims)}
-        train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-        test_sims = sims - train_sims
+    # Divide the train en test dataset
+    n_sims_train = len(os.listdir(data_dir_train))
+    sims_train = {i for i in range(n_sims_train)}
+    if data_dir_train == data_dir_test:
+        train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+        test_sims = sims_train - train_sims
+    else:
+        train_sims = sims_train
+        n_sims_test = len(os.listdir(data_dir_test))
+        # Use maximum number of test simulations or 20% of the train simulations
+        if n_sims_test < int(n_sims_train * 0.2):
+            print(f"Less than 20% of number train sims as test sims.")
+            test_sims = {i for i in range(n_sims_test)}
+        else:
+            test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
+        print(f"Number of train simulations: {len(train_sims)}")
+        print(f"Number of test simulations: {len(test_sims)}")
 
+    for i in range(args.iterations):
         # Set config
         config = dict(
-            learning_rate=0.01,
-            epochs=30,
+            learning_rate=0.001,
+            epochs=20,
             batch_size=1024,
-            loss_type="L1",
+            loss_type="L2",
             loss_reduction_type="mean",
             optimizer="Adam",
             data_type=args.data_type,
@@ -360,7 +374,7 @@ if __name__ == "__main__":
             train_sims=list(train_sims),
             test_sims=list(test_sims),
             n_frames=10,
-            n_sims=n_sims,
+            n_sims=n_sims_train,
             hidden_sizes=[128, 256],
             activation_func=["ReLU", "ReLU"],
             dropout=[0.2, 0.4],
@@ -388,7 +402,7 @@ if __name__ == "__main__":
 
         start_time = time.time()
         model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb)
-        print("It took", time.time() - start_time, "seconds.")
+        print(f"It took {time.time() - start_time} seconds to train & eval the model.")
 
         # Save model
         model_dict = {
@@ -400,5 +414,5 @@ if __name__ == "__main__":
             os.mkdir("models")
 
         torch.save(
-            model_dict, f"models/fcnn/{config['data_type']}_{config['architecture']}.pickle"
+            model_dict, f"models/fcnn/{config['data_type']}_{config['architecture']}_{config['data_dir_test']}.pickle"
         )

@@ -9,6 +9,7 @@ from pyquaternion import Quaternion
 import random
 import os
 import argparse
+import time
 
 def get_mat(data, obj_id):
     """
@@ -230,11 +231,10 @@ def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel
             os.mkdir(dir) #TODO mkdir args
     elif len(os.listdir(dir)) > num_sims:
         print(f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory.")
-        # exit()
-        raise IndexError("diwhqodi")
+        raise IndexError(f"This directory ({dir}) already exists with less simulations.")
 
     for sim_id in range(num_sims):
-        if sim_id % 10 == 0 or sim_id == num_sims-1:
+        if sim_id % 100 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
 
@@ -262,6 +262,7 @@ def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel
         f.close()
 
 if __name__ == "__main__":
+    start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=1000)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=2000)
@@ -282,5 +283,7 @@ if __name__ == "__main__":
     obj_type = "box"
     print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
     write_data_nsim(n_sims, n_steps, obj_type, args.symmetry, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(r_min,r_max))
+
+    print(f"Time: {time.time()- start_time}")
 
     # write_data_nsim(n_sims, n_steps, obj_type, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(0,0))

@@ -333,7 +333,7 @@ if __name__ == "__main__":
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
-    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(0, 0)_none")
+    # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(0, 0)_none")
     args = parser.parse_args()
     if not os.path.exists(args.data_dir):
         raise("Not such a directory")
