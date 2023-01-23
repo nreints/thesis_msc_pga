@@ -342,6 +342,12 @@ if __name__ == "__main__":
     else:
         data_dir_test = "data/" + args.data_dir_test
 
+    if not os.path.exists(data_dir_train):
+        raise IndexError("No directory for the train data {args.data_dir_train}")
+    if not os.path.exists(data_dir_train):
+        raise IndexError("No directory for the train data {args.data_dir_train}")
+
+
     # Divide the train en test dataset
     n_sims_train = len(os.listdir(data_dir_train))
     sims_train = {i for i in range(n_sims_train)}
@@ -414,5 +420,5 @@ if __name__ == "__main__":
             os.mkdir("models")
 
         torch.save(
-            model_dict, f"models/fcnn/{config['data_type']}_{config['architecture']}_{config['data_dir_test']}.pickle"
+            model_dict, f"models/fcnn/{config['data_type']}_{config['architecture']}_{args.data_dir_train}.pickle"
         )

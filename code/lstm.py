@@ -184,7 +184,7 @@ def eval_model(model, data_loader, loss_module, config):
 
 
 
-def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, data_dir, mode_wandb):
+def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb):
     # tell wandb to get started
     with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb):
       # access all HPs through wandb.config, so logging matches execution!
@@ -192,7 +192,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, data_
       wandb.run.name = f"{config.architecture}/{config.data_type}"
 
       # make the model, data, and optimization problem
-      model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict, data_dir)
+      model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
       print(model)
 
       # and use them to train the model
@@ -205,8 +205,8 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, data_
 
 def make(config, ndata_dict, loss_dict, optimizer_dict, data_dir):
     # Make the data
-    data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=data_dir)
-    data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=data_dir)
+    data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
+    data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
 
     train_data_loader = data.DataLoader(data_set_train, batch_size=config.batch_size, shuffle=True)
     test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
@@ -227,18 +227,40 @@ if __name__ == "__main__":
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
     parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default=f"data_t(0, 0)_r(0, 0)_none")
     parser.add_argument("-data_dir_test", type=str, help="directory of the test data", default="")
+    parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
+    parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
     args = parser.parse_args()
+
     data_dir_train = "data/" + args.data_dir_train
-    data_dir_test = "data/" + args.data_dir_test
+    if args.data_dir_test == "":
+        data_dir_test = data_dir_train
+    else:
+        data_dir_test = "data/" + args.data_dir_test
 
     if not os.path.exists(data_dir_train):
-        raise("No directory for the train data {args.data_dir_train}")
-    # TODO FIX DIFFERENT train test data
-    # if not args.data_dir_test or not os.path.exists(args.data_dir_test):
-    #     raise("No directory for the test data {args.data_dir_test}")
-    print(data_dir_train)
-    # for data_dir in args.data_dir_train:
-    for data_thing in ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]:
+        raise IndexError("No directory for the train data {args.data_dir_train}")
+    if not os.path.exists(data_dir_train):
+        raise IndexError("No directory for the train data {args.data_dir_train}")
+
+    # Divide the train en test dataset
+    n_sims_train = len(os.listdir(data_dir_train))
+    sims_train = {i for i in range(n_sims_train)}
+    if data_dir_train == data_dir_test:
+        train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+        test_sims = sims_train - train_sims
+    else:
+        train_sims = sims_train
+        n_sims_test = len(os.listdir(data_dir_test))
+        # Use maximum number of test simulations or 20% of the train simulations
+        if n_sims_test < int(n_sims_train * 0.2):
+            print(f"Less than 20% of number train sims as test sims.")
+            test_sims = {i for i in range(n_sims_test)}
+        else:
+            test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
+        print(f"Number of train simulations: {len(train_sims)}")
+        print(f"Number of test simulations: {len(test_sims)}")
+
+    for i in range(args.iterations):
         n_sims = len(os.listdir(data_dir_train))
         sims = {i for i in range(n_sims)}
         train_sims = set(random.sample(sims, int(0.8 * n_sims)))
@@ -252,7 +274,7 @@ if __name__ == "__main__":
             loss_type = "L1",
             loss_reduction_type = "mean",
             optimizer = "Adam",
-            data_type = data_thing,
+            data_type = args.data_type,
             architecture = "lstm",
             train_sims = list(train_sims),
             test_sims = list(test_sims),
@@ -260,7 +282,8 @@ if __name__ == "__main__":
             n_sims = n_sims,
             n_layers = 1,
             hidden_size = 96,
-            data_dir=data_dir_train
+            data_dir_train=data_dir_train,
+            data_dir_test=data_dir_test
             )
 
         loss_dict = {
@@ -281,8 +304,7 @@ if __name__ == "__main__":
                         "log_dualQ": 6
                     }
         start_time = time.time()
-        print(config["data_type"])
-        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, data_dir_train, args.mode_wandb)
+        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb)
         print("It took ", time.time() - start_time, " seconds.")
 
         model_dict = {'config': config,
