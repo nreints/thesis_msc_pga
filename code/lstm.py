@@ -242,25 +242,24 @@ if __name__ == "__main__":
     if not os.path.exists(data_dir_train):
         raise IndexError("No directory for the train data {args.data_dir_train}")
 
-    # Divide the train en test dataset
-    n_sims_train = len(os.listdir(data_dir_train))
-    sims_train = {i for i in range(n_sims_train)}
-    if data_dir_train == data_dir_test:
-        train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
-        test_sims = sims_train - train_sims
-    else:
-        train_sims = sims_train
-        n_sims_test = len(os.listdir(data_dir_test))
-        # Use maximum number of test simulations or 20% of the train simulations
-        if n_sims_test < int(n_sims_train * 0.2):
-            print(f"Less than 20% of number train sims as test sims.")
-            test_sims = {i for i in range(n_sims_test)}
+    for i in range(args.iterations):
+        # Divide the train en test dataset
+        n_sims_train = len(os.listdir(data_dir_train))
+        sims_train = {i for i in range(n_sims_train)}
+        if data_dir_train == data_dir_test:
+            train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+            test_sims = sims_train - train_sims
         else:
-            test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
+            train_sims = sims_train
+            n_sims_test = len(os.listdir(data_dir_test))
+            # Use maximum number of test simulations or 20% of the train simulations
+            if n_sims_test < int(n_sims_train * 0.2):
+                print(f"Less than 20% of number train sims as test sims.")
+                test_sims = {i for i in range(n_sims_test)}
+            else:
+                test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
         print(f"Number of train simulations: {len(train_sims)}")
         print(f"Number of test simulations: {len(test_sims)}")
-
-    for i in range(args.iterations):
         n_sims = len(os.listdir(data_dir_train))
         sims = {i for i in range(n_sims)}
         train_sims = set(random.sample(sims, int(0.8 * n_sims)))
