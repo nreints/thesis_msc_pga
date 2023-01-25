@@ -2,24 +2,22 @@
 
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
-#SBATCH --array=1-28%7
-#SBATCH --job-name=fcnn_trainbasic
-#SBATCH --time=5:0:0
+#SBATCH --job-name=data_creation
+#SBATCH --ntasks=1
+#SBATCH --time=00:20:00
 #SBATCH --mem=32000M
-#SBATCH --output=$HOME/MScThesis/snelliusOutput/fcnn_trainbasic_%A_%a.out
+#SBATCH --output=$HOME/MScThesis/snelliusOutput/slurm_output_dataCreation_%A.out
 
 module purge
 module load 2022
 module load Miniconda3/4.12.0
 
-HPARAMS_FILE=$HOME/MScThesis/code/jobs/fcnn_hyper.txt
-
+# Your job starts in the directory where you call sbatch
 cd $HOME/MScThesis/code
+# Activate your environment
 source activate thesis
-
-cd $HOME/MScThesis/code
+# Run your code
 srun python create_data.py -n_sims 10000 -t_min 0 -t_max 0 -r_min 0 -r_max 0
 srun python create_data.py -n_sims 10000 -t_min -10 -t_max 10 -r_min -5 -r_max 5
 srun python create_data.py -n_sims 10000 -t_min 0 -t_max 0 -r_min -5 -r_max 5
 srun python create_data.py -n_sims 10000 -t_min -10 -t_max 10 -r_min 0 -r_max 0
-srun python fcnn.py $(head -$SLURM_ARRAY_TASK_ID $HPARAMS_FILE | tail -1)
