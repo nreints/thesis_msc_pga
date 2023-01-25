@@ -272,7 +272,6 @@ if __name__ == "__main__":
     parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
     parser.add_argument("-r_max", type=int, help="rotation qvel max", default=0)
     args = parser.parse_args()
-
     ## Create random data
     n_sims = args.n_sims
     n_steps = args.n_frames
@@ -280,10 +279,11 @@ if __name__ == "__main__":
     t_max = args.t_max
     r_min = args.r_min
     r_max = args.r_max
+    print(f"Creating dataset qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
     obj_type = "box"
-    print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
+    # print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
     write_data_nsim(n_sims, n_steps, obj_type, args.symmetry, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(r_min,r_max))
 
-    print(f"Time: {time.time()- start_time}")
+    print(f"---- FINISHED ----\nTime: {time.time()- start_time}")
 
     # write_data_nsim(n_sims, n_steps, obj_type, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(0,0))
