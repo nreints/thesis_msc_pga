@@ -12,7 +12,7 @@ import os
 import argparse
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-wandb.login(key="dc4407c06f6d57a37befe29cb0773deffd670c72")
+# wandb.login(key="dc4407c06f6d57a37befe29cb0773deffd670c72")
 
 class fcnn(nn.Module):
     def __init__(self, n_data, config):
@@ -122,7 +122,7 @@ def train_log(loss, epoch):
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
 
 def train_model(
-    model, optimizer, data_loader, test_loader, loss_module, num_epochs, config
+    model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config
 ):
     # Set model to train mode
     loss_type = config.loss_type
@@ -177,12 +177,11 @@ def train_model(
             optimizer.step()
             # print("total_time", time.time() - start)
 
-        # Log and print epoch every 10 epochs
         # Log to W&B
         train_log(loss_epoch / len(data_loader), epoch)
 
         # Evaluate model
-        true_loss, convert_loss = eval_model(model, test_loader, loss_module, config)
+        true_loss, convert_loss, total_convert_loss = eval_model(model, test_loaders, loss_module, config, epoch)
 
         # Set model to train mode
         model.train()
@@ -191,7 +190,7 @@ def train_model(
             epoch,
             round(loss_epoch.item() / len(data_loader), 10),
             "\t",
-            round(convert_loss, 10),
+            round(convert_loss, 10), "\t", round(total_convert_loss, 10)
         )
 
         # Write to file
@@ -206,56 +205,58 @@ def train_model(
         # f.close()
         print("epoch_time; ", time.time() - epoch_time)
 
-def eval_model(model, data_loader, loss_module, config):
+def eval_model(model, data_loaders, loss_module, config, current_epoch):
 
     model.eval()  # Set model to eval mode
 
     with torch.no_grad():  # Deactivate gradients for the following code
-        total_loss = 0
-        total_convert_loss = 0
-        for data_inputs, data_labels, start_pos, pos_target in data_loader:
+        for i, data_loader in enumerate(data_loaders):
+            total_loss = 0
+            total_convert_loss = 0
+            wandb_total_convert_loss = 0
+            for data_inputs, data_labels, start_pos, pos_target in data_loader:
 
-            # Set data to current device
-            data_inputs = data_inputs.to(device)
-            data_labels = data_labels.to(device)
-            # start_pos = start_pos.to(device)
-            # pos_target = pos_target.to(device)
+                # Set data to current device
+                data_inputs = data_inputs.to(device)
+                data_labels = data_labels.to(device)
+                # start_pos = start_pos.to(device)
+                # pos_target = pos_target.to(device)
 
-            # Get predictions
-            preds = model(data_inputs)
-            preds = preds.squeeze(dim=1)
+                # Get predictions
+                preds = model(data_inputs)
+                preds = preds.squeeze(dim=1)
 
-            # if config['data_type'] == 'pos':
-            #     preds = preds.reshape((preds.shape[0], 8, 3))
-            #     data_labels = data_labels.reshape((data_labels.shape[0], 8, 3))
-
-            # Convert predictions to xyz-data
-            alt_preds = convert(
-                preds.detach().cpu(), start_pos, data_loader.dataset.data_type
-            )
-            # Determine norm penalty for quaternion data
-            if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
-                norm_penalty = (
-                    config["lam"]
-                    * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1))) ** 2
+                # Convert predictions to xyz-data
+                alt_preds = convert(
+                    preds.detach().cpu(), start_pos, data_loader.dataset.data_type
                 )
-            else:
-                norm_penalty = 0
 
-            position_loss = loss_module(alt_preds, pos_target)
+                # Determine norm penalty for quaternion data
+                if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
+                    norm_penalty = (
+                        config["lam"]
+                        * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1))) ** 2
+                    )
+                else:
+                    norm_penalty = 0
 
-            # Calculate the total xyz-loss
-            total_convert_loss += position_loss + norm_penalty
+                position_loss = loss_module(alt_preds, pos_target)
 
-            total_loss += loss_module(preds, data_labels)
+                # Calculate the total xyz-loss
+                total_convert_loss += position_loss + norm_penalty
+                wandb_total_convert_loss += position_loss
 
-        # Log loss to W&B
-        wandb.log({"Converted test loss": total_convert_loss / len(data_loader)})
+                total_loss += loss_module(preds, data_labels)
+
+            # Log loss to W&B
+            print(f"\t Logging test loss: {config.data_dirs_test[i][5:]} => {wandb_total_convert_loss / len(data_loader)}")
+            wandb.log({f"Test loss {config.data_dirs_test[i][5:]}": wandb_total_convert_loss / len(data_loader)}, step=current_epoch)
+            # wandb.log({f"Test loss {config.data_dirs_test[i][5:]}": wandb_total_convert_loss / len(data_loader)})
 
     # Return the average loss
-    return total_loss.item() / len(data_loader), total_convert_loss.item() / len(
-        data_loader
-    )
+    return total_loss.item() / len(data_loader), wandb_total_convert_loss.item() / len(
+        data_loader), total_convert_loss.item() / len(
+        data_loader)
 
 def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb):
     # tell wandb to get started
@@ -265,7 +266,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
         wandb.run.name = f"{config.architecture}/{config.data_type}"
 
         # make the model, data, and optimization problem
-        model, train_loader, test_loader, criterion, optimizer = make(
+        model, train_loader, test_loaders, criterion, optimizer = make(
             config, ndata_dict, loss_dict, optimizer_dict,
         )
         print(config["data_type"])
@@ -276,14 +277,14 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
             model,
             optimizer,
             train_loader,
-            test_loader,
+            test_loaders,
             criterion,
             config.epochs,
             config,
         )
 
         # and test its final performance
-        eval_model(model, test_loader, criterion, config)
+        eval_model(model, test_loaders, criterion, config, config.epochs)
 
     return model
 
@@ -297,20 +298,25 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         data_type=config.data_type,
         dir=config.data_dir_train
     )
-    data_set_test = MyDataset(
-        sims=config.test_sims,
-        n_frames=config.n_frames,
-        n_data=ndata_dict[config.data_type],
-        data_type=config.data_type,
-        dir=config.data_dir_test
-    )
-
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
     )
-    test_data_loader = data.DataLoader(
-        data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
-    )
+    test_data_loaders = []
+
+    for test_data_dir in config.data_dirs_test:
+        # print("data/"+test_data_dir)
+        data_set_test = MyDataset(
+            sims=config.test_sims,
+            n_frames=config.n_frames,
+            n_data=ndata_dict[config.data_type],
+            data_type=config.data_type,
+            dir="data/"+test_data_dir
+        )
+        test_data_loader = data.DataLoader(
+            data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
+        )
+        test_data_loaders += [test_data_loader]
+
 
     # Make the model
     model = fcnn(ndata_dict[config.data_type], config).to(device)
@@ -321,7 +327,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         model.parameters(), lr=config.learning_rate
     )
 
-    return model, train_data_loader, test_data_loader, criterion, optimizer
+    return model, train_data_loader, test_data_loaders, criterion, optimizer
 
 
 if __name__ == "__main__":
@@ -330,18 +336,21 @@ if __name__ == "__main__":
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
     parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default="data_t(0, 0)_r(0, 0)_none")
-    parser.add_argument("-data_dir_test", type=str, help="directory of the test data", default="")
+    # parser.add_argument("-data_dir_test", type=list, help="directory of the test data", default="")
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
     parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
     args = parser.parse_args()
 
 
     data_dir_train = "data/" + args.data_dir_train
-    if args.data_dir_test == "":
-        data_dir_test = data_dir_train
-    else:
-        data_dir_test = "data/" + args.data_dir_test
-
+    # data_dirs_test = args.data_dir_test
+    data_dirs_test = ["data_t(0, 0)_r(0, 0)_none", "data_t(-10, 10)_r(0, 0)_none",
+                        "data_t(0, 0)_r(-5, 5)_none","data_t(-10, 10)_r(-5, 5)_none"]
+    # if args.data_dir_test == "":
+    #     data_dirs_test = [data_dir_train]
+    # else:
+    #     data_dirs_test = "data/" + args.data_dir_test
+    
     if not os.path.exists(data_dir_train):
         raise IndexError("No directory for the train data {args.data_dir_train}")
     if not os.path.exists(data_dir_train):
@@ -351,18 +360,27 @@ if __name__ == "__main__":
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
         sims_train = {i for i in range(n_sims_train)}
-        if data_dir_train == data_dir_test:
-            train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
-            test_sims = sims_train - train_sims
-        else:
-            train_sims = sims_train
-            n_sims_test = len(os.listdir(data_dir_test))
-            # Use maximum number of test simulations or 20% of the train simulations
-            if n_sims_test < int(n_sims_train * 0.2):
-                print(f"Less than 20% of number train sims as test sims.")
-                test_sims = {i for i in range(n_sims_test)}
-            else:
-                test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
+        train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+        test_sims = sims_train - train_sims
+
+
+
+
+        # if data_dir_train == data_dirs_test:
+        #     train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+        #     test_sims = sims_train - train_sims
+        # else:
+        #     train_sims = sims_train
+        #     n_sims_test = len(os.listdir(data_dir_test))
+        #     # Use maximum number of test simulations or 20% of the train simulations
+        #     if n_sims_test < int(n_sims_train * 0.2):
+        #         print(f"Less than 20% of number train sims as test sims.")
+        #         test_sims = {i for i in range(n_sims_test)}
+        #     else:
+        #         test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
+
+
+
         print(f"Number of train simulations: {len(train_sims)}")
         print(f"Number of test simulations: {len(test_sims)}")
         # Set config
@@ -385,7 +403,7 @@ if __name__ == "__main__":
             batch_norm=[True, True, True],
             lam=0.01,
             data_dir_train=data_dir_train,
-            data_dir_test=data_dir_test
+            data_dirs_test=data_dirs_test
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}

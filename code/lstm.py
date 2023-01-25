@@ -121,7 +121,6 @@ def train_model(model, optimizer, data_loader, test_loader, loss_module, num_epo
             #     # print(output.shape, data_labels_pos.shape)
             #     output = output.reshape((output.shape[0], output.shape[1], 8, 3))
 
-
             # print("inputs", data_inputs.shape)
             # print("labels", data_labels.shape)
             # print("pos_target", pos_target.shape)
@@ -302,6 +301,7 @@ if __name__ == "__main__":
                         "pos_diff_start": 24,
                         "log_dualQ": 6
                     }
+
         start_time = time.time()
         model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb)
         print("It took ", time.time() - start_time, " seconds.")
@@ -313,5 +313,4 @@ if __name__ == "__main__":
         if not os.path.exists("models"):
             os.mkdir("models")
 
-
-        torch.save(model_dict, f"models/lstm/{config['data_type']}_{config['architecture']}.pickle")
+        torch.save(model_dict, f"models/lstm/{config['data_type']}_{config['architecture']}_{args.data_dir_train}.pickle")
