@@ -226,6 +226,8 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
     
     dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}"
+    if not os.path.exists("data"):
+        os.mkdir("data")
     if not os.path.exists(dir):
             print("Creating directory")
             os.mkdir(dir) #TODO mkdir args
