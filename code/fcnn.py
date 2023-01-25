@@ -264,7 +264,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
     with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}"
+        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}"
 
         # make the model, data, and optimization problem
         model, train_loader, test_loaders, criterion, optimizer = make(
@@ -404,7 +404,8 @@ if __name__ == "__main__":
             batch_norm=[True, True, True],
             lam=0.01,
             data_dir_train=data_dir_train,
-            data_dirs_test=data_dirs_test
+            data_dirs_test=data_dirs_test,
+            iter=i
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
