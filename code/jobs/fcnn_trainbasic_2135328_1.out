@@ -1,0 +1,98 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: Appending key for api.wandb.ai to your netrc file: /home/nreints/.netrc
+/gpfs/home2/nreints/MScThesis/code/fcnn.py:364: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230125_163838-8fsoy95e
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run dancing-dumpling-1130
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/8fsoy95e
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: Waiting for W&B process to finish... (success).
+wandb: ERROR Error while calling W&B API: run nreints/thesis/8fsoy95e was previously created and deleted; try a new run name (<Response [409]>)
+wandb: ERROR Error while calling W&B API: run nreints/thesis/8fsoy95e was previously created and deleted; try a new run name (<Response [409]>)
+wandb: ERROR Error while calling W&B API: run nreints/thesis/8fsoy95e was previously created and deleted; try a new run name (<Response [409]>)
+wandb: ERROR Error while calling W&B API: run nreints/thesis/8fsoy95e was previously created and deleted; try a new run name (<Response [409]>)
+wandb: ERROR Error while calling W&B API: run nreints/thesis/8fsoy95e was previously created and deleted; try a new run name (<Response [409]>)
+wandb: ERROR Dropped streaming file chunk (see wandb/debug-internal.log)
+wandb: ERROR Error while calling W&B API: run nreints/thesis/8fsoy95e was previously created and deleted; try a new run name (<Response [409]>)
+wandb: ERROR Error while calling W&B API: run nreints/thesis/8fsoy95e was previously created and deleted; try a new run name (<Response [409]>)
+wandb: ERROR Error while calling W&B API: run nreints/thesis/8fsoy95e was previously created and deleted; try a new run name (<Response [409]>)
+Thread SenderThread:
+Traceback (most recent call last):
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/apis/normalize.py", line 26, in wrapper
+    return func(*args, **kwargs)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/internal_api.py", line 1592, in upsert_run
+    response = self.gql(
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/internal_api.py", line 213, in gql
+    ret = self._retry_gql(
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/lib/retry.py", line 128, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/internal_api.py", line 241, in execute
+    return self.client.execute(*args, **kwargs)  # type: ignore
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/transport/requests.py", line 39, in execute
+    request.raise_for_status()
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 409 Client Error: Conflict for url: https://api.wandb.ai/graphql
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/internal_util.py", line 49, in run
+    self._run()
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/internal_util.py", line 100, in _run
+    self._process(record)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/internal.py", line 329, in _process
+    self._sm.send(record)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 341, in send
+    send_handler(record)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 363, in send_request
+    send_handler(record)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 607, in send_request_defer
+    self.debounce(final=True)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 510, in debounce
+    self._maybe_update_config(always=final)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 487, in _maybe_update_config
+    self._debounce_config()
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/sdk/internal/sender.py", line 516, in _debounce_config
+    self._api.upsert_run(
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/wandb/apis/normalize.py", line 28, in wrapper
+    raise CommError(err.response, err)
+wandb.errors.CommError: <Response [409]>
+wandb: ERROR Internal wandb error: file data was not synced
+srun: error: gcn14: task 0: Exited with exit code 255
+srun: launch/slurm: _step_signal: Terminating StepId=2135329.0
+
+JOB STATISTICS
+==============
+Job ID: 2135329
+Array Job ID: 2135328_1
+Cluster: snellius
+User/Group: nreints/nreints
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 04:30:18 core-walltime
+Job Wall-clock time: 00:15:01
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 31.25 GB (31.25 GB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
