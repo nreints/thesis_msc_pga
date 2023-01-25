@@ -286,6 +286,6 @@ if __name__ == "__main__":
     # print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
     write_data_nsim(n_sims, n_steps, obj_type, args.symmetry, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(r_min,r_max))
 
-    print(f"---- FINISHED ----\nTime: {time.time()- start_time}")
+    print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")
 
     # write_data_nsim(n_sims, n_steps, obj_type, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(0,0))
