@@ -12,7 +12,7 @@ import os
 import argparse
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-# wandb.login(key="dc4407c06f6d57a37befe29cb0773deffd670c72")
+wandb.login(key="dc4407c06f6d57a37befe29cb0773deffd670c72")
 
 class fcnn(nn.Module):
     def __init__(self, n_data, config):
