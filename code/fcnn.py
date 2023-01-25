@@ -336,14 +336,14 @@ if __name__ == "__main__":
     # parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
-    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", default="data_t(0, 0)_r(0, 0)_none")
+    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", nargs="+", default="data_t(0, 0)_r(0, 0)_none")
     # parser.add_argument("-data_dir_test", type=list, help="directory of the test data", default="")
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
     parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
     args = parser.parse_args()
 
 
-    data_dir_train = "data/" + args.data_dir_train
+    data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
     data_dirs_test = ["data_t(0, 0)_r(0, 0)_none", "data_t(-10, 10)_r(0, 0)_none",
                         "data_t(0, 0)_r(-5, 5)_none","data_t(-10, 10)_r(-5, 5)_none"]
