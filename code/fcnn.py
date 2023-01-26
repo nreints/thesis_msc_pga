@@ -342,7 +342,7 @@ if __name__ == "__main__":
     parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
     args = parser.parse_args()
 
-
+    print("BEFORE", args.data_dir_train)
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
     data_dirs_test = ["data_t(0, 0)_r(0, 0)_none", "data_t(-10, 10)_r(0, 0)_none",
@@ -351,9 +351,7 @@ if __name__ == "__main__":
     #     data_dirs_test = [data_dir_train]
     # else:
     #     data_dirs_test = "data/" + args.data_dir_test
-    
-    if not os.path.exists(data_dir_train):
-        raise IndexError("No directory for the train data {args.data_dir_train}")
+
     if not os.path.exists(data_dir_train):
         raise IndexError("No directory for the train data {args.data_dir_train}")
 
