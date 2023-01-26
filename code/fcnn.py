@@ -261,7 +261,7 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch):
 
 def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb):
     # tell wandb to get started
-    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb):
+    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb, tags=[device]):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
         wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}"

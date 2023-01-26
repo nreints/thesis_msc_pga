@@ -187,10 +187,10 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch):
 
 def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb):
     # tell wandb to get started
-    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb):
+    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb, tags=[str(device)]):
       # access all HPs through wandb.config, so logging matches execution!
       config = wandb.config
-      wandb.run.name = f"{config.architecture}/{config.data_type}"
+      wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}"
 
       # make the model, data, and optimization problem
       model, train_loader, test_loader, criterion, optimizer = make(config, ndata_dict, loss_dict, optimizer_dict)
@@ -200,7 +200,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
       train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config)
 
       # and test its final performance
-      eval_model(model, test_loader, criterion, config)
+      eval_model(model, test_loader, criterion, config, config.epochs)
 
     return model
 
@@ -263,6 +263,7 @@ if __name__ == "__main__":
         raise IndexError("No directory for the train data {args.data_dir_train}")
 
     for i in range(args.iterations):
+        print(f"----- ITERATION {i}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
         sims_train = {i for i in range(n_sims_train)}
@@ -290,7 +291,7 @@ if __name__ == "__main__":
         # test_sims = sims - train_sims
 
         config = dict(
-            learning_rate = 0.001,
+            learning_rate = 0.005,
             epochs = 30,
             batch_size = 1024,
             dropout = 0.2,
