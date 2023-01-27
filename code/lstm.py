@@ -97,7 +97,7 @@ def train_log(loss, epoch):
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
     # print(f"Loss after " + f" examples: {loss:.3f}")
 
-def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config):
+def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config, losses):
     # Set model to train mode
     model.train()
     wandb.watch(model, loss_module, log="all", log_freq=10)
@@ -143,7 +143,7 @@ def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_ep
 
         train_log(loss_epoch/len(data_loader), epoch)
 
-        convert_loss = eval_model(model, test_loaders, loss_module, config, epoch)
+        convert_loss = eval_model(model, test_loaders, config, epoch, losses)
         model.train()
         print(epoch, round(loss_epoch.item()/len(data_loader), 10), '\t', round(convert_loss, 10))
 
@@ -155,39 +155,40 @@ def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_ep
 
 
 
-def eval_model(model, data_loaders, loss_module, config, current_epoch):
+def eval_model(model, data_loaders, config, current_epoch, losses):
     model.eval() # Set model to eval mode
 
     with torch.no_grad(): # Deactivate gradients for the following code
         for i, data_loader in enumerate(data_loaders):
-            total_loss = 0
-            total_convert_loss = 0
-            for data_inputs, data_labels, data_labels_pos, start_pos in data_loader:
+            for loss_module in losses:
+                loss_module = loss_module(reduction=config.loss_reduction_type)
+                total_loss = 0
+                total_convert_loss = 0
+                for data_inputs, data_labels, data_labels_pos, start_pos in data_loader:
 
-                # Determine prediction of model on dev set
-                data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
+                    # Determine prediction of model on dev set
+                    data_inputs, data_labels = data_inputs.to(device), data_labels.to(device)
 
-                preds, _ = model(data_inputs)
-                preds = preds.squeeze(dim=1)
+                    preds, _ = model(data_inputs)
+                    preds = preds.squeeze(dim=1)
 
-                # if config['data_type'] == 'pos':
-                #     preds = preds.reshape((preds.shape[0], preds.shape[1], 8, 3))
+                    # if config['data_type'] == 'pos':
+                    #     preds = preds.reshape((preds.shape[0], preds.shape[1], 8, 3))
+                    alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
 
-                alt_preds = convert(preds.detach().cpu(), start_pos, data_loader.dataset.data_type)
+                    total_loss += loss_module(preds, data_labels)
+                    total_convert_loss += loss_module(alt_preds, data_labels_pos)
 
-                total_loss += loss_module(preds, data_labels)
-                total_convert_loss += loss_module(alt_preds, data_labels_pos)
-
-            print(f"\t Logging test loss: {config.data_dirs_test[i][5:]} => {total_convert_loss / len(data_loader)}")
-            wandb.log({f"Test loss {config.data_dirs_test[i][5:]}": total_convert_loss / len(data_loader)}, step=current_epoch)
+                print(f"\t Logging test loss: {config.data_dirs_test[i][5:]}, {str(loss_module)} => {total_convert_loss / len(data_loader)}")
+                wandb.log({f"Test loss {config.data_dirs_test[i][5:]}, {str(loss_module)}": total_convert_loss / len(data_loader)}, step=current_epoch)
 
     return total_convert_loss.item()/len(data_loader)
 
 
 
-def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb):
+def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb, losses):
     # tell wandb to get started
-    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb, tags=[str(device)]):
+    with wandb.init(project="test", config=hyperparameters, mode=mode_wandb, tags=[str(device)]):
       # access all HPs through wandb.config, so logging matches execution!
       config = wandb.config
       wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}"
@@ -197,10 +198,10 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
       print(model)
 
       # and use them to train the model
-      train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config)
+      train_model(model, optimizer, train_loader, test_loader, criterion, config.epochs, config, losses)
 
       # and test its final performance
-      eval_model(model, test_loader, criterion, config, config.epochs)
+      eval_model(model, test_loader, config, config.epochs, losses)
 
     return model
 
@@ -228,7 +229,6 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         )
         test_data_loaders += [test_data_loader]
 
-    print(test_data_loaders)
     # Make the model
     model = LSTM(ndata_dict[config.data_type], config).to(device)
 
@@ -245,11 +245,11 @@ if __name__ == "__main__":
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
     parser.add_argument("-data_dir_train", type=str, help="directory of the train data", nargs="+", default="data_t(0, 0)_r(0, 0)_none")
     # parser.add_argument("-data_dir_test", type=list, help="directory of the test data", default="")
+    parser.add_argument("-loss", type=str, help="Loss type", default="L2")
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
     parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
     args = parser.parse_args()
 
-    print("BEFORE", args.data_dir_train)
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
     data_dirs_test = ["data_t(0, 0)_r(0, 0)_none", "data_t(-10, 10)_r(0, 0)_none",
@@ -258,6 +258,8 @@ if __name__ == "__main__":
     #     data_dirs_test = [data_dir_train]
     # else:
     #     data_dirs_test = "data/" + args.data_dir_test
+
+    losses = [nn.MSELoss, nn.L1Loss]
 
     if not os.path.exists(data_dir_train):
         raise IndexError("No directory for the train data {args.data_dir_train}")
@@ -283,19 +285,13 @@ if __name__ == "__main__":
         #     else:
         #         test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
 
-        # print(f"Number of train simulations: {len(train_sims)}")
-        # print(f"Number of test simulations: {len(test_sims)}")
-        # n_sims = len(os.listdir(data_dir_train))
-        # sims = {i for i in range(n_sims)}
-        # train_sims = set(random.sample(sims, int(0.8 * n_sims)))
-        # test_sims = sims - train_sims
 
         config = dict(
             learning_rate = 0.005,
             epochs = 30,
             batch_size = 1024,
             dropout = 0.2,
-            loss_type = "L2",
+            loss_type = args.loss,
             loss_reduction_type = "mean",
             optimizer = "Adam",
             data_type = args.data_type,
@@ -330,7 +326,7 @@ if __name__ == "__main__":
                     }
 
         start_time = time.time()
-        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb)
+        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses)
         print("It took ", time.time() - start_time, " seconds.")
 
         model_dict = {'config': config,

@@ -332,23 +332,25 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
-    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
-    # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(0, 0)_none")
+    # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
+    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(0, 0)_none")
     args = parser.parse_args()
-    if not os.path.exists(args.data_dir):
-        raise("Not such a directory")
+    data_dir = "data/"+args.data_dir
+    if not os.path.exists(data_dir):
+        raise KeyError(f"Not such a directory {data_dir}")
 
 
 
-    nr_frames = 200 # See create_data.py
-    nr_sims = len(os.listdir(args.data_dir))
+    nr_frames = 300 # See create_data.py
+    nr_sims = len(os.listdir(data_dir))
     if nr_sims == 0:
-        raise(f"No simulations in {args.data_dir}")
+        raise KeyError(f"No simulations in {data_dir}")
     # ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
     data_type = "dual_quat"
     architecture = "fcnn"
     print(f"Visualizing {architecture} trained on {data_type}")
 
+    # -----------------------------------
 
     # model, config = load_model(data_type, architecture)
     # plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims, args.data_dir)
@@ -361,7 +363,7 @@ if __name__ == "__main__":
 
     # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
 
-
+    # -----------------------------------'
 
     # Below the test for all datatypes
     plot_data = []
@@ -371,7 +373,7 @@ if __name__ == "__main__":
     # Test all data types:
     data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]
     for data_thing in data_types:
-        result = get_random_sim_data(data_thing, nr_frames, nr_sims, args.data_dir, i)
+        result = get_random_sim_data(data_thing, nr_frames, nr_sims, data_dir, i)
         plot_data.append(result[0])
 
     plot_datatypes(plot_data, data_types)

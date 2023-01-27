@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --array=1-28%7
+#SBATCH --job-name=fcnn_trainbasic
+#SBATCH --time=5:0:0
+#SBATCH --mem=32000M
+#SBATCH --output=fcnn_trainbasic_%A_%a.out
+
+module purge
+module load 2022
+module load Miniconda3/4.12.0
+
+HPARAMS_FILE=$HOME/MScThesis/code/jobs/hyper_L1.txt
+
+cd $HOME/MScThesis/code
+source activate thesis
+
+cd $HOME/MScThesis/code
+srun python fcnn.py $(head -$SLURM_ARRAY_TASK_ID $HPARAMS_FILE | tail -1)
