@@ -1,11 +1,11 @@
 
-def create_string(euler_obj, pos_obj, type_obj, size_obj):
+def create_string(euler_obj, pos_obj, type_obj, size_obj, gravity):
 
     return f"""
     <mujoco>
+    <option gravity="0 0 {gravity}"/>
     <worldbody>
         <light name="top" pos="0 0 1"/>
-        <geom type="plane" pos="0 0 0" size="10 10 10" rgba="1 1 1 1"/>
         <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
             <joint name="joint1" type="free"/>

@@ -42,12 +42,11 @@ def load_model(data_type, architecture):
 
     return model, config
 
-def get_random_sim_data(data_type, nr_frames, nr_sims, data_dir, i=None):
+def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
     """
     Collects the data from a random simulation.
     Input:
         - data_type: type of the data that needs to be collected.
-        - nr_frames: number of frames to collect.
         - nr_sims: total number of available simulations ().
         - i: id of simulation to select, default; select random simulation.
     Output:
@@ -55,6 +54,7 @@ def get_random_sim_data(data_type, nr_frames, nr_sims, data_dir, i=None):
         - original_data; data in the format of data_type.
         - plot_data_true_pos; original xyz data.
         - start_pos[0]; start position (xyz) of the simulation.
+        - nr_frames: number of frames to collect.
     """
     # Select random simulation
 
@@ -64,6 +64,7 @@ def get_random_sim_data(data_type, nr_frames, nr_sims, data_dir, i=None):
 
     with open(f'{data_dir}/sim_{i}.pickle', 'rb') as f:
         file = pickle.load(f)
+        nr_frames = file["vars"]["n_steps"]
         # Load the correct start position repeat for converting
         if data_type == "pos_diff_start":
             start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32).flatten()
@@ -80,7 +81,7 @@ def get_random_sim_data(data_type, nr_frames, nr_sims, data_dir, i=None):
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
-    return plot_data, original_data, plot_data_true_pos, start_pos[0]
+    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames
 
 def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames, model):
     """
@@ -261,7 +262,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
     ani = animation.FuncAnimation(fig, update, nr_frames, interval=75, repeat=False)
     plt.show()
 
-def plot_datatypes(plot_data, data_types):
+def plot_datatypes(plot_data, data_types, nr_frames):
     """
     Plots 3D animation of the cubes in all data types
     """
@@ -328,23 +329,21 @@ def plot_datatypes(plot_data, data_types):
     plt.close()
 
 if __name__ == "__main__":
-    print("poejdw")
     parser = argparse.ArgumentParser()
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
     parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(0, 0)_none")
     args = parser.parse_args()
-    data_dir = "data/"+args.data_dir
+    data_dir = "data/" + args.data_dir
     if not os.path.exists(data_dir):
         raise KeyError(f"Not such a directory {data_dir}")
 
-
-
-    nr_frames = 300 # See create_data.py
     nr_sims = len(os.listdir(data_dir))
     if nr_sims == 0:
         raise KeyError(f"No simulations in {data_dir}")
+
+
     # ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
     data_type = "dual_quat"
     architecture = "fcnn"
@@ -372,10 +371,17 @@ if __name__ == "__main__":
 
     # Test all data types:
     data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]
+    # data_types = ["pos", "eucl_motion"]
+    # data_types = ["pos", "quat"]
+    # data_types = ["pos", "log_quat"]
+    # data_types = ["pos", "dual_quat"]
+    # data_types = ["pos", "pos_diff_start"]
+    # data_types = ["pos", "log_dualQ"]
+    
     for data_thing in data_types:
-        result = get_random_sim_data(data_thing, nr_frames, nr_sims, data_dir, i)
-        plot_data.append(result[0])
+        result, _,_,_, nr_frames = get_random_sim_data(data_thing, nr_sims, data_dir, i)
+        plot_data.append(result)
 
-    plot_datatypes(plot_data, data_types)
+    plot_datatypes(plot_data, data_types, nr_frames)
 
 

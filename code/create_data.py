@@ -15,7 +15,7 @@ def get_mat(data, obj_id):
     """
     Returns the rotation matrix of an object.
     """
-    return data.xmat[obj_id]
+    return data.geom_xmat[obj_id]
 
 def get_vert_local(model, obj_id):
     """
@@ -24,7 +24,6 @@ def get_vert_local(model, obj_id):
     obj_size = model.geom_size[obj_id]
     offsets = np.array([-1, 1]) * obj_size[:, None]
     return np.stack(list(itertools.product(*offsets))).T
-
 
 def get_vert_coords(data, obj_id, xyz_local):
     """
@@ -45,7 +44,7 @@ def get_quat(data, obj_id):
     """
     # MUJOCO DOCS Cartesian orientation of body frame
     # a bi cj dk convention (identity: 1 0 0 0)
-    return data.xquat[obj_id]
+    return data.xquat[obj_id + 1]
 
 def calculate_log_quat(quat):
     """
@@ -126,7 +125,6 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     """
     Create the dataset of data_type for n//10 steps.
     """
-
     geom_name = "object_geom"
 
     model = mujoco.MjModel.from_xml_string(string)
@@ -139,7 +137,6 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     data.qvel[0:3] = np.random.rand(3) * [random.randint(qvel_range_t[0], qvel_range_t[1]) for _ in range(3)]
     # data.qvel[0:3] = np.array([0,0,0])
     data.qvel[3:6] = np.random.rand(3) * [random.randint(qvel_range_r[0], qvel_range_r[1]) for _ in range(3)]
-    # data.qvel[3:6] = np.array([7,0,0])
     geom_id = model.geom(geom_name).id
 
     xyz_local = get_vert_local(model, geom_id)
@@ -150,10 +147,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
         import mujoco_viewer
         viewer = mujoco_viewer.MujocoViewer(model, data)
 
-    for i in range(n_steps):
-        # data.qvel[0:3] = np.array([0,0,0])
-
-
+    for i in range(0, n_steps, 10):
         if not visualize or viewer.is_alive:
             mujoco.mj_step(model, data)
 
@@ -169,51 +163,56 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
 
-            if i % 10 == 0:
+            # print("---------\n", i, "\n", data.ximat.reshape(2,3,3)[1], "\n", data.ximat.reshape(2,3,3)[1] @ data.qvel[3:6])
+            # print(data.qvel)
+            # if i >= 50:
+                # exit()
 
-                xpos = data.geom_xpos[geom_id]
+            xpos = data.geom_xpos[geom_id]
 
-                # Collect position data
-                dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
+            # Collect position data
+            dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
 
-                # Collect euclidean motion data
-                dataset["eucl_motion"][i // 10] = np.append(
-                    get_mat(data, geom_id), xpos
+
+            # print("GOAL:\n", get_vert_coords(data, geom_id, xyz_local).T)
+            # Collect euclidean motion data
+            dataset["eucl_motion"][i // 10] = np.append(
+                get_mat(data, geom_id), xpos
+            )
+            # print("SAD:\n", )
+            # Quaternion w ai bj ck convention
+            quaternion = get_quat(data, geom_id)
+
+            # Collect quaternion data
+            dataset["quat"][i // 10] = np.append(
+                quaternion, xpos
+            )
+
+            # Collect Log Quaternion data
+            dataset["log_quat"][i // 10] = np.append(
+                calculate_log_quat(quaternion), xpos
+            )
+
+            dualQuaternion = get_dualQ(
+                quaternion, xpos
+            )
+
+            # Collect Dual-Quaternion data
+            dataset["dual_quat"][i // 10] = dualQuaternion
+
+            # Collect exp_dualQ data
+            dataset["log_dualQ"][i // 10] = logDual(dualQuaternion)
+
+            if i != 0:
+                dataset["pos_diff"][i // 10] = (
+                    get_vert_coords(data, geom_id, xyz_local).T - prev
                 )
 
-                # Quaternion w ai bj ck convention
-                quaternion = get_quat(data, geom_id)
+                prev = get_vert_coords(data, geom_id, xyz_local).T
 
-                # Collect quaternion data
-                dataset["quat"][i // 10] = np.append(
-                    quaternion, xpos
+                dataset["pos_diff_start"][i // 10] = (
+                    get_vert_coords(data, geom_id, xyz_local).T - start
                 )
-
-                # Collect Log Quaternion data
-                dataset["log_quat"][i // 10] = np.append(
-                    calculate_log_quat(quaternion), xpos
-                )
-
-                dualQuaternion = get_dualQ(
-                    quaternion, xpos
-                )
-
-                # Collect Dual-Quaternion data
-                dataset["dual_quat"][i // 10] = dualQuaternion
-
-                # Collect exp_dualQ data
-                dataset["log_dualQ"][i // 10] = logDual(dualQuaternion)
-
-                if i != 0:
-                    dataset["pos_diff"][i // 10] = (
-                        get_vert_coords(data, geom_id, xyz_local).T - prev
-                    )
-
-                    prev = get_vert_coords(data, geom_id, xyz_local).T
-
-                    dataset["pos_diff_start"][i // 10] = (
-                        get_vert_coords(data, geom_id, xyz_local).T - start
-                    )
         else:
             break
 
@@ -232,12 +231,12 @@ def get_sizes(symmetry):
         return f"{size} {size} {size}"
     elif symmetry == "semi": #TODO think whether it needs to be more random
         size01 = np.random.uniform(0.5, 5)
-        size2 = np.random.uniform(1.5*size01, 2*size01)
+        size2 = np.random.uniform(2*size01, 4*size01)
         return f"{size01} {size01} {size2}" #TODO random volgorde list shuffle
     elif symmetry == "tennis0":
         # TODO FLYING Quadrilaterally-faced hexahedrons
         ratio = np.array([1, 3, 10])
-        random_size = np.random.uniform(0.5, 5)
+        random_size = np.random.uniform(0.2, 2)
         sizes = ratio * random_size
         return f"{sizes[0]} {sizes[1]} {sizes[2]}"
     elif symmetry == "tennis1":
@@ -250,7 +249,7 @@ def get_sizes(symmetry):
     else:
         raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}") #TODO baseExeption
 
-def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
+def write_data_nsim(num_sims, n_steps, obj_type, symmetry, gravity, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
 
     dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}"
     if not os.path.exists("data"):
@@ -258,24 +257,33 @@ def write_data_nsim(num_sims, n_steps, obj_type, symmetry, visualize=False, qvel
     if not os.path.exists(dir):
             print("Creating directory")
             os.mkdir(dir)
-
     elif len(os.listdir(dir)) > num_sims:
         print(f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory.")
         raise IndexError(f"This directory ({dir}) already exists with less simulations.")
 
     for sim_id in range(num_sims):
+        # Print progress
         if sim_id % 100 == 0 or sim_id == num_sims-1:
             print(f"sim: {sim_id}/{num_sims-1}")
+        # Define euler angle
         euler = f"{np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)} {np.random.uniform(-40, 40)}"
         euler = f"0 0 0"
-
+        # Define sizes
         sizes = get_sizes(symmetry)
-        #TODO fix no flying Quadrilaterally-faced hexahedrons
-        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(10, 30)}"
-        string = create_string(euler, pos, obj_type, sizes)
+        # print(sizes)
+        # Define position TODO fix no flying Quadrilaterally-faced hexahedrons
+        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(5, 10)}"
+        # Define gravity
+        if gravity:
+            gravity = -9.81
+        else:
+            gravity = 0
+
+        string = create_string(euler, pos, obj_type, sizes, gravity)
+        # Create dataset
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
 
-        sim_data = {"vars": [euler, pos, obj_type, sizes], "data": dataset}
+        sim_data = {"vars": {"euler":euler, "pos":pos, "obj_type":obj_type, "sizes":sizes, "gravity":gravity, "n_steps":n_steps//10}, "data": dataset}
         with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
         f.close()
@@ -284,12 +292,13 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=1000)
-    parser.add_argument("-n_frames", type=int, help="number of frames", default=3000)
-    parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="none")
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=10000)
+    parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="full")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
     parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
     parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
     parser.add_argument("-r_max", type=int, help="rotation qvel max", default=0)
+    parser.add_argument('--gravity', action=argparse.BooleanOptionalAction)
     parser.add_argument('--visualize', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
@@ -303,7 +312,7 @@ if __name__ == "__main__":
     print(f"Creating dataset qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
     obj_type = "box"
     # print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
-    write_data_nsim(n_sims, n_steps, obj_type, args.symmetry, visualize=args.visualize, qvel_range_t=(t_min,t_max), qvel_range_r=(r_min,r_max))
+    write_data_nsim(n_sims, n_steps, obj_type, args.symmetry, gravity=args.gravity, visualize=args.visualize, qvel_range_t=(t_min,t_max), qvel_range_r=(r_min,r_max))
 
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")
 
