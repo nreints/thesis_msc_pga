@@ -57,10 +57,8 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
     # Select random simulation
 
     if not i:
-        print("Using simulation number ", i)
+        print("Using simulation number ", i, " data_type ", data_type)
         i = randint(0, nr_sims-1)
-
-    print(i)
 
     with open(f'{data_dir}/sim_{i}.pickle', 'rb') as f:
         file = pickle.load(f)
@@ -176,15 +174,15 @@ def distance_check(converted, check):
         - check: the xyz vertice positions of the validation cube.
     Output: None
     """
-    X_conv, Y_conv, Z_conv = converted[:, 0], converted[:, 1], converted[:, 2]
-    # X_pred, Y_pred, Z_pred = predicted[:, 0], predicted[:, 1], predicted[:, 2]
-    X_check, Y_check, Z_check = check[:, 0], check[:, 1], check[:, 2]
 
-    distance_conv = ((X_conv[0] - X_conv[1])**2 + (Y_conv[0] - Y_conv[1])**2 + (Z_conv[0] - Z_conv[1])**2)
-    # distance_predicted = ((X_pred[0] - X_pred[1])**2 + (Y_pred[0] - Y_pred[1])**2 + (Z_pred[0] - Z_pred[1])**2)**0.5
-    distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)
+    assert np.allclose(converted, check, atol=1e-4)
+    # X_conv, Y_conv, Z_conv = converted[:, 0], converted[:, 1], converted[:, 2]
+    # X_check, Y_check, Z_check = check[:, 0], check[:, 1], check[:, 2]
 
-    assert math.isclose(distance_conv, distance_check, rel_tol=0.0001)
+    # distance_conv = ((X_conv[0] - X_conv[1])**2 + (Y_conv[0] - Y_conv[1])**2 + (Z_conv[0] - Z_conv[1])**2)
+    # distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)
+
+    # assert math.isclose(distance_conv, distance_check, rel_tol=1e-4)
 
 def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     """
@@ -333,9 +331,11 @@ if __name__ == "__main__":
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
-    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(0, 0)_none")
+    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(2, 5)_none_pNone_gNone")
     args = parser.parse_args()
+
     data_dir = "data/" + args.data_dir
+    print(data_dir)
     if not os.path.exists(data_dir):
         raise KeyError(f"Not such a directory {data_dir}")
 
@@ -364,12 +364,11 @@ if __name__ == "__main__":
 
     # Below the test for all datatypes
     plot_data = []
-    pos_data = []
     i = randint(0, nr_sims-1)
 
     # Test all data types:
     data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]
-    
+
     for data_thing in data_types:
         result, _,_,_, nr_frames = get_random_sim_data(data_thing, nr_sims, data_dir, i)
         plot_data.append(result)

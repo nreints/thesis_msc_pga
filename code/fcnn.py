@@ -116,11 +116,11 @@ class MyDataset(data.Dataset):
         data_pos_target = self.pos_target[idx]
         return data_point, data_target, data_start, data_pos_target
 
-def train_log(loss, epoch):
+def train_log(loss, epoch, config):
     """
     Log the train loss to Weights and Biases
     """
-    wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
+    wandb.log({"Epoch": epoch, f"Train loss {config.data_dir_train[5:-12]}": loss}, step=epoch)
 
 def train_model(
     model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config, losses
@@ -179,7 +179,7 @@ def train_model(
             # print("total_time", time.time() - start)
 
         # Log to W&B
-        train_log(loss_epoch / len(data_loader), epoch)
+        train_log(loss_epoch / len(data_loader), epoch, config)
 
         # Evaluate model
         true_loss, convert_loss, total_convert_loss = eval_model(model, test_loaders, loss_module, config, epoch, losses)
@@ -252,8 +252,8 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
                     total_loss += loss_module(preds, data_labels)
 
                 # Log loss to W&B
-                print(f"\t Logging test loss: {config.data_dirs_test[i][5:]} => {wandb_total_convert_loss / len(data_loader)}")
-                wandb.log({f"Test loss {config.data_dirs_test[i][5:]} {loss_module}": wandb_total_convert_loss / len(data_loader)}, step=current_epoch)
+                print(f"\t Logging test loss {loss_module}: {config.data_dirs_test[i][5:]} => \t {wandb_total_convert_loss / len(data_loader)}")
+                wandb.log({f"Test loss {config.data_dirs_test[i][5:-12]} {loss_module}": wandb_total_convert_loss / len(data_loader)}, step=current_epoch)
                 # wandb.log({f"Test loss {config.data_dirs_test[i][5:]}": wandb_total_convert_loss / len(data_loader)})
 
     # Return the average loss
@@ -263,7 +263,7 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
 
 def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb, losses):
     # tell wandb to get started
-    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb, tags=[device]):
+    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb, tags=[device.type]):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
         wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}"
@@ -284,6 +284,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
             criterion,
             config.epochs,
             config,
+            losses
         )
 
         # and test its final performance
@@ -338,7 +339,7 @@ if __name__ == "__main__":
     # parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
-    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", nargs="+", default="data_t(0, 0)_r(0, 0)_none")
+    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", nargs="+", default="data_t(0, 0)_r(2, 5)_none_pNone_gNone")
     parser.add_argument("-loss", type=str, help="Loss type", default="L2")
     # parser.add_argument("-data_dir_test", type=list, help="directory of the test data", default="")
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
@@ -347,17 +348,18 @@ if __name__ == "__main__":
 
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
-    data_dirs_test = ["data_t(0, 0)_r(0, 0)_none", "data_t(-10, 10)_r(0, 0)_none",
-                        "data_t(0, 0)_r(-5, 5)_none","data_t(-10, 10)_r(-5, 5)_none"]
+    data_dirs_test = os.listdir("data")
+    if '.DS_Store' in data_dirs_test:
+        data_dirs_test.remove('.DS_Store')
+
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
     # else:
     #     data_dirs_test = "data/" + args.data_dir_test
-
     losses = [nn.MSELoss, nn.L1Loss]
 
     if not os.path.exists(data_dir_train):
-        raise IndexError("No directory for the train data {args.data_dir_train}")
+        raise IndexError(f"No directory for the train data {data_dir_train}")
 
     for i in range(args.iterations):
         # Divide the train en test dataset
