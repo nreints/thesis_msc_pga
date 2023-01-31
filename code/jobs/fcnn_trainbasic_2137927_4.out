@@ -1,0 +1,45 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: Appending key for api.wandb.ai to your netrc file: /home/nreints/.netrc
+/gpfs/home2/nreints/MScThesis/code/fcnn.py:364: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230126_121450-rsudnn2o
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run floating-mandu-1175
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/rsudnn2o
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.024 MB of 0.114 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.114 MB uploaded (0.000 MB deduped)wandb: | 0.114 MB of 0.114 MB uploaded (0.000 MB deduped)wandb: / 0.114 MB of 0.114 MB uploaded (0.000 MB deduped)wandb: 🚀 View run floating-mandu-1175 at: https://wandb.ai/nreints/thesis/runs/rsudnn2o
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230126_121450-rsudnn2o/logs
+Number of train simulations: 8000
+Number of test simulations: 2000
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 428, in <module>
+    model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb)
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 270, in model_pipeline
+    model, train_loader, test_loaders, criterion, optimizer = make(
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 298, in make
+    n_data=ndata_dict[config.data_type],
+KeyError: 'logQuat'
+srun: error: gcn44: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=2137934.0
+
+JOB STATISTICS
+==============
+Job ID: 2137934
+Array Job ID: 2137927_4
+Cluster: snellius
+User/Group: nreints/nreints
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:08:06 core-walltime
+Job Wall-clock time: 00:00:27
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 31.25 GB (31.25 GB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.

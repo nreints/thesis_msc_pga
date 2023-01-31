@@ -1,0 +1,2288 @@
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_102129-irb7q4c2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run vermilion-dragon-1644
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/irb7q4c2
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+BEFORE ['data_t(-10,', '10)_r(-5,', '5)_none']
+----- ITERATION 0/10 ------
+[<torch.utils.data.dataloader.DataLoader object at 0x151e011268c0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa3fca90>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa3fc3a0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa3fc610>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.02509666234254837
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.05431191250681877
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.026150967925786972
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.057705312967300415
+0 2.656013252 	 0.0577053116
+epoch_time;  37.63769865036011
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00816368032246828
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.017695767804980278
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00991299469023943
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.02004355378448963
+1 0.0316091533 	 0.0200435546
+epoch_time;  37.21307921409607
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.007456079125404358
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.012382111512124538
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.008532179519534111
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.013703395612537861
+2 0.0134987438 	 0.0137033952
+epoch_time;  37.04069972038269
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001933270483277738
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004227643366903067
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002848273143172264
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0053148879669606686
+3 0.0084852281 	 0.0053148878
+epoch_time;  36.78455948829651
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001629964797757566
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0030831790063530207
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002151183318346739
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003773585194721818
+4 0.0060669901 	 0.0037735852
+epoch_time;  36.76435327529907
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012814785586670041
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0023599008563905954
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0021561405155807734
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003273066133260727
+5 0.0049765202 	 0.0032730661
+epoch_time;  36.72331142425537
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0015648504486307502
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002529905643314123
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002216537017375231
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0032046400010585785
+6 0.0042509816 	 0.0032046399
+epoch_time;  37.08854913711548
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001517068361863494
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003148169256746769
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0024031370412558317
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004044229164719582
+7 0.0215679186 	 0.0040442292
+epoch_time;  37.33330965042114
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.004581689368933439
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.006464090198278427
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.006325046066194773
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.008077261969447136
+8 0.0032849092 	 0.008077262
+epoch_time;  36.95321989059448
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013948307605460286
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0022726310417056084
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002268516691401601
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0032305249478667974
+9 0.0029667675 	 0.0032305249
+epoch_time;  37.06466841697693
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000859945488628
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001396646723151207
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014050406171008945
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0020047982688993216
+10 0.0027732441 	 0.0020047983
+epoch_time;  37.61256980895996
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013362830504775047
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002031899755820632
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0018181902123615146
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0025138778146356344
+11 0.0024675014 	 0.0025138778
+epoch_time;  37.13532495498657
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006904855254106224
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010420465841889381
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012207364197820425
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016060307389125228
+12 0.0023366544 	 0.0016060308
+epoch_time;  36.65109086036682
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002707928419113159
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.005872948095202446
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00393030745908618
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.006846384610980749
+13 0.0254448942 	 0.0068463847
+epoch_time;  36.94305944442749
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0014306536177173257
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00264100544154644
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00211977306753397
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0032493763137608767
+14 0.0039257285 	 0.0032493762
+epoch_time;  37.03223943710327
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008752956637181342
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015940767480060458
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013984745601192117
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0021064337342977524
+15 0.0026674893 	 0.0021064337
+epoch_time;  37.08052396774292
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011011420283466578
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0019931551069021225
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0015966591890901327
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0024961945600807667
+16 0.00237147 	 0.0024961946
+epoch_time;  37.449902057647705
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009363475255668163
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0014350508572533727
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001490568509325385
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0019720534328371286
+17 0.0021409382 	 0.0019720533
+epoch_time;  37.08459115028381
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010040313936769962
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001524976221844554
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013595711207017303
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001819438999518752
+18 0.0020569605 	 0.001819439
+epoch_time;  36.99646234512329
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0021797094959765673
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004274189472198486
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0033394205383956432
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005295584909617901
+19 0.0041895443 	 0.0052955849
+epoch_time;  37.01095962524414
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007205423898994923
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011158738052472472
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010895770974457264
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014397557824850082
+20 0.0014762571 	 0.0014397558
+epoch_time;  36.92636775970459
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001571707078255713
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0019922317005693913
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0019073433941230178
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0022732715588063
+21 0.0016698606 	 0.0022732716
+epoch_time;  37.3391489982605
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011362205259501934
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0017646620981395245
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0016444328939542174
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0022726489696651697
+22 0.0017270486 	 0.0022726489
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▃▃▂▁▁▁▁▂▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▃▂▁▁▁▁▁▂▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▃▃▂▁▁▁▁▂▁▁▁▁▂▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▃▃▁▁▁▁▁▂▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00153
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00123
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00119
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00087
+wandb:                         Train loss 0.00148
+wandb: 
+wandb: 🚀 View run vermilion-dragon-1644 at: https://wandb.ai/nreints/thesis/runs/irb7q4c2
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_102129-irb7q4c2/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_104113-sjd4359n
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run bright-rocket-1652
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/sjd4359n
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+epoch_time;  37.088446378707886
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013774114195257425
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0017701726173982024
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0018497658893465996
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002285601105540991
+23 0.0016917852 	 0.0022856011
+epoch_time;  36.93352675437927
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009984078351408243
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001487499917857349
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014357741456478834
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0019265172304585576
+24 0.0016613692 	 0.0019265172
+epoch_time;  37.02856183052063
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0016320378053933382
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002201022347435355
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00174297159537673
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002336777513846755
+25 0.0015885041 	 0.0023367776
+epoch_time;  37.08236312866211
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006604102090932429
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009921544697135687
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010485629318282008
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013538810890167952
+26 0.0015693911 	 0.0013538811
+epoch_time;  36.9761643409729
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011089768959209323
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0014245929196476936
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001520922756753862
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018015395617112517
+27 0.0021354024 	 0.0018015396
+epoch_time;  36.68471074104309
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006921383319422603
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009736543870531023
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010236764792352915
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012765465071424842
+28 0.0014463347 	 0.0012765466
+epoch_time;  36.95355987548828
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008697733865119517
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001229965011589229
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011867223074659705
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015272273449227214
+29 0.0014823798 	 0.0015272273
+epoch_time;  36.77629542350769
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008696370059624314
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012296305503696203
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00118671462405473
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015261679654940963
+It took  1184.5968325138092  seconds.
+----- ITERATION 1/10 ------
+[<torch.utils.data.dataloader.DataLoader object at 0x151e010eff70>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa473ee0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa473fd0>, <torch.utils.data.dataloader.DataLoader object at 0x151db7cfc160>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.023842621594667435
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.052218254655599594
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.024958711117506027
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.060020264238119125
+0 2.6214271563 	 0.0600202624
+epoch_time;  37.28397250175476
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.005531250033527613
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.01461129728704691
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.006399412639439106
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.017615050077438354
+1 0.0300181011 	 0.0176150503
+epoch_time;  37.33042597770691
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.005723205395042896
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.009879713878035545
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.006314062047749758
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.011730519123375416
+2 0.0127954057 	 0.0117305189
+epoch_time;  37.16420269012451
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.006716751027852297
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.009347534738481045
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.006788729224354029
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.010011125355958939
+3 0.0082011039 	 0.0100111255
+epoch_time;  37.31633138656616
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.005430683493614197
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.007751359138637781
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0071243345737457275
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.009677736088633537
+4 0.0061267807 	 0.0096777357
+epoch_time;  36.597503423690796
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0026757519226521254
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003648075507953763
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002777845598757267
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00397768709808588
+5 0.0047852349 	 0.003977687
+epoch_time;  36.96927094459534
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.004505082033574581
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.005799863021820784
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0065652490593492985
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.008244523778557777
+6 0.0039864482 	 0.0082445238
+epoch_time;  37.10292863845825
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0020349554251879454
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0040641785599291325
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.003128483658656478
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005739972926676273
+7 0.0382086113 	 0.005739973
+epoch_time;  37.28951334953308
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002408211585134268
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00425766222178936
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0033245114609599113
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00573867978528142
+8 0.0040699066 	 0.0057386797
+epoch_time;  36.99664664268494
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.010426954366266727
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.011973968707025051
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.007277877535670996
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.009203283116221428
+9 0.0034259992 	 0.0092032834
+epoch_time;  37.08005499839783
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011780732311308384
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0016956401523202658
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014746974920853972
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0021964190527796745
+10 0.0029954031 	 0.0021964191
+epoch_time;  36.614654302597046
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00123638438526541
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0018215423915535212
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0017370334826409817
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0024892534129321575
+11 0.0026791334 	 0.0024892535
+epoch_time;  36.40384125709534
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012255500769242644
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0016757783014327288
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0016021073097363114
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002231113612651825
+12 0.002411908 	 0.0022311135
+epoch_time;  36.65248656272888
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012717383215203881
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002536018844693899
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0020416509360074997
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0036906239110976458
+13 0.0218251306 	 0.0036906238
+epoch_time;  36.280516147613525
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011811114381998777
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001911821193061769
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0015583577333018184
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0024320888333022594
+14 0.0025489617 	 0.0024320888
+epoch_time;  36.0283887386322
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▃▂▂▂▁▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▃▂▂▂▁▂▁▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▃▃▃▃▂▃▂▂▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▂▃▃▂▂▂▁▂▄▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00167
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00132
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00128
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00097
+wandb:                         Train loss 0.00153
+wandb: 
+wandb: 🚀 View run bright-rocket-1652 at: https://wandb.ai/nreints/thesis/runs/sjd4359n
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_104113-sjd4359n/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_110030-hrv6oww0
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run glowing-fireworks-1659
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/hrv6oww0
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001299327239394188
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0018913857638835907
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0016618190566077828
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002371637150645256
+15 0.0021910411 	 0.0023716371
+epoch_time;  36.13492178916931
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001265188679099083
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00173836515750736
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0015720889205113053
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002194818342104554
+16 0.0021160044 	 0.0021948184
+epoch_time;  35.92677640914917
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008330820710398257
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001164154033176601
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012103335466235876
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016318121924996376
+17 0.0020484704 	 0.0016318122
+epoch_time;  35.93128180503845
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009710655431263149
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0014793979935348034
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014283254276961088
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0021230217535048723
+18 0.0019652279 	 0.0021230218
+epoch_time;  36.48659300804138
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011289381654933095
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015279552899301052
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001462360960431397
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001984386006370187
+19 0.0019008817 	 0.0019843861
+epoch_time;  36.250282287597656
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000878108839970082
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001501539722084999
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014916048385202885
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0024450914934277534
+20 0.0071868413 	 0.0024450915
+epoch_time;  36.187894105911255
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000715449161361903
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010875664884224534
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010494051966816187
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015266432892531157
+21 0.0015388712 	 0.0015266433
+epoch_time;  36.25507950782776
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006951820687390864
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010610638419166207
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010657699313014746
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015268365386873484
+22 0.0016552944 	 0.0015268365
+epoch_time;  36.57297348976135
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006898588035255671
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009818152757361531
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010146190179511905
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013743103481829166
+23 0.0016962006 	 0.0013743103
+epoch_time;  36.45796990394592
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009563507628627121
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001270479173399508
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001177635625936091
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015412115026265383
+24 0.0016657185 	 0.0015412115
+epoch_time;  36.43340826034546
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0023959679529070854
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0027553625404834747
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0021598078310489655
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00257999449968338
+25 0.0016587028 	 0.0025799944
+epoch_time;  36.11320233345032
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005920559051446617
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008705365471541882
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.000942621729336679
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012804621364921331
+26 0.003100236 	 0.0012804622
+epoch_time;  36.15337824821472
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006071722600609064
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008833311148919165
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009661089279688895
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012831265339627862
+27 0.0013786485 	 0.0012831266
+epoch_time;  36.58492565155029
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008643101318739355
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011823835084214807
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011485613649711013
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015296372584998608
+28 0.0015201161 	 0.0015296372
+epoch_time;  36.591943979263306
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009660734212957323
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001314910245127976
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001281162491068244
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016674129292368889
+29 0.0015306807 	 0.0016674129
+epoch_time;  36.31525540351868
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000966183899436146
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001315045403316617
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012812975328415632
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016668118769302964
+It took  1157.3430383205414  seconds.
+----- ITERATION 2/10 ------
+[<torch.utils.data.dataloader.DataLoader object at 0x151dfabdf790>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa472770>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa45b6a0>, <torch.utils.data.dataloader.DataLoader object at 0x151e010bed70>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.030147705227136612
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0629185363650322
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.03115777298808098
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.05841931700706482
+0 2.6272229549 	 0.0584193169
+epoch_time;  36.50142765045166
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.011659138835966587
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.02441513165831566
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.012511322274804115
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.02310877852141857
+1 0.0338304853 	 0.0231087777
+epoch_time;  36.53668665885925
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003944426774978638
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.009175362065434456
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.004748418461531401
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.009084182791411877
+2 0.0153680783 	 0.0090841829
+epoch_time;  36.11182618141174
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003754126373678446
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.007490705698728561
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.004354704637080431
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0077762301079928875
+3 0.0096196154 	 0.0077762301
+epoch_time;  36.42860531806946
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002570410957559943
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004978026729077101
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0034537287428975105
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005650096572935581
+4 0.0069663375 	 0.0056500968
+epoch_time;  36.01339554786682
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0035279816947877407
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.005110640544444323
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0042609418742358685
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005713350605219603
+5 0.0053268334 	 0.0057133508
+epoch_time;  36.14395833015442
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001964784460142255
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00422858027741313
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0028152232989668846
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004696155432611704
+6 0.0321984446 	 0.0046961552
+epoch_time;  36.12858605384827
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▄▂▂▂▂▁▁▁▁▂▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▄▂▂▁▁▁▁▁▁▂▁▁▁▁▁▇▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none ▆▃▂▂▁▂▁▁▁▁▂▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none ▆▃▂▁▁▁▁▁▁▁▂▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00123
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00094
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00098
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00067
+wandb:                         Train loss 0.00158
+wandb: 
+wandb: 🚀 View run glowing-fireworks-1659 at: https://wandb.ai/nreints/thesis/runs/hrv6oww0
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_110030-hrv6oww0/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_111937-ei5daor9
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run red-kumquat-1664
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/ei5daor9
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0016663373680785298
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0030438248068094254
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0022057397291064262
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0033892570063471794
+7 0.0038817526 	 0.003389257
+epoch_time;  36.43165993690491
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013627050211653113
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002596489852294326
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0020166635513305664
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003078497014939785
+8 0.0033863351 	 0.0030784971
+epoch_time;  35.920583724975586
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0018081098096445203
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0026392426807433367
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002161629032343626
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0029228285420686007
+9 0.0030670556 	 0.0029228285
+epoch_time;  36.42041635513306
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.004044528119266033
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.008031890727579594
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00631746044382453
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.01069586630910635
+10 0.0253076084 	 0.0106958659
+epoch_time;  36.31481957435608
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012363048736006021
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002481276635080576
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0018832413479685783
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002964301500469446
+11 0.0045990352 	 0.0029643014
+epoch_time;  36.3587760925293
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009969574166461825
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0018092867685481906
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0016013479325920343
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002309192204847932
+12 0.0028126094 	 0.0023091922
+epoch_time;  36.351388454437256
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0015030890936031938
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002180216833949089
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0017294138669967651
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0023818861227482557
+13 0.0025256395 	 0.0023818861
+epoch_time;  36.130547285079956
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009418755653314292
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0014328312827274203
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001223617815412581
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016776290722191334
+14 0.0022524329 	 0.0016776291
+epoch_time;  36.31217074394226
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010178155498579144
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0014828899875283241
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012752856127917767
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001678621512837708
+15 0.002163878 	 0.0016786215
+epoch_time;  36.013343334198
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.045406341552734375
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.054124560207128525
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.04288947582244873
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.05576024204492569
+16 0.0021657922 	 0.0557602424
+epoch_time;  36.1492714881897
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001448474358767271
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002675047144293785
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0020413072779774666
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0031864438205957413
+17 0.02282527 	 0.0031864438
+epoch_time;  36.18939185142517
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009495970443822443
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0016113948076963425
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013623706763610244
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001993719721212983
+18 0.0025885728 	 0.0019937197
+epoch_time;  35.855371952056885
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007618037052452564
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012838365510106087
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001179447746835649
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016730717616155744
+19 0.002239916 	 0.0016730718
+epoch_time;  36.43124032020569
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007912982255220413
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012217764742672443
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001229194924235344
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016619605012238026
+20 0.0020703993 	 0.0016619605
+epoch_time;  36.5546133518219
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010955620091408491
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015123059274628758
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014885938726365566
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018676038598641753
+21 0.0019586115 	 0.0018676039
+epoch_time;  36.62974214553833
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008358070044778287
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012275814078748226
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011957829119637609
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015642856014892459
+22 0.0018536193 	 0.0015642855
+epoch_time;  36.444371461868286
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011954973451793194
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015519477892667055
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001551198773086071
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0019033387070521712
+23 0.0018004465 	 0.0019033387
+epoch_time;  36.504924058914185
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000621750601567328
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009322459809482098
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009536168072372675
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012268773280084133
+24 0.0025171537 	 0.0012268773
+epoch_time;  36.31817317008972
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0021930423099547625
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0025046956725418568
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0023286633659154177
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0026131116319447756
+25 0.0015392358 	 0.0026131116
+epoch_time;  36.22953915596008
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009940264280885458
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012964173220098019
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013047029497101903
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015733514446765184
+26 0.0016215526 	 0.0015733514
+epoch_time;  36.629178524017334
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006134798168204725
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008794121677055955
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009635278838686645
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012006773613393307
+27 0.0016455806 	 0.0012006774
+epoch_time;  36.413044691085815
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007757065468467772
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010522640077397227
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011577282566577196
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014090784825384617
+28 0.0015698836 	 0.0014090785
+epoch_time;  36.54052996635437
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006667954730801284
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009356305818073452
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.000984438695013523
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012329117162153125
+29 0.0015799949 	 0.0012329117
+epoch_time;  36.16412687301636
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000667087733745575
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.000935616553761065
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009842278668656945
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012328759767115116
+It took  1147.3849506378174  seconds.
+----- ITERATION 3/10 ------
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+[<torch.utils.data.dataloader.DataLoader object at 0x151e010bcf40>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa435240>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa436c20>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa436dd0>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.022261597216129303
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.050530098378658295
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.024545831605792046
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.05640020594000816
+0 2.7342020132 	 0.0564002069
+epoch_time;  36.53400373458862
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.007704597897827625
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.016789598390460014
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.010257315821945667
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.02072780765593052
+1 0.0321884502 	 0.0207278073
+epoch_time;  36.52398324012756
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0058898599818348885
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.010133487172424793
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.007348592858761549
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.012350873090326786
+2 0.0134348743 	 0.0123508733
+epoch_time;  36.195680379867554
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003853956703096628
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.006429655477404594
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0051328446716070175
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.008615638129413128
+3 0.0083088741 	 0.0086156386
+epoch_time;  36.12602734565735
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002436821348965168
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003679705783724785
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0033206644002348185
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005003018770366907
+4 0.0060196959 	 0.0050030187
+epoch_time;  36.339059591293335
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002700395882129669
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004354401491582394
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.003195102559402585
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005080174654722214
+5 0.004850006 	 0.0050801745
+epoch_time;  36.23257231712341
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.007298725191503763
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.013235948048532009
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.010103119537234306
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.017461227253079414
+6 0.0511818596 	 0.0174612279
+epoch_time;  36.096447467803955
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0032086754217743874
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.005394140724092722
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.004571388941258192
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.007176042068749666
+7 0.009163946 	 0.007176042
+epoch_time;  36.451534032821655
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0018407610477879643
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0031344396993517876
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002486857119947672
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004017365165054798
+8 0.005410276 	 0.0040173649
+epoch_time;  36.34549427032471
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0021810622420161963
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0032744130585342646
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002254445105791092
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003546943422406912
+9 0.0041953555 	 0.0035469435
+epoch_time;  36.565101623535156
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010958454804494977
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0017340766498818994
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0015094286063686013
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002234564395621419
+10 0.0034284953 	 0.0022345644
+epoch_time;  36.76594400405884
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0016715546371415257
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0023243650794029236
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002139523159712553
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0028743469156324863
+11 0.0029824146 	 0.0028743468
+epoch_time;  36.05031394958496
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009126037475652993
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013619690435007215
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013487249379977584
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018623507348820567
+12 0.0031168347 	 0.0018623507
+epoch_time;  36.424620628356934
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001230135909281671
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0020793441217392683
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0019401749595999718
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0029945624992251396
+13 0.0109960533 	 0.0029945626
+epoch_time;  36.623897075653076
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001041632960550487
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001517890254035592
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013585746055468917
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0019461407791823149
+14 0.0020095188 	 0.0019461408
+epoch_time;  37.06496262550354
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010208291932940483
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013897661119699478
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013827059883624315
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018080896697938442
+15 0.0020061474 	 0.0018080896
+epoch_time;  36.08444809913635
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007980261580087245
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011347228428348899
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012809219770133495
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017177830450236797
+16 0.0020790115 	 0.001717783
+epoch_time;  36.64225769042969
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006435992545448244
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009129157406277955
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010321222944185138
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013577130157500505
+17 0.0020002523 	 0.001357713
+epoch_time;  38.78608798980713
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008965371525846422
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013239096151664853
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012321785325184464
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017004580004140735
+18 0.0018882997 	 0.001700458
+epoch_time;  37.3941388130188
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008088548202067614
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013502519577741623
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013373384717851877
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0019505027448758483
+19 0.0056673129 	 0.0019505028
+epoch_time;  35.99960160255432
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005461291293613613
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0007990918238647282
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009116867440752685
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001222419086843729
+20 0.0015110384 	 0.0012224191
+epoch_time;  36.35412120819092
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007489006966352463
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010837434092536569
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010933246230706573
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014910376630723476
+21 0.0015916823 	 0.0014910377
+epoch_time;  36.43991160392761
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000821461551822722
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001121864072047174
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012228466803207994
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016045053489506245
+22 0.0016950283 	 0.0016045054
+epoch_time;  36.24029016494751
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: \ 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: | 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: / 0.022 MB of 0.022 MB uploaded (0.000 MB deduped)wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▃▂▂▁▂▃▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▃▂▂▁▂▃▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▄▃▂▂▂▄▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▃▃▂▂▂▃▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00162
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00123
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00133
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.001
+wandb:                         Train loss 0.00148
+wandb: 
+wandb: 🚀 View run red-kumquat-1664 at: https://wandb.ai/nreints/thesis/runs/ei5daor9
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_111937-ei5daor9/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_113850-x4k6dfa2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run sweet-firecracker-1670
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/x4k6dfa2
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006173151778057218
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008326389943249524
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010006250813603401
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012708439026027918
+23 0.0016512347 	 0.0012708439
+epoch_time;  36.545549154281616
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0017303077038377523
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002140364609658718
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002331238240003586
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00285265501588583
+24 0.0016110822 	 0.0028526551
+epoch_time;  35.990538597106934
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008805323159322143
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012777146184816957
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012695698533207178
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017405595863237977
+25 0.0015962988 	 0.0017405595
+epoch_time;  36.43174481391907
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005193468532525003
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0007169046439230442
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0008668942027725279
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0011217612773180008
+26 0.0018263228 	 0.0011217613
+epoch_time;  36.309412240982056
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005782886873930693
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0007989436271600425
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009409243939444423
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001224853447638452
+27 0.0014981604 	 0.0012248535
+epoch_time;  36.34169578552246
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0030047723557800055
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0034201086964458227
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.003809628775343299
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004342801868915558
+28 0.0014961749 	 0.004342802
+epoch_time;  36.437925577163696
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009959767339751124
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012342410627752542
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013246595626696944
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016209647292271256
+29 0.0014802041 	 0.0016209647
+epoch_time;  36.53594779968262
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009958320297300816
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012347731972113252
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013250919291749597
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016205161809921265
+It took  1152.520883321762  seconds.
+----- ITERATION 4/10 ------
+[<torch.utils.data.dataloader.DataLoader object at 0x151e010bd7e0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa45bf40>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa459900>, <torch.utils.data.dataloader.DataLoader object at 0x151dfa459d20>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.02683345600962639
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.056017935276031494
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.027990220114588737
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.06489399075508118
+0 2.6848336739 	 0.0648939934
+epoch_time;  36.5957465171814
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0071161785162985325
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.01645481213927269
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.008312833495438099
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.020201094448566437
+1 0.0334008106 	 0.0202010953
+epoch_time;  35.97447896003723
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.006048049312084913
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.010585632175207138
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.006978488061577082
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.01332317478954792
+2 0.0145375586 	 0.0133231745
+epoch_time;  36.51241326332092
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003683648072183132
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.006402877159416676
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.005531091708689928
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.009295466355979443
+3 0.0089360034 	 0.0092954664
+epoch_time;  36.65071177482605
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00223584845662117
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0039881328120827675
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002951595466583967
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005379064008593559
+4 0.0066289028 	 0.0053790638
+epoch_time;  37.57003831863403
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002899029990658164
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004422195255756378
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0037539980839937925
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005918228533118963
+5 0.0052297146 	 0.0059182287
+epoch_time;  36.32174897193909
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0072289747186005116
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00842126365751028
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.007287498097866774
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.009237793274223804
+6 0.0042894293 	 0.0092377936
+epoch_time;  36.432358503341675
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002595077268779278
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004088283982127905
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0031917209271341562
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005927972495555878
+7 0.0207536526 	 0.0059279726
+epoch_time;  38.16482090950012
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011096569942310452
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0021173814311623573
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0017417510971426964
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0034492667764425278
+8 0.003353094 	 0.0034492668
+epoch_time;  38.140119314193726
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002563019283115864
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00352986017242074
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0035762470215559006
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004968692548573017
+9 0.0030047922 	 0.0049686925
+epoch_time;  38.30314493179321
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0018173581920564175
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0024665058590471745
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00237380457110703
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0033920351415872574
+10 0.0027171661 	 0.0033920351
+epoch_time;  39.36067843437195
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000776995497290045
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011827077250927687
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012997081503272057
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001956332940608263
+11 0.0024702549 	 0.001956333
+epoch_time;  38.30679368972778
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013633513590320945
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002271246397867799
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0019485190277919173
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003485089633613825
+12 0.0216570139 	 0.0034850897
+epoch_time;  38.06274390220642
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012310340534895658
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001757787773385644
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001623989432118833
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002565064700320363
+13 0.002435394 	 0.0025650646
+epoch_time;  38.13314151763916
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000921637169085443
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001388538395985961
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001298958552069962
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00199820171110332
+14 0.0022374311 	 0.0019982018
+epoch_time;  38.29138493537903
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▃▂▂▁▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▃▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▃▃▂▂▂▃▂▁▂▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▃▂▂▁▂▃▂▁▂▁▁▁▁▁▁▁▁▁▁▁▃▁▁▁▁▁▁▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.0015
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00108
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00116
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00084
+wandb:                         Train loss 0.00174
+wandb: 
+wandb: 🚀 View run sweet-firecracker-1670 at: https://wandb.ai/nreints/thesis/runs/x4k6dfa2
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_113850-x4k6dfa2/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_115856-e5nj2xfp
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run alight-monkey-1677
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/e5nj2xfp
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011410912266001105
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015917123528197408
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014343014918267727
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0020709445234388113
+15 0.0020879993 	 0.0020709445
+epoch_time;  38.20740485191345
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001375889522023499
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001912040519528091
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001786941895261407
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002501133596524596
+16 0.0019565132 	 0.0025011335
+epoch_time;  38.075682163238525
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008259906317107379
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013135718181729317
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013042240170761943
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002182949800044298
+17 0.0057452102 	 0.0021829499
+epoch_time;  38.06083154678345
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005976512329652905
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008603569585829973
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009545522625558078
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013817583676427603
+18 0.001531073 	 0.0013817584
+epoch_time;  38.924649715423584
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013132618041709065
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0016410453245043755
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014892971375957131
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0019217535154893994
+19 0.0015890183 	 0.0019217535
+epoch_time;  37.96839261054993
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006004718597978354
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008462212863378227
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009661430958658457
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013259233674034476
+20 0.0017078892 	 0.0013259233
+epoch_time;  37.779505014419556
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.006699655670672655
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.007579775992780924
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.006341680884361267
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.007675492204725742
+21 0.0016966115 	 0.0076754922
+epoch_time;  38.33004307746887
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007903842488303781
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011613747337833047
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001159364590421319
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016511089634150267
+22 0.0016649495 	 0.001651109
+epoch_time;  38.79569149017334
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006809782353229821
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009353611967526376
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010195604991167784
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013595176860690117
+23 0.0017077183 	 0.0013595177
+epoch_time;  38.65681004524231
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008139864075928926
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011096366215497255
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00113033561501652
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015172137646004558
+24 0.0015652826 	 0.0015172137
+epoch_time;  37.70455193519592
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005456000217236578
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0007415956351906061
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0008299094042740762
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0011146420147269964
+25 0.0016535877 	 0.0011146421
+epoch_time;  37.96937274932861
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006922371103428304
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009086889331229031
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00099419173784554
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013110848376527429
+26 0.0015295683 	 0.0013110848
+epoch_time;  37.88959217071533
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006179218180477619
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008788664126768708
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010102886008098722
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013641576515510678
+27 0.0015000235 	 0.0013641576
+epoch_time;  38.97666835784912
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000632694223895669
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008716807351447642
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009835370583459735
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001326906611211598
+28 0.0014810031 	 0.0013269066
+epoch_time;  38.088425636291504
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008421565289609134
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010792817920446396
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011634131660684943
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001496724085882306
+29 0.0017396862 	 0.001496724
+epoch_time;  38.02122950553894
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008419304504059255
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010791897075250745
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011633775429800153
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014970616903156042
+It took  1205.7063403129578  seconds.
+----- ITERATION 5/10 ------
+[<torch.utils.data.dataloader.DataLoader object at 0x151e02b34a00>, <torch.utils.data.dataloader.DataLoader object at 0x151dfab16740>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabdf1f0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabdf100>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.02300364337861538
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.049452316015958786
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.029424721375107765
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0580473318696022
+0 2.6319608724 	 0.0580473321
+epoch_time;  38.259291887283325
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.005602830555289984
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.013531263917684555
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.007423766888678074
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.016410822048783302
+1 0.0322543367 	 0.0164108219
+epoch_time;  38.21890616416931
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.004431690089404583
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.007960767485201359
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.005218387581408024
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.009290092624723911
+2 0.0139378065 	 0.009290093
+epoch_time;  38.29046654701233
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00219952454790473
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004305507987737656
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0030675316229462624
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00554322637617588
+3 0.0086866533 	 0.0055432262
+epoch_time;  38.458207845687866
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001548816217109561
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002754353918135166
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0022454005666077137
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003754293778911233
+4 0.0067215103 	 0.0037542938
+epoch_time;  38.14528822898865
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00124287826474756
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002313599456101656
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0020433105528354645
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00343313324265182
+5 0.0051244646 	 0.0034331332
+epoch_time;  38.22634267807007
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.015875330194830894
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.026554998010396957
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.023768847808241844
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.03781808912754059
+6 0.0394494622 	 0.0378180876
+epoch_time;  38.164016008377075
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▃▂▂▁▁▆▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▃▂▁▁▁▅▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▃▂▂▁▁▇▂▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▃▂▁▁▁▆▂▂▃▁▁▂▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00129
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00091
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00103
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00072
+wandb:                         Train loss 0.0017
+wandb: 
+wandb: 🚀 View run alight-monkey-1677 at: https://wandb.ai/nreints/thesis/runs/e5nj2xfp
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_115856-e5nj2xfp/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_121921-tj1q26gf
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run virtuous-firecracker-1685
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/tj1q26gf
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.004445264115929604
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.006230848375707865
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.005579859018325806
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00793183408677578
+7 0.0107989033 	 0.0079318339
+epoch_time;  38.21049523353577
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002652919851243496
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003955456893891096
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.003260701894760132
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004773502238094807
+8 0.0046434854 	 0.0047735023
+epoch_time;  38.4445161819458
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.005529884714633226
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.007695399224758148
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.005044987425208092
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0073760454542934895
+9 0.0038862528 	 0.0073760456
+epoch_time;  38.0296630859375
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010848490055650473
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0016758408164605498
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001707358518615365
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0025126165710389614
+10 0.0033273672 	 0.0025126165
+epoch_time;  38.145320415496826
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002070413902401924
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0031691030599176884
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0024501506704837084
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003626702819019556
+11 0.0029206527 	 0.0036267028
+epoch_time;  38.3089702129364
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003277935553342104
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004214735701680183
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.003613528795540333
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0045662797056138515
+12 0.0025588943 	 0.0045662798
+epoch_time;  38.30259418487549
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012966794893145561
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0021383927669376135
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002114307601004839
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0032799644395709038
+13 0.0192007026 	 0.0032799644
+epoch_time;  38.15159225463867
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001446951413527131
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0020825446117669344
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002074620220810175
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0028278834652155638
+14 0.0025059978 	 0.0028278835
+epoch_time;  38.51429104804993
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002019678708165884
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0026793167926371098
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0020982965361326933
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0028856717981398106
+15 0.0022941506 	 0.0028856717
+epoch_time;  38.07504463195801
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013129544677212834
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0017464146949350834
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0015846611931920052
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0021430724300444126
+16 0.0022444803 	 0.0021430724
+epoch_time;  38.31459999084473
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008784899255260825
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012302272953093052
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013548335991799831
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018194328295066953
+17 0.0021125348 	 0.0018194329
+epoch_time;  38.18828797340393
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002439372707158327
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003032624488696456
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0023266326170414686
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0030455219093710184
+18 0.0019745056 	 0.0030455218
+epoch_time;  38.081512689590454
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007855512085370719
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011711162514984608
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012598265893757343
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018064593896269798
+19 0.0053339344 	 0.0018064594
+epoch_time;  38.06923460960388
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008516473462805152
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011695680441334844
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013021304039284587
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016691623022779822
+20 0.0016728038 	 0.0016691623
+epoch_time;  38.57860040664673
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010440333280712366
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001279316726140678
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012727094581350684
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015892769442871213
+21 0.0017685888 	 0.001589277
+epoch_time;  38.75501823425293
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009019597200676799
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011539009865373373
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012011299841105938
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015175596345216036
+22 0.0017273094 	 0.0015175596
+epoch_time;  38.88229584693909
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008664894849061966
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011191709199920297
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012942582834511995
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00166600092779845
+23 0.0017075822 	 0.001666001
+epoch_time;  38.404380321502686
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00074863649206236
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010150724556297064
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010624004062265158
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013794940896332264
+24 0.0016342561 	 0.0013794941
+epoch_time;  38.502265214920044
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008808823768049479
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011692341649904847
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014096760423853993
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017796882893890142
+25 0.0016666708 	 0.0017796883
+epoch_time;  37.77251720428467
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006899110157974064
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010102253872901201
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011020010570064187
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014912608312442899
+26 0.0016022279 	 0.0014912609
+epoch_time;  37.77669835090637
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007534968899562955
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009939644951373339
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001127755967900157
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014501651749014854
+27 0.0015513204 	 0.0014501652
+epoch_time;  38.32147192955017
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0019583823159337044
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0026368731632828712
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0021547956857830286
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0028953247237950563
+28 0.0015489084 	 0.0028953248
+epoch_time;  38.241140604019165
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007154605118557811
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009129237150773406
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001030201674439013
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012938124127686024
+29 0.0016954358 	 0.0012938124
+epoch_time;  38.43512773513794
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007152635371312499
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009134130668826401
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010310537181794643
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012936191633343697
+It took  1225.288524389267  seconds.
+----- ITERATION 6/10 ------
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+[<torch.utils.data.dataloader.DataLoader object at 0x151dfa458700>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabc6ad0>, <torch.utils.data.dataloader.DataLoader object at 0x151e01086bf0>, <torch.utils.data.dataloader.DataLoader object at 0x151e01086dd0>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.025220107287168503
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.05047085881233215
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.027750611305236816
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.06645948439836502
+0 2.6971704453 	 0.0664594829
+epoch_time;  38.222888708114624
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.007873167283833027
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.01655370183289051
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.009570309892296791
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.02296573296189308
+1 0.0326443946 	 0.0229657337
+epoch_time;  37.80332541465759
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.009408279322087765
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.01295133400708437
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00884491577744484
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.014992423355579376
+2 0.0133482841 	 0.0149924229
+epoch_time;  38.116943359375
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002493019448593259
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004393936134874821
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0035359226167201996
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.006818061228841543
+3 0.0082704052 	 0.0068180611
+epoch_time;  37.950738191604614
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0034082671627402306
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004811606835573912
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.003831279929727316
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.006329094059765339
+4 0.0058892584 	 0.0063290942
+epoch_time;  37.97792410850525
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003647856181487441
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.006707862950861454
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.005722622852772474
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.011014433577656746
+5 0.0237816486 	 0.0110144334
+epoch_time;  37.780152797698975
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0016593963373452425
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0029712491668760777
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002486463403329253
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004714819602668285
+6 0.0048850588 	 0.0047148196
+epoch_time;  37.80796504020691
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013637276133522391
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002258818596601486
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0018520072335377336
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003261276986449957
+7 0.0033558359 	 0.003261277
+epoch_time;  38.05001902580261
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003952073864638805
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.005706968251615763
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0040917424485087395
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0062141697853803635
+8 0.0030198633 	 0.0062141699
+epoch_time;  38.05412554740906
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.004647268448024988
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0051110247150063515
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0032721671741455793
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004201160278171301
+9 0.0026633906 	 0.0042011601
+epoch_time;  37.95545840263367
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010737546253949404
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0017603266751393676
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001823867904022336
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003135102801024914
+10 0.0166553263 	 0.0031351028
+epoch_time;  37.85277795791626
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0019123591482639313
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002439087489619851
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0020442053209990263
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00305558112449944
+11 0.0023810582 	 0.0030555812
+epoch_time;  38.17980360984802
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0019218437373638153
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0023843494709581137
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0022981835063546896
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0030839969404041767
+12 0.0022952244 	 0.0030839969
+epoch_time;  38.34596657752991
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009543680353090167
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012686069821938872
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001280625001527369
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018278405768796802
+13 0.0021960728 	 0.0018278405
+epoch_time;  38.14110064506531
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007338977884501219
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009700988885015249
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010558980284258723
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014910722384229302
+14 0.0021038353 	 0.0014910722
+epoch_time;  38.9066047668457
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013346057385206223
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0019105894025415182
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0019210053142160177
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002953834133222699
+15 0.0019535262 	 0.002953834
+epoch_time;  38.054896116256714
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002136118244379759
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003446059999987483
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.003057633526623249
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005253148730844259
+16 0.0070888525 	 0.0052531489
+epoch_time;  38.3781681060791
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000684839382302016
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009200200438499451
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010639348765835166
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014737651217728853
+17 0.0017089723 	 0.0014737651
+epoch_time;  37.91524648666382
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007196121150627732
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00097986264154315
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011421090457588434
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015620290068909526
+18 0.0015359616 	 0.001562029
+epoch_time;  38.587355852127075
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008542079594917595
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010493637528270483
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012223749654367566
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015808307798579335
+19 0.0016968003 	 0.0015808308
+epoch_time;  38.23895740509033
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012880992144346237
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015541821485385299
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001358920126222074
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017939863028004766
+20 0.00169384 	 0.0017939864
+epoch_time;  38.53857946395874
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000677397008985281
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008842742536216974
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001075289212167263
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014066094299778342
+21 0.001661895 	 0.0014066094
+epoch_time;  38.533647775650024
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012633873848244548
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015163804637268186
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013515723403543234
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017340624472126365
+22 0.0016238946 	 0.0017340624
+epoch_time;  37.902756214141846
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010750917717814445
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▃▂▂▂▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▃▃▂▂▂▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▃▃▂▂▂▁▁▂▂▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▃▄▂▂▂▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00174
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.0013
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00128
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00096
+wandb:                         Train loss 0.00148
+wandb: 
+wandb: 🚀 View run virtuous-firecracker-1685 at: https://wandb.ai/nreints/thesis/runs/tj1q26gf
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_121921-tj1q26gf/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_123928-3f6qm819
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run twinkling-festival-1690
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/3f6qm819
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001343834213912487
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012733683688566089
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001726910937577486
+23 0.0015818784 	 0.001726911
+epoch_time;  38.062679052352905
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008390725706703961
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001030781539157033
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011775963939726353
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014958928804844618
+24 0.0015793635 	 0.0014958929
+epoch_time;  38.044819593429565
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005574154783971608
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0007364067132584751
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009001600556075573
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0011734539875760674
+25 0.0019153857 	 0.001173454
+epoch_time;  38.06984806060791
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013276884565129876
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015749352751299739
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0017142118886113167
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0021243116352707148
+26 0.0014804844 	 0.0021243117
+epoch_time;  38.15135049819946
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005995089886710048
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0007813962874934077
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0008846476557664573
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0011812731390818954
+27 0.0014932283 	 0.0011812731
+epoch_time;  37.68514037132263
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008058763341978192
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010277100373059511
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011849621077999473
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015540923923254013
+28 0.0014589668 	 0.0015540924
+epoch_time;  38.29880952835083
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009626612300053239
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013048778055235744
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012769384775310755
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017358488403260708
+29 0.001481175 	 0.0017358488
+epoch_time;  37.91289281845093
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00096236786339432
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013036516029387712
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012762650148943067
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017350357957184315
+It took  1207.4592726230621  seconds.
+----- ITERATION 7/10 ------
+[<torch.utils.data.dataloader.DataLoader object at 0x151e01084fa0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabc57e0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabc4be0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabc4a90>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.027817068621516228
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.05940841883420944
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.02965843863785267
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.05922706425189972
+0 3.0241673345 	 0.0592270647
+epoch_time;  38.087358474731445
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.005893699824810028
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.015354440547525883
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.007629288826137781
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.016364499926567078
+1 0.0327061141 	 0.0163644995
+epoch_time;  37.79086875915527
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003397449152544141
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.007650991901755333
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.004415865987539291
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.008440791629254818
+2 0.0133813155 	 0.008440792
+epoch_time;  38.28822922706604
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0023282268084585667
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004720041528344154
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0031241632532328367
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005509426351636648
+3 0.0082264928 	 0.0055094262
+epoch_time;  38.335246562957764
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002220811555162072
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0038995484355837107
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0037575438618659973
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.005689426325261593
+4 0.0060541408 	 0.0056894261
+epoch_time;  38.1942982673645
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003422727808356285
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004581434652209282
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0034734720829874277
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004830241668969393
+5 0.0047637563 	 0.0048302416
+epoch_time;  38.49552893638611
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0018868249608203769
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003401808440685272
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002844315953552723
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004516188055276871
+6 0.0277679322 	 0.0045161881
+epoch_time;  38.9558687210083
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013754998799413443
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0023290214594453573
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0019184107659384608
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0029217104893177748
+7 0.0039335824 	 0.0029217106
+epoch_time;  38.00006127357483
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001364414463751018
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002332170493900776
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001851860317401588
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002775247674435377
+8 0.0033421423 	 0.0027752477
+epoch_time;  38.106000661849976
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0015450204955413938
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002114278730005026
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0019266150193288922
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0025757995899766684
+9 0.0029099004 	 0.0025757996
+epoch_time;  38.222201108932495
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012184492079541087
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0017737692687660456
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0016578715294599533
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002342293504625559
+10 0.0026328158 	 0.0023422934
+epoch_time;  38.23479986190796
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003037855727598071
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.005619020666927099
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.004462673794478178
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.007351410109549761
+11 0.0343738732 	 0.00735141
+epoch_time;  38.11932635307312
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0017188353231176734
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0027060655411332846
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002515412401407957
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003649277612566948
+12 0.0046482974 	 0.0036492776
+epoch_time;  38.0063636302948
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001000594231300056
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0016075994353741407
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0018259924836456776
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0025119315832853317
+13 0.0031806396 	 0.0025119317
+epoch_time;  38.31422781944275
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001282267738133669
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0020487154833972454
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0018929661018773913
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002677752636373043
+14 0.0026666555 	 0.0026777527
+epoch_time;  38.559789419174194
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009908798383548856
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▃▂▂▂▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▃▂▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▃▂▂▂▂▁▁▁▁▁▂▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▂▂▁▁▂▁▁▁▁▁▂▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00131
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00087
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00097
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00059
+wandb:                         Train loss 0.00276
+wandb: 
+wandb: 🚀 View run twinkling-festival-1690 at: https://wandb.ai/nreints/thesis/runs/3f6qm819
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_123928-3f6qm819/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_125936-0jrlusn3
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run prosperous-peony-1695
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/0jrlusn3
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0014374098973348737
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0015183594077825546
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002062366111204028
+15 0.0023474915 	 0.0020623661
+epoch_time;  38.11299109458923
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0029754412826150656
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003930447157472372
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0030860533006489277
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004119066521525383
+16 0.0021708553 	 0.0041190667
+epoch_time;  38.20260715484619
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009437758708372712
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013233075151219964
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001404800103046
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001821597688831389
+17 0.0019955133 	 0.0018215977
+epoch_time;  38.378915548324585
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009660418145358562
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0014546123566105962
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0015595488948747516
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002115716226398945
+18 0.0019437859 	 0.0021157162
+epoch_time;  38.13071823120117
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0016732779331505299
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0020362769719213247
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0019656994845718145
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0023835983593016863
+19 0.0018311254 	 0.0023835984
+epoch_time;  38.285439252853394
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007044263766147196
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001091948477551341
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001128290663473308
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015750696184113622
+20 0.0101453325 	 0.0015750697
+epoch_time;  38.224475383758545
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00132665631826967
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0018022583099082112
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001654999447055161
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0021923240274190903
+21 0.0016165931 	 0.002192324
+epoch_time;  37.87035059928894
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011936442460864782
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015188936376944184
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001448329072445631
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001806403393857181
+22 0.001724918 	 0.0018064034
+epoch_time;  38.0306396484375
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008498327806591988
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011638142168521881
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012774454662576318
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016594325425103307
+23 0.0017269356 	 0.0016594326
+epoch_time;  38.27319931983948
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.00138790940400213
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0017064298735931516
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0017821156652644277
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0021549081429839134
+24 0.0016681607 	 0.0021549082
+epoch_time;  38.13009166717529
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006021591834723949
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008551315404474735
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009692790918052197
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001238520024344325
+25 0.0016385933 	 0.0012385201
+epoch_time;  37.849499464035034
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009649954154156148
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012439831625670195
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013473499566316605
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016572077292948961
+26 0.0015856882 	 0.0016572077
+epoch_time;  37.97166919708252
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008958981488831341
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001234064344316721
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011902648257091641
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015260003274306655
+27 0.001574669 	 0.0015260003
+epoch_time;  38.229068994522095
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007010743720456958
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009445788455195725
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001042398507706821
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013143836986273527
+28 0.0015224869 	 0.0013143837
+epoch_time;  38.259241819381714
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005854438641108572
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008727642707526684
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.000973845599219203
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013146657729521394
+29 0.0027581124 	 0.0013146658
+epoch_time;  39.55418276786804
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0005859931698068976
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0008695607539266348
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009739397210069001
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001314738066866994
+It took  1207.9278390407562  seconds.
+----- ITERATION 8/10 ------
+[<torch.utils.data.dataloader.DataLoader object at 0x151dfabb0fd0>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabc4b50>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabc4850>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabc50c0>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.021547041833400726
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.05196012929081917
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.025034530088305473
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.05074215680360794
+0 2.7413127706 	 0.050742158
+epoch_time;  38.10548377037048
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.013107342645525932
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.023814022541046143
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.014353899285197258
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.023240508511662483
+1 0.0318363285 	 0.0232405086
+epoch_time;  38.27611589431763
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0031070420518517494
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.007294129114598036
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.004160023294389248
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.007658817805349827
+2 0.0145431276 	 0.007658818
+epoch_time;  38.34247803688049
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.009270746260881424
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0130608594045043
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0124597679823637
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.015769043937325478
+3 0.0086785453 	 0.0157690437
+epoch_time;  38.11001706123352
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003806972410529852
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.005926171783357859
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.005167650058865547
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0069221751764416695
+4 0.0065091499 	 0.0069221752
+epoch_time;  37.99179244041443
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.006089427508413792
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.008028946816921234
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.00701899453997612
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00869198888540268
+5 0.0051070158 	 0.0086919887
+epoch_time;  37.95133113861084
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0029406396206468344
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0056708380579948425
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.004163003526628017
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0066637322306632996
+6 0.0495452477 	 0.0066637323
+epoch_time;  37.68936014175415
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001823298865929246
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▄▂▃▂▂▂▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▄▂▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▅▂▄▂▃▂▁▁▁▁▂▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▅▂▄▂▃▂▁▁▁▁▁▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁▂▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00129
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00093
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00104
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00069
+wandb:                         Train loss 0.00147
+wandb: 
+wandb: 🚀 View run prosperous-peony-1695 at: https://wandb.ai/nreints/thesis/runs/0jrlusn3
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_125936-0jrlusn3/logs
+/gpfs/home2/nreints/MScThesis/code/lstm.py:270: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230127_131940-2ec5oolr
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run floating-orchid-1700
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/2ec5oolr
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0032580054830759764
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002497354056686163
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003773997537791729
+7 0.0055698785 	 0.0037739976
+epoch_time;  37.977240800857544
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0020111987832933664
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0034175387118011713
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0026249547954648733
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003958505112677813
+8 0.0042743737 	 0.0039585051
+epoch_time;  37.86613988876343
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0018423154251649976
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0027209629770368338
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0020948979072272778
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0028965179808437824
+9 0.003454852 	 0.002896518
+epoch_time;  38.40129637718201
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0017863564426079392
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0025506652891635895
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002266400959342718
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0030302961822599173
+10 0.0030289761 	 0.0030302962
+epoch_time;  37.968260049819946
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0021093212999403477
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0037072510458528996
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0032754214480519295
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004935084842145443
+11 0.0117638434 	 0.0049350849
+epoch_time;  38.20585107803345
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008261124603450298
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013756125699728727
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001339153153821826
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018475351389497519
+12 0.0026896964 	 0.0018475351
+epoch_time;  38.30554556846619
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009468254284001887
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013527307892218232
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012941405875608325
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016916686436161399
+13 0.0022987209 	 0.0016916686
+epoch_time;  38.336198568344116
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010673801880329847
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015044042374938726
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013656705850735307
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001776672201231122
+14 0.0021991071 	 0.0017766722
+epoch_time;  38.523256063461304
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002688584616407752
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003401755588129163
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002990644657984376
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0037374175153672695
+15 0.002113735 	 0.0037374176
+epoch_time;  38.158082485198975
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002885045949369669
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0036403508856892586
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002941247308626771
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0035100241657346487
+16 0.0020259959 	 0.0035100243
+epoch_time;  38.416417598724365
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008943133871071041
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012890978250652552
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012753360206261277
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016390931559726596
+17 0.0018926134 	 0.0016390932
+epoch_time;  37.94550180435181
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0011585596948862076
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0020210030488669872
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001864408957771957
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002701493678614497
+18 0.0133534835 	 0.0027014937
+epoch_time;  37.77580189704895
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007497906335629523
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011341077042743564
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011851429007947445
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0015601343475282192
+19 0.0020788508 	 0.0015601343
+epoch_time;  37.99321150779724
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010930451098829508
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015486294869333506
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001652887207455933
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0020950669422745705
+20 0.0018436764 	 0.0020950669
+epoch_time;  37.792359590530396
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008728807442821562
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012016729451715946
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011954004876315594
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00151155237108469
+21 0.0017956664 	 0.0015115524
+epoch_time;  39.007558822631836
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.002154022455215454
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0028817495331168175
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002515917643904686
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0031861409079283476
+22 0.0017430059 	 0.0031861409
+epoch_time;  38.30863881111145
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0014718177262693644
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0018641016213223338
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0016581648960709572
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0019996899645775557
+23 0.0016846608 	 0.0019996899
+epoch_time;  38.44458889961243
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008882056572474539
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011749587720260024
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011832693126052618
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014708732487633824
+24 0.0016780259 	 0.0014708733
+epoch_time;  37.95827078819275
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007452816935256124
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010023448849096894
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001095731626264751
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001340713119134307
+25 0.0015833647 	 0.0013407131
+epoch_time;  38.162718057632446
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008085040608420968
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010516594629734755
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011605763575062156
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013908756664022803
+26 0.0018036851 	 0.0013908756
+epoch_time;  38.27327060699463
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0024698039051145315
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0029800974298268557
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002521815476939082
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0029238525312393904
+27 0.001399626 	 0.0029238525
+epoch_time;  38.18338418006897
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0016219207318499684
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0020524149294942617
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001894709886983037
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0023055195342749357
+28 0.0015528366 	 0.0023055195
+epoch_time;  38.05943059921265
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006861764704808593
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.000932204129640013
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001042851130478084
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012924245093017817
+29 0.001467776 	 0.0012924245
+epoch_time;  38.39697885513306
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006863625603727996
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009321108227595687
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010423936182633042
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001293367356993258
+It took  1203.3960716724396  seconds.
+----- ITERATION 9/10 ------
+/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/rnn.py:67: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.2 and num_layers=1
+  warnings.warn("dropout option adds dropout after all but last "
+[<torch.utils.data.dataloader.DataLoader object at 0x151dfabb1870>, <torch.utils.data.dataloader.DataLoader object at 0x151e01045810>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabb5f00>, <torch.utils.data.dataloader.DataLoader object at 0x151dfabb6bf0>]
+LSTM(
+  (lstm): LSTM(7, 96, batch_first=True, dropout=0.2)
+  (layers): Sequential(
+    (0): Linear(in_features=96, out_features=7, bias=True)
+  )
+)
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.020684318616986275
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.05602547153830528
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.023174792528152466
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.05293279141187668
+0 2.9891068186 	 0.0529327911
+epoch_time;  38.58575749397278
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.012781444005668163
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.024664172902703285
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.013042408041656017
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.02268476039171219
+1 0.0303755969 	 0.02268476
+epoch_time;  38.27713894844055
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.006520656868815422
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.012391838245093822
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0072785927914083
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.012478907592594624
+2 0.0131617437 	 0.0124789077
+epoch_time;  38.502973318099976
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.003422984154894948
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.006777290720492601
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.003814088646322489
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.006513230502605438
+3 0.0088819364 	 0.0065132304
+epoch_time;  38.54595589637756
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0032730242237448692
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00552937388420105
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0044180420227348804
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.00636865571141243
+4 0.0066217723 	 0.0063686558
+epoch_time;  38.25922250747681
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0018285082187503576
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003422629088163376
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0025138151831924915
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0038751098327338696
+5 0.0047373129 	 0.0038751097
+epoch_time;  38.14287853240967
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0018077562563121319
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.004018375184386969
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002795150736346841
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.004602636676281691
+6 0.027091284 	 0.0046026368
+epoch_time;  38.41747212409973
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0014123121509328485
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.002711033681407571
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002070002956315875
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0031785371247678995
+7 0.0037619445 	 0.0031785371
+epoch_time;  38.37819314002991
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0022570232395082712
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003391680307686329
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.002625108230859041
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.003717762418091297
+8 0.0032394855 	 0.0037177625
+epoch_time;  38.15810585021973
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0024044367019087076
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.003438589395955205
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0025081506464630365
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0035425748210400343
+9 0.0029758286 	 0.0035425749
+epoch_time;  38.11677122116089
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001496915821917355
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0022670116741210222
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0017196533735841513
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0023190034553408623
+10 0.0026755069 	 0.0023190033
+epoch_time;  38.157195806503296
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001203607302159071
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.00243589305318892
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0018175675068050623
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0028567679692059755
+11 0.0179720019 	 0.002856768
+epoch_time;  38.08868741989136
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008117592660710216
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001568404957652092
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012469713110476732
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018654534360393882
+12 0.0024371521 	 0.0018654534
+epoch_time;  38.40567874908447
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0013464526273310184
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0021217651665210724
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0017450021114200354
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002421499462798238
+13 0.0023144217 	 0.0024214994
+epoch_time;  38.63024878501892
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009952225955203176
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0015498679131269455
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001243254984728992
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0017260329332202673
+14 0.0022037109 	 0.0017260329
+epoch_time;  38.18203067779541
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001080762012861669
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0016645961441099644
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014692761469632387
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001963153248652816
+15 0.0021001482 	 0.0019631532
+epoch_time;  38.546303033828735
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001328474492765963
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0018919137073680758
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0016790349036455154
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0021644264925271273
+16 0.0020165922 	 0.0021644265
+epoch_time;  38.33828663825989
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0015555099816992879
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0022645427379757166
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001798219745978713
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0024315370246767998
+17 0.0018871155 	 0.0024315369
+epoch_time;  38.24815821647644
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0009234563913196325
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0016734335804358125
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0014624787727370858
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.002144784666597843
+18 0.0089402303 	 0.0021447847
+epoch_time;  38.44126749038696
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006590736447833478
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0010854019783437252
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001045364886522293
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0013959764037281275
+19 0.0016347113 	 0.0013959764
+epoch_time;  38.47799491882324
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0012631862191483378
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0017686875071376562
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001427393057383597
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0018663018709048629
+20 0.0016986966 	 0.0018663019
+epoch_time;  38.40101766586304
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008727079839445651
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012274004984647036
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.001185177592560649
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001533796195872128
+21 0.0017580787 	 0.0015337962
+epoch_time;  38.63592576980591
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008995873504318297
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0013169695157557726
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0015664921374991536
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0019312102813273668
+22 0.0016929111 	 0.0019312103
+epoch_time;  38.294716596603394
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                              Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb: Test loss t(-10, 10)_r(-5, 5)_none █▄▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  Test loss t(-10, 10)_r(0, 0)_none █▄▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    Test loss t(0, 0)_r(-5, 5)_none █▅▃▂▂▁▂▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     Test loss t(0, 0)_r(0, 0)_none █▅▃▂▂▁▁▁▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:                         Train loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                              Epoch 29
+wandb: Test loss t(-10, 10)_r(-5, 5)_none 0.00125
+wandb:  Test loss t(-10, 10)_r(0, 0)_none 0.00093
+wandb:    Test loss t(0, 0)_r(-5, 5)_none 0.00098
+wandb:     Test loss t(0, 0)_r(0, 0)_none 0.00064
+wandb:                         Train loss 0.0015
+wandb: 
+wandb: 🚀 View run floating-orchid-1700 at: https://wandb.ai/nreints/thesis/runs/2ec5oolr
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230127_131940-2ec5oolr/logs
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008558063418604434
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0012594484724104404
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0011372483568266034
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014546643942594528
+23 0.0017100458 	 0.0014546644
+epoch_time;  38.54741930961609
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.001105728792026639
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0014949735486879945
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0013139261864125729
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001638801652006805
+24 0.0016117036 	 0.0016388016
+epoch_time;  38.25719738006592
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0007716395775787532
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0011966621968895197
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0010717806871980429
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0014928278978914022
+25 0.0015892941 	 0.0014928279
+epoch_time;  38.25830864906311
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0008535839733667672
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001317606307566166
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012222323566675186
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016092612640932202
+26 0.0015824857 	 0.0016092613
+epoch_time;  38.48851561546326
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0014270012034103274
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0018926546908915043
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0016701244749128819
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0020661973394453526
+27 0.0015266546 	 0.0020661974
+epoch_time;  38.4781858921051
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0010081416694447398
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.001392289181239903
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0012714912882074714
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0016199419042095542
+28 0.0015322518 	 0.0016199419
+epoch_time;  38.15214395523071
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.000636727490928024
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009327915031462908
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.000984497251920402
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.001248905318789184
+29 0.0014993414 	 0.0012489053
+epoch_time;  38.051403760910034
+	 Logging test loss: t(0, 0)_r(0, 0)_none => 0.0006363849970512092
+	 Logging test loss: t(-10, 10)_r(0, 0)_none => 0.0009323569247499108
+	 Logging test loss: t(0, 0)_r(-5, 5)_none => 0.0009846196044236422
+	 Logging test loss: t(-10, 10)_r(-5, 5)_none => 0.0012496234849095345
+It took  1210.9706363677979  seconds.
+
+JOB STATISTICS
+==============
+Job ID: 2142524
+Array Job ID: 2141141_24
+Cluster: snellius
+User/Group: nreints/nreints
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 2-11:36:18 core-walltime
+Job Wall-clock time: 03:18:41
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 31.25 GB (31.25 GB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
