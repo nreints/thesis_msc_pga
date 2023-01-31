@@ -245,8 +245,8 @@ def get_sizes(symmetry):
     else:
         raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}") #TODO baseExeption
 
-def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims):
-    dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}"
+def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
+    dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}_p{plane}_g{grav}"
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(dir):
@@ -257,28 +257,26 @@ def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims):
         raise IndexError(f"This directory ({dir}) already exists with less simulations.")
     return dir
 
-def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
+def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0), plane=False):
 
     for sim_id in range(num_sims):
         if sim_id % 100 == 0 or sim_id == num_sims:
             print(f"Generating sim {sim_id}/{num_sims}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-
+        # euler = "0 30 0"
         # Define sizes
         sizes = get_sizes(symmetry)
+        # sizes = "3 3 3"
         # Define position TODO fix no flying Quadrilaterally-faced hexahedrons
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(5, 10)}"
+        # pos = "0 0 6"
         # Define gravity
-        if gravity:
-            gravity = -9.81
-        else:
-            gravity = 0
 
-        string = create_string(euler, pos, sizes, gravity)
+        string = create_string(euler, pos, sizes, gravity, plane)
+        print(string)
         # Create dataset
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
-
         sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes, "gravity":gravity, "n_steps":n_steps//10}, "data": dataset}
         with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
@@ -295,6 +293,7 @@ if __name__ == "__main__":
     parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
     parser.add_argument("-r_max", type=int, help="rotation qvel max", default=0)
     parser.add_argument('--gravity', action=argparse.BooleanOptionalAction)
+    parser.add_argument('--plane', action=argparse.BooleanOptionalAction)
     parser.add_argument('--visualize', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
@@ -307,10 +306,10 @@ if __name__ == "__main__":
     print(f"Creating dataset qvel_range_t={qvel_range_t}, qvel_range_r={qvel_range_r}, symmetry={args.symmetry}")
 
 
-    dir = get_dir(qvel_range_t, qvel_range_r, args.symmetry, args.n_sims)
+    dir = get_dir(qvel_range_t, qvel_range_r, args.symmetry, args.n_sims, args.plane, args.gravity)
 
     # print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
-    write_data_nsim(n_sims, n_steps, args.symmetry, args.gravity, dir, args.visualize, qvel_range_t, qvel_range_r)
+    write_data_nsim(n_sims, n_steps, args.symmetry, args.gravity, dir, args.visualize, qvel_range_t, qvel_range_r, args.plane)
 
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")
 

@@ -58,7 +58,9 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
 
     if not i:
         print("Using simulation number ", i)
-        i = randint(0, nr_sims)
+        i = randint(0, nr_sims-1)
+
+    print(i)
 
     with open(f'{data_dir}/sim_{i}.pickle', 'rb') as f:
         file = pickle.load(f)
