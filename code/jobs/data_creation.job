@@ -2,23 +2,20 @@
 
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
+#SBATCH --array=1-20%5
 #SBATCH --job-name=data_creation
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=3
-#SBATCH --time=1:00:00
+#SBATCH --time=0:10:0
 #SBATCH --mem=32000M
-#SBATCH --output=slurm_output_%A.out
+#SBATCH --output=data_creation_%A_%a.out
 
 module purge
 module load 2022
 module load Miniconda3/4.12.0
 
-# Your job starts in the directory where you call sbatch
+HPARAMS_FILE=$HOME/MScThesis/code/jobs/hyper_data_creation.txt
+
 cd $HOME/MScThesis/code
-# Activate your environment
 source activate thesis
-# Run your code
-srun python create_data.py -n_sims 10000 -t_min 0 -t_max 0 -r_min 0 -r_max 0
-srun python create_data.py -n_sims 10000 -t_min -10 -t_max 10 -r_min -5 -r_max 5
-srun python create_data.py -n_sims 10000 -t_min 0 -t_max 0 -r_min -5 -r_max 5
-srun python create_data.py -n_sims 10000 -t_min -10 -t_max 10 -r_min 0 -r_max 0
+
+cd $HOME/MScThesis/code
+srun python create_data.py $(head -$SLURM_ARRAY_TASK_ID $HPARAMS_FILE | tail -1)

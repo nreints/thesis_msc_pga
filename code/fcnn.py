@@ -253,7 +253,7 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
 
                 # Log loss to W&B
                 print(f"\t Logging test loss: {config.data_dirs_test[i][5:]} => {wandb_total_convert_loss / len(data_loader)}")
-                wandb.log({f"Test loss {config.data_dirs_test[i][5:]}": wandb_total_convert_loss / len(data_loader)}, step=current_epoch)
+                wandb.log({f"Test loss {config.data_dirs_test[i][5:]} {loss_module}": wandb_total_convert_loss / len(data_loader)}, step=current_epoch)
                 # wandb.log({f"Test loss {config.data_dirs_test[i][5:]}": wandb_total_convert_loss / len(data_loader)})
 
     # Return the average loss

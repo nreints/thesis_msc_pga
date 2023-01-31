@@ -13,9 +13,7 @@ import math
 import argparse
 import os
 
-
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
 
 def load_model(data_type, architecture):
     """
@@ -323,7 +321,7 @@ def plot_datatypes(plot_data, data_types, nr_frames):
         ax.legend()
 
     # Interval : Delay between frames in milliseconds.
-    ani = animation.FuncAnimation(fig, update, nr_frames, interval=50, repeat=False)
+    ani = animation.FuncAnimation(fig, update, frames=nr_frames, interval=1, repeat=False)
 
     plt.show()
     plt.close()
@@ -343,8 +341,6 @@ if __name__ == "__main__":
     if nr_sims == 0:
         raise KeyError(f"No simulations in {data_dir}")
 
-
-    # ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
     data_type = "dual_quat"
     architecture = "fcnn"
     print(f"Visualizing {architecture} trained on {data_type}")
@@ -371,12 +367,6 @@ if __name__ == "__main__":
 
     # Test all data types:
     data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]
-    # data_types = ["pos", "eucl_motion"]
-    # data_types = ["pos", "quat"]
-    # data_types = ["pos", "log_quat"]
-    # data_types = ["pos", "dual_quat"]
-    # data_types = ["pos", "pos_diff_start"]
-    # data_types = ["pos", "log_dualQ"]
     
     for data_thing in data_types:
         result, _,_,_, nr_frames = get_random_sim_data(data_thing, nr_sims, data_dir, i)
