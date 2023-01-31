@@ -274,7 +274,6 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
         # Define gravity
 
         string = create_string(euler, pos, sizes, gravity, plane)
-        print(string)
         # Create dataset
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
         sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes, "gravity":gravity, "n_steps":n_steps//10}, "data": dataset}
