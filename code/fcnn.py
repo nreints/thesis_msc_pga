@@ -381,13 +381,11 @@ if __name__ == "__main__":
         #     else:
         #         test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
 
-
-
         print(f"Number of train simulations: {len(train_sims)}")
         print(f"Number of test simulations: {len(test_sims)}")
         # Set config
         config = dict(
-            learning_rate=0.005,
+            learning_rate=0.0025,
             epochs=30,
             batch_size=8192,
             loss_type=args.loss,
