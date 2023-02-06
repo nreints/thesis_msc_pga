@@ -248,7 +248,6 @@ def get_sizes(symmetry):
 
 def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
     dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}_p{plane}_g{grav}"
-    dir = f"data/data_show_tennis0_effect"
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(dir):
