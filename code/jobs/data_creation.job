@@ -1,11 +1,21 @@
 #!/bin/bash
 
-#SBATCH --partition=thin
-#SBATCH --cpus-per-task=32
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --array=1-2%2
 #SBATCH --job-name=data_creation
 #SBATCH --time=0:10:0
+#SBATCH --mem=32000M
 #SBATCH --output=data_creation_%A_%a.out
 
 module purge
+module load 2022
+module load Miniconda3/4.12.0
+
+HPARAMS_FILE=$HOME/MScThesis/code/jobs/hyper_data_creation.txt
+
+cd $HOME/MScThesis/code
+source activate thesis
+
+cd $HOME/MScThesis/code
+srun python create_data.py $(head -$SLURM_ARRAY_TASK_ID $HPARAMS_FILE | tail -1)
