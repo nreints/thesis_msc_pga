@@ -9,14 +9,3 @@
 #SBATCH --output=data_creation_%A_%a.out
 
 module purge
-module load 2022
-module load Miniconda3/4.12.0
-
-HPARAMS_FILE=$HOME/MScThesis/code/jobs/hyper_data_creation.txt
-
-cd $HOME/MScThesis/code
-source activate thesis
-
-cd $HOME/MScThesis/code
-srun python create_data.py -symmetry semi -n_sims=10000 -t_min 4 -t_max 10 -r_min 0 -r_max 0
-srun python create_data.py -symmetry semi -n_sims=10000 -t_min 0 -t_max 0 -r_min 2 -r_max 5
