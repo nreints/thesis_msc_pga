@@ -331,7 +331,7 @@ if __name__ == "__main__":
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
-    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(2, 5)_none_pNone_gNone")
+    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(2, 5)_full_pNone_gNone")
     args = parser.parse_args()
 
     data_dir = "data/" + args.data_dir
@@ -365,6 +365,8 @@ if __name__ == "__main__":
     # Below the test for all datatypes
     plot_data = []
     i = randint(0, nr_sims-1)
+    i = 55
+    print("simulation", i)
 
     # Test all data types:
     data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "pos_diff_start", "log_dualQ"]

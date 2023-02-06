@@ -226,9 +226,10 @@ def get_sizes(symmetry):
         size = np.random.uniform(0.5, 5)
         return f"{size} {size} {size}"
     elif symmetry == "semi": #TODO think whether it needs to be more random
+        ratio = np.array([1,1,10])
         size01 = np.random.uniform(0.5, 5)
-        size2 = np.random.uniform(2*size01, 4*size01)
-        return f"{size01} {size01} {size2}" #TODO random volgorde list shuffle
+        sizes = ratio * size01
+        return f"{sizes[0]} {sizes[1]} {sizes[2]}" #TODO random volgorde list shuffle
     elif symmetry == "tennis0":
         # TODO FLYING Quadrilaterally-faced hexahedrons Not necessary if no plane
         ratio = np.array([1, 3, 10])
@@ -247,6 +248,7 @@ def get_sizes(symmetry):
 
 def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
     dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}_p{plane}_g{grav}"
+    dir = f"data/data_show_tennis0_effect"
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(dir):
@@ -264,14 +266,10 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
             print(f"Generating sim {sim_id}/{num_sims}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-        # euler = "0 30 0"
         # Define sizes
         sizes = get_sizes(symmetry)
-        # sizes = "3 3 3"
         # Define position TODO fix no flying Quadrilaterally-faced hexahedrons
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(5, 10)}"
-        # pos = "0 0 6"
-        # Define gravity
 
         string = create_string(euler, pos, sizes, gravity, plane)
         # Create dataset
@@ -284,8 +282,8 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=1000)
-    parser.add_argument("-n_frames", type=int, help="number of frames", default=2500)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=100)
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=6000)
     parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="full")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
     parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
