@@ -20,6 +20,24 @@ def eucl2pos(eucl_motion, start_pos):
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
 
+        # rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
+        # rot_zeros = torch.zeros((eucl_motion.shape[0], 3))[:, None, :]
+        # rots = torch.cat((rotations, rot_zeros), dim=1)
+
+        # translations = eucl_motion[:, 9:]
+        # print(translations)
+        # trans_ones = torch.ones((eucl_motion.shape[0], 1))
+        # trans = torch.cat((translations, trans_ones), dim=1)[:, :, None]
+
+        # complete = torch.cat((rots, trans), dim=-1)
+        # print(complete[:2])
+
+        # pos_ones = torch.ones((eucl_motion.shape[0], 8, 1))
+        # homo_start_pos = torch.cat((start_pos.reshape(-1, 8, 3), pos_ones), dim=2)
+
+        # out = torch.bmm(homo_start_pos, complete.mT)[:,:,:3]
+
+        ##### OLD
         rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
         mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
 
@@ -287,6 +305,8 @@ def convert(true_preds, start_pos, data_type):
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type == "eucl_motion":
+        return eucl2pos(true_preds, start_pos)
+    elif data_type =="eucl_motion_old":
         return eucl2pos(true_preds, start_pos)
     elif data_type == "quat":
         return quat2pos(true_preds, start_pos)

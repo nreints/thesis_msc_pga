@@ -10,13 +10,14 @@ import random
 import os
 import argparse
 import time
+import copy
 # from tqdm import trange
 
 def get_mat(data, obj_id):
     """
     Returns the rotation matrix of an object.
     """
-    return data.geom_xmat[obj_id]
+    return data.geom_xmat[obj_id].reshape(3,3)
 
 def get_vert_local(model, obj_id):
     """
@@ -113,7 +114,9 @@ def create_empty_dataset(local_start):
         "start": local_start.T,
         "pos": np.empty((n_steps // 10, 8, 3)),
         "eucl_motion": np.empty((n_steps // 10, 1, 12)),
+        "eucl_motion_old": np.empty((n_steps // 10, 1, 12)),
         "quat": np.empty((n_steps // 10, 1, 7)),
+        "quat_old": np.empty((n_steps // 10, 1, 7)),
         "log_quat": np.empty((n_steps // 10, 1, 7)),
         "dual_quat": np.empty((n_steps // 10, 1, 8)),
         "pos_diff": np.empty((n_steps // 10, 8, 3)),
@@ -135,9 +138,11 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     # qvel 012 -> linear velocity
     # qvel 345 -> angular velocity
     # Set random initial velocities
-    # TODO
     data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-10, size=3)
+    # data.qvel[0:3] = [0, 3, 0]
     data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-10, size=3)
+    # data.qvel[3:6] = [0, 40, 0]
+
 
     geom_id = model.geom(geom_name).id
     body_id = model.body("object_body").id
@@ -160,37 +165,65 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
             if i == 0:
 
-                prev = get_vert_coords(data, geom_id, xyz_local).T
-                start = prev
+                start_xpos = copy.deepcopy(data.geom_xpos[geom_id])
+
+
+                prev_xyz = get_vert_coords(data, geom_id, xyz_local).T
+                start_xyz = prev_xyz
 
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
+
+                start_rotMat = copy.deepcopy(get_mat(data, geom_id))
+                dataset["eucl_motion"][i] = np.append(np.eye(3), np.zeros(3))
+
+                start_quat = copy.deepcopy(get_quat(data, body_id))
 
             xpos = data.geom_xpos[geom_id]
 
             # Collect position data
             dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
 
-            # Collect euclidean motion data
-            dataset["eucl_motion"][i // 10] = np.append(
-                get_mat(data, geom_id), xpos
-            )
+            if i >= 10:
+                # Collect euclidean motion data
+                current_rotMat = get_mat(data, geom_id)
 
-            # Quaternion w ai bj ck convention
-            quaternion = get_quat(data, body_id)
+                rel_trans = xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
+                rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
+
+                dataset["eucl_motion"][i // 10] = np.append(
+                    rel_rot.flatten(), rel_trans
+                )
+
+                quaternion = Quaternion(matrix=rel_rot)
+                quat2 = quaternion.elements
+                quat2 = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse).elements
+
+                dataset["quat"][i // 10] = np.append(
+                    quat2, rel_trans
+                )
+
+                # TODO log_quat dual_quat log_dual_quat -> FIX START POS OOK IN CONVERT AANROEP
+
+            dataset["eucl_motion_old"][i // 10] = np.append(
+                    get_mat(data, geom_id).flatten(), xpos
+                )
+
+            # # Quaternion w ai bj ck convention
+            quatzzz = get_quat(data, body_id)
 
             # Collect quaternion data
-            dataset["quat"][i // 10] = np.append(
-                quaternion, xpos
+            dataset["quat_old"][i // 10] = np.append(
+                quatzzz, xpos
             )
 
             # Collect Log Quaternion data
             dataset["log_quat"][i // 10] = np.append(
-                calculate_log_quat(quaternion), xpos
+                calculate_log_quat(quatzzz), xpos
             )
 
             dualQuaternion = get_dualQ(
-                quaternion, xpos
+                quatzzz, xpos
             )
 
             # Collect Dual-Quaternion data
@@ -201,13 +234,13 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
             if i != 0:
                 dataset["pos_diff"][i // 10] = (
-                    get_vert_coords(data, geom_id, xyz_local).T - prev
+                    get_vert_coords(data, geom_id, xyz_local).T - prev_xyz
                 )
 
-                prev = get_vert_coords(data, geom_id, xyz_local).T
+                prev_xyz = get_vert_coords(data, geom_id, xyz_local).T
 
                 dataset["pos_diff_start"][i // 10] = (
-                    get_vert_coords(data, geom_id, xyz_local).T - start
+                    get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
         else:
             break
@@ -223,7 +256,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
 def get_sizes(symmetry):
     if symmetry == "full":
-        size = np.random.uniform(0.5, 5)
+        size = np.random.uniform(5, 10)
         return f"{size} {size} {size}"
     elif symmetry == "semi": #TODO think whether it needs to be more random
         ratio = np.array([1,1,10])
@@ -265,10 +298,13 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
             print(f"Generating sim {sim_id}/{num_sims}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
+        euler = "0 0 0"
         # Define sizes
         sizes = get_sizes(symmetry)
         # Define position TODO fix no flying Quadrilaterally-faced hexahedrons
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(5, 10)}"
+        # pos = "0 0 0"
+
 
         string = create_string(euler, pos, sizes, gravity, plane)
         # Create dataset
@@ -286,8 +322,8 @@ if __name__ == "__main__":
     parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="full")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
     parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
-    parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
-    parser.add_argument("-r_max", type=int, help="rotation qvel max", default=0)
+    parser.add_argument("-r_min", type=int, help="rotation qvel min", default=4)
+    parser.add_argument("-r_max", type=int, help="rotation qvel max", default=5)
     parser.add_argument('--gravity', action=argparse.BooleanOptionalAction)
     parser.add_argument('--plane', action=argparse.BooleanOptionalAction)
     parser.add_argument('--visualize', action=argparse.BooleanOptionalAction)
