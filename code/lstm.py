@@ -66,10 +66,10 @@ class MyDataset(data.Dataset):
                 data_all = pickle.load(f)["data"]
                 data = data_all[self.data_type]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    if self.data_type == "pos_diff_start":
-                        self.start_pos.append(data_all["pos"][0].flatten())
-                    else:
-                        self.start_pos.append(data_all["start"].flatten())
+                    # if self.data_type == "pos_diff_start":
+                    self.start_pos.append(data_all["pos"][0].flatten())
+                    # else:
+                    #     self.start_pos.append(data_all["start"].flatten())
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].reshape(-1, self.n_datap_perframe))
                     self.target.append(data[frame+1:train_end+1].reshape(-1, self.n_datap_perframe))

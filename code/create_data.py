@@ -114,22 +114,22 @@ def create_empty_dataset(local_start):
     Returns empyt data dictionary.
     """
     return {
-        "start": local_start.T,
+        # "start": local_start.T,
         "pos": np.empty((n_steps // 10, 8, 3)),
         "eucl_motion": np.empty((n_steps // 10, 1, 12)),
-        "eucl_motion_old": np.empty((n_steps // 10, 1, 12)),
+        # "eucl_motion_old": np.empty((n_steps // 10, 1, 12)),
         "quat": np.empty((n_steps // 10, 1, 7)),
-        "quat_old": np.empty((n_steps // 10, 1, 7)),
+        # "quat_old": np.empty((n_steps // 10, 1, 7)),
         "log_quat": np.empty((n_steps // 10, 1, 7)),
-        "log_quat_old": np.empty((n_steps // 10, 1, 7)),
+        # "log_quat_old": np.empty((n_steps // 10, 1, 7)),
         "dual_quat": np.empty((n_steps // 10, 1, 8)),
-        "dual_quat_old": np.empty((n_steps // 10, 1, 8)),
-        "pos_diff": np.empty((n_steps // 10, 8, 3)),
+        # "dual_quat_old": np.empty((n_steps // 10, 1, 8)),
+        # "pos_diff": np.empty((n_steps // 10, 8, 3)),
         "pos_diff_start": np.empty((n_steps // 10, 8, 3)),
-        "pos_norm": np.empty((n_steps // 10, 8, 3)),
-        "trans": np.empty((n_steps // 10, 3)),
-        "log_dualQ": np.empty((n_steps // 10, 6)),
-        "log_dualQ_old": np.empty((n_steps // 10, 6))
+        # "pos_norm": np.empty((n_steps // 10, 8, 3)),
+        # "trans": np.empty((n_steps // 10, 3)),
+        "log_dualQ": np.empty((n_steps // 10, 6))
+        # "log_dualQ_old": np.empty((n_steps // 10, 6))
     }
 
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):

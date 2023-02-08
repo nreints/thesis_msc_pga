@@ -87,10 +87,10 @@ class MyDataset(data.Dataset):
                 # Add data and targets
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     # Always save the start position for converting
-                    if self.data_type == "pos_diff_start":
-                        self.start_pos.append(data_all["pos"][0].flatten())
-                    else:
-                        self.start_pos.append(data_all["start"].flatten())
+                    # if self.data_type == "pos_diff_start":
+                    self.start_pos.append(data_all["pos"][0].flatten())
+                    # else:
+                    #     self.start_pos.append(data_all["start"].flatten())
 
                     train_end = frame + self.n_frames_perentry
 
@@ -363,7 +363,8 @@ if __name__ == "__main__":
 
     for i in range(args.iterations):
         # Divide the train en test dataset
-        n_sims_train = len(os.listdir(data_dir_train))
+        # n_sims_train = len(os.listdir(data_dir_train))
+        n_sims_train = 4000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims
