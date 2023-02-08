@@ -167,12 +167,9 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 viewer.render()
 
             if i == 0:
-
                 start_xpos = copy.deepcopy(data.geom_xpos[geom_id])
 
-
-                prev_xyz = get_vert_coords(data, geom_id, xyz_local).T
-                start_xyz = prev_xyz
+                start_xyz = get_vert_coords(data, geom_id, xyz_local).T
 
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
@@ -226,45 +223,11 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 # Collect Dual-Quaternion data
                 dataset["dual_quat"][i // 10] = dualQuaternion
 
-                # Collect exp_dualQ data
+                # Collect log_dualQ data (= bivector = rotation axis)
                 dataset["log_dualQ"][i // 10] = logDual(dualQuaternion)
-
-
-            # ######## Old data
-
-            # dataset["eucl_motion_old"][i // 10] = np.append(
-            #         get_mat(data, geom_id).flatten(), xpos
-            #     )
-
-            # # # Quaternion w ai bj ck convention
-            # full_quat = get_quat(data, body_id)
-
-            # # Collect quaternion data
-            # dataset["quat_old"][i // 10] = np.append(
-            #     full_quat, xpos
-            # )
-
-            # # Collect Log Quaternion data
-            # dataset["log_quat_old"][i // 10] = np.append(
-            #     calculate_log_quat(full_quat), xpos
-            # )
-
-            # dualQuaternion = get_dualQ(
-            #     full_quat, xpos
-            # )
-
-            # # Collect Dual-Quaternion data
-            # dataset["dual_quat_old"][i // 10] = dualQuaternion
-
-            # # Collect exp_dualQ data
-            # dataset["log_dualQ_old"][i // 10] = logDual(dualQuaternion)
 
         else:
             break
-
-    # dataset["pos_norm"] = (
-    #     dataset["pos"] - np.mean(dataset["pos"], axis=(0, 1))
-    # ) / np.std(dataset["pos"], axis=(0, 1))
 
     if visualize:
         viewer.close()
