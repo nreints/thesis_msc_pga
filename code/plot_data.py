@@ -64,13 +64,14 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         file = pickle.load(f)
         nr_frames = file["vars"]["n_steps"]
         # Load the correct start position repeat for converting
-        if data_type == "pos_diff_start" or data_type == "eucl_motion" or data_type =="quat":
+        print(data_type[-3:])
+        if data_type[-3:] == "old":
+            start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32).flatten()
+            start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
+        else:
             start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
             print(file["data"]["trans"].shape)
-        else:
-            start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32).flatten()
-            start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
         # Load the data in correct data type
         original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
@@ -177,13 +178,6 @@ def distance_check(converted, check):
     """
 
     assert np.allclose(converted, check, atol=1e-4)
-    # X_conv, Y_conv, Z_conv = converted[:, 0], converted[:, 1], converted[:, 2]
-    # X_check, Y_check, Z_check = check[:, 0], check[:, 1], check[:, 2]
-
-    # distance_conv = ((X_conv[0] - X_conv[1])**2 + (Y_conv[0] - Y_conv[1])**2 + (Z_conv[0] - Z_conv[1])**2)
-    # distance_check = ((X_check[0] - X_check[1])**2 + (Y_check[0] - Y_check[1])**2 + (Z_check[0] - Z_check[1])**2)
-
-    # assert math.isclose(distance_conv, distance_check, rel_tol=1e-4)
 
 def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     """
@@ -310,7 +304,6 @@ def plot_datatypes(plot_data, data_types, nr_frames):
 
             # Plot the edges
             ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
-            print(converted_cube)
 
         # if idx > 1:
         #     exit()
@@ -370,10 +363,10 @@ if __name__ == "__main__":
     # Below the test for all datatypes
     plot_data = []
     i = randint(0, nr_sims-1)
-    i=14
     print("simulation", i)
     # Test all data types:
-    data_types = ["pos", "eucl_motion", "quat"]#, "eucl_motion_old"]
+
+    data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
 
     for data_thing in data_types:
         result, _,_,_, nr_frames = get_random_sim_data(data_thing, nr_sims, data_dir, i)

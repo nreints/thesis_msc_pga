@@ -118,12 +118,15 @@ def create_empty_dataset(local_start):
         "quat": np.empty((n_steps // 10, 1, 7)),
         "quat_old": np.empty((n_steps // 10, 1, 7)),
         "log_quat": np.empty((n_steps // 10, 1, 7)),
+        "log_quat_old": np.empty((n_steps // 10, 1, 7)),
         "dual_quat": np.empty((n_steps // 10, 1, 8)),
+        "dual_quat_old": np.empty((n_steps // 10, 1, 8)),
         "pos_diff": np.empty((n_steps // 10, 8, 3)),
         "pos_diff_start": np.empty((n_steps // 10, 8, 3)),
         "pos_norm": np.empty((n_steps // 10, 8, 3)),
         "trans": np.empty((n_steps // 10, 3)),
-        "log_dualQ": np.empty((n_steps // 10, 6))
+        "log_dualQ": np.empty((n_steps // 10, 6)),
+        "log_dualQ_old": np.empty((n_steps // 10, 6))
     }
 
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
@@ -179,12 +182,18 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
 
+                dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
+                dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
+                dualQ_start = get_dualQ([1, 0, 0, 0], np.zeros(3))
+                dataset["dual_quat"][i] = dualQ_start
+                dataset["log_dualQ"][i] = logDual(dualQ_start)
+
             xpos = data.geom_xpos[geom_id]
 
             # Collect position data
             dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
 
-            if i >= 10:
+            if i != 0:
                 # Collect euclidean motion data
                 current_rotMat = get_mat(data, geom_id)
 
@@ -195,59 +204,67 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                     rel_rot.flatten(), rel_trans
                 )
 
-                quaternion = Quaternion(matrix=rel_rot)
-                quat2 = quaternion.elements
-                quat2 = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse).elements
+                quaternion = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse).elements
 
                 dataset["quat"][i // 10] = np.append(
-                    quat2, rel_trans
+                    quaternion, rel_trans
                 )
 
-                # TODO log_quat dual_quat log_dual_quat -> FIX START POS OOK IN CONVERT AANROEP
-
-            dataset["eucl_motion_old"][i // 10] = np.append(
-                    get_mat(data, geom_id).flatten(), xpos
+                 # Collect Log Quaternion data
+                dataset["log_quat"][i // 10] = np.append(
+                    calculate_log_quat(quaternion), rel_trans
                 )
-
-            # # Quaternion w ai bj ck convention
-            quatzzz = get_quat(data, body_id)
-
-            # Collect quaternion data
-            dataset["quat_old"][i // 10] = np.append(
-                quatzzz, xpos
-            )
-
-            # Collect Log Quaternion data
-            dataset["log_quat"][i // 10] = np.append(
-                calculate_log_quat(quatzzz), xpos
-            )
-
-            dualQuaternion = get_dualQ(
-                quatzzz, xpos
-            )
-
-            # Collect Dual-Quaternion data
-            dataset["dual_quat"][i // 10] = dualQuaternion
-
-            # Collect exp_dualQ data
-            dataset["log_dualQ"][i // 10] = logDual(dualQuaternion)
-
-            if i != 0:
-                dataset["pos_diff"][i // 10] = (
-                    get_vert_coords(data, geom_id, xyz_local).T - prev_xyz
-                )
-
-                prev_xyz = get_vert_coords(data, geom_id, xyz_local).T
 
                 dataset["pos_diff_start"][i // 10] = (
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
+
+                dualQuaternion = get_dualQ(
+                    quaternion, rel_trans
+                )
+
+                # Collect Dual-Quaternion data
+                dataset["dual_quat"][i // 10] = dualQuaternion
+
+                # Collect exp_dualQ data
+                dataset["log_dualQ"][i // 10] = logDual(dualQuaternion)
+
+
+            # ######## Old data
+
+            # dataset["eucl_motion_old"][i // 10] = np.append(
+            #         get_mat(data, geom_id).flatten(), xpos
+            #     )
+
+            # # # Quaternion w ai bj ck convention
+            # full_quat = get_quat(data, body_id)
+
+            # # Collect quaternion data
+            # dataset["quat_old"][i // 10] = np.append(
+            #     full_quat, xpos
+            # )
+
+            # # Collect Log Quaternion data
+            # dataset["log_quat_old"][i // 10] = np.append(
+            #     calculate_log_quat(full_quat), xpos
+            # )
+
+            # dualQuaternion = get_dualQ(
+            #     full_quat, xpos
+            # )
+
+            # # Collect Dual-Quaternion data
+            # dataset["dual_quat_old"][i // 10] = dualQuaternion
+
+            # # Collect exp_dualQ data
+            # dataset["log_dualQ_old"][i // 10] = logDual(dualQuaternion)
+
         else:
             break
 
-    dataset["pos_norm"] = (
-        dataset["pos"] - np.mean(dataset["pos"], axis=(0, 1))
-    ) / np.std(dataset["pos"], axis=(0, 1))
+    # dataset["pos_norm"] = (
+    #     dataset["pos"] - np.mean(dataset["pos"], axis=(0, 1))
+    # ) / np.std(dataset["pos"], axis=(0, 1))
 
     if visualize:
         viewer.close()
@@ -298,13 +315,10 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
             print(f"Generating sim {sim_id}/{num_sims}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-        euler = "0 0 0"
         # Define sizes
         sizes = get_sizes(symmetry)
         # Define position TODO fix no flying Quadrilaterally-faced hexahedrons
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(5, 10)}"
-        # pos = "0 0 0"
-
 
         string = create_string(euler, pos, sizes, gravity, plane)
         # Create dataset
