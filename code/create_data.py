@@ -11,6 +11,7 @@ import os
 import argparse
 import time
 import copy
+import math
 # from tqdm import trange
 
 def get_mat(data, obj_id):
@@ -63,8 +64,8 @@ def calculate_log_quat(quat):
     else:
         inv_norm = 1 / np.linalg.norm(quat[1:])
 
-    arccos = np.arccos(quat[0] / norm)
-    part2 = inv_norm * arccos * quat[1:]
+    part_arccos = np.arccos(quat[0] / norm)
+    part2 = inv_norm * part_arccos * quat[1:]
 
     logQuat = np.append(log_norm, part2)
 
@@ -92,9 +93,11 @@ def logDual(r):
     Input rotor (8 numbers) returns bivector (=log of rotor) (6 numbers)
     (14 mul, 5 add, 1 div, 1 acos, 1 sqrt)
     """
-    if r[0] == 1:
+
+    if r[0] == 1 or math.isclose(r[0], 1):
         return np.array([-r[5], -r[6], -r[7], 0, 0, 0])
     a = 1 / (1 - r[0] * r[0])
+
     b = np.arccos(r[0]) * np.sqrt(a)
     c = a * r[4] * (1 - r[0] * b)
     return np.array([
@@ -166,6 +169,11 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
                 viewer.render()
 
+            xpos = data.geom_xpos[geom_id]
+
+            # Collect position data
+            dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
+
             if i == 0:
                 start_xpos = copy.deepcopy(data.geom_xpos[geom_id])
 
@@ -185,12 +193,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["dual_quat"][i] = dualQ_start
                 dataset["log_dualQ"][i] = logDual(dualQ_start)
 
-            xpos = data.geom_xpos[geom_id]
-
-            # Collect position data
-            dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
-
-            if i != 0:
+            else:
                 # Collect euclidean motion data
                 current_rotMat = get_mat(data, geom_id)
 
@@ -212,10 +215,6 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                     calculate_log_quat(quaternion), rel_trans
                 )
 
-                dataset["pos_diff_start"][i // 10] = (
-                    get_vert_coords(data, geom_id, xyz_local).T - start_xyz
-                )
-
                 dualQuaternion = get_dualQ(
                     quaternion, rel_trans
                 )
@@ -225,6 +224,10 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
                 # Collect log_dualQ data (= bivector = rotation axis)
                 dataset["log_dualQ"][i // 10] = logDual(dualQuaternion)
+
+                dataset["pos_diff_start"][i // 10] = (
+                    get_vert_coords(data, geom_id, xyz_local).T - start_xyz
+                )
 
         else:
             break
@@ -299,8 +302,8 @@ if __name__ == "__main__":
     parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="full")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
     parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
-    parser.add_argument("-r_min", type=int, help="rotation qvel min", default=4)
-    parser.add_argument("-r_max", type=int, help="rotation qvel max", default=5)
+    parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
+    parser.add_argument("-r_max", type=int, help="rotation qvel max", default=0)
     parser.add_argument('--gravity', action=argparse.BooleanOptionalAction)
     parser.add_argument('--plane', action=argparse.BooleanOptionalAction)
     parser.add_argument('--visualize', action=argparse.BooleanOptionalAction)
