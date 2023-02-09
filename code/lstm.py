@@ -98,6 +98,7 @@ def train_log(loss, epoch):
     # print(f"Loss after " + f" examples: {loss:.3f}")
 
 def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config, losses):
+    print("-- Started Training --")
     # Set model to train mode
     model.train()
     wandb.watch(model, loss_module, log="all", log_freq=10)
@@ -229,6 +230,8 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         )
         test_data_loaders += [test_data_loader]
 
+    print("-- Finished Dataloaders --")
+
     # Make the model
     model = LSTM(ndata_dict[config.data_type], config).to(device)
 
@@ -252,8 +255,9 @@ if __name__ == "__main__":
 
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
-    data_dirs_test = ["data_t(0, 0)_r(0, 0)_none", "data_t(-10, 10)_r(0, 0)_none",
-                        "data_t(0, 0)_r(-5, 5)_none","data_t(-10, 10)_r(-5, 5)_none"]
+    data_dirs_test = os.listdir("data")
+    if '.DS_Store' in data_dirs_test:
+        data_dirs_test.remove('.DS_Store')
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
     # else:
@@ -267,7 +271,7 @@ if __name__ == "__main__":
     for i in range(args.iterations):
         print(f"----- ITERATION {i}/{args.iterations} ------")
         # Divide the train en test dataset
-        n_sims_train = len(os.listdir(data_dir_train))
+        n_sims_train = len(os.listdir(data_dir_train)) // 2
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims

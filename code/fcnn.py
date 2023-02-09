@@ -125,6 +125,7 @@ def train_log(loss, epoch, config):
 def train_model(
     model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config, losses
 ):
+    print("--- Started Learning ---")
     # Set model to train mode
     loss_type = config.loss_type
     model.train()
@@ -321,6 +322,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         )
         test_data_loaders += [test_data_loader]
 
+    print("-- Finished Dataloaders --")
 
     # Make the model
     model = fcnn(ndata_dict[config.data_type], config).to(device)

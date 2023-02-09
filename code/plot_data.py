@@ -64,18 +64,27 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         file = pickle.load(f)
         nr_frames = file["vars"]["n_steps"]
         # Load the correct start position repeat for converting
-        print(data_type[-3:])
         if data_type[-3:] == "old":
             start_pos = torch.tensor(file["data"]["start"], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
         else:
             start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
-            print(file["data"]["trans"].shape)
 
         # Load the data in correct data type
         original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
-
+        print(data_type)
+        if data_type == "pos" or data_type == "pos_diff_start":
+            print(original_data[:20].reshape(20, 8,3))
+        elif data_type =="eucl_motion":
+            print(original_data[:20, :9].reshape(20, 3,3), "\n", original_data[:20, 9:].reshape(20, 3))
+        elif data_type == "quat" or data_type == "log_quat":
+            print(original_data[:20, :-3],"\n",  original_data[:20, -3:])
+        elif data_type == "dual_quat":
+            print(original_data[:20, :4], "\n", original_data[:20, 4:])
+        elif "log_dualQ":
+            print(original_data[:20])
+        print("----------------")
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
         # Load original xyz position data for validating plot_data
