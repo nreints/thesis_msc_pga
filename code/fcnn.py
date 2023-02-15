@@ -273,8 +273,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
         model, train_loader, test_loaders, criterion, optimizer = make(
             config, ndata_dict, loss_dict, optimizer_dict,
         )
-        print(config["data_type"])
-        print(model)
+        print("Datatype:", config["data_type"])
 
         # and use them to train the model
         train_model(
@@ -366,7 +365,7 @@ if __name__ == "__main__":
     for i in range(args.iterations):
         # Divide the train en test dataset
         # n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 4000
+        n_sims_train = 2000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims
@@ -390,7 +389,7 @@ if __name__ == "__main__":
         config = dict(
             learning_rate=0.0025,
             epochs=30,
-            batch_size=8192,
+            batch_size=2048,
             loss_type=args.loss,
             loss_reduction_type="mean",
             optimizer="Adam",

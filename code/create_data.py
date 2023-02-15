@@ -96,6 +96,7 @@ def logDual(r):
 
     if r[0] == 1 or math.isclose(r[0], 1):
         return np.array([-r[5], -r[6], -r[7], 0, 0, 0])
+
     a = 1 / (1 - r[0] * r[0])
 
     b = np.arccos(r[0]) * np.sqrt(a)
@@ -109,7 +110,7 @@ def logDual(r):
                     b * r[1]
                 ])
 
-def create_empty_dataset(local_start):
+def create_empty_dataset():
     """
     Returns empyt data dictionary.
     """
@@ -189,6 +190,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
+
                 dualQ_start = get_dualQ([1, 0, 0, 0], np.zeros(3))
                 dataset["dual_quat"][i] = dualQ_start
                 dataset["log_dualQ"][i] = logDual(dualQ_start)
