@@ -280,6 +280,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
     )
+    print("-- Finished Train Dataloader --")
 
     test_data_loaders = []
 
@@ -297,7 +298,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         )
         test_data_loaders += [test_data_loader]
 
-    print("-- Finished Dataloaders --")
+    print("-- Finished Test Dataloaders --")
 
     # Make the model
     model = fcnn(ndata_dict[config.data_type], config).to(device)

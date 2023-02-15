@@ -10,12 +10,12 @@ def eucl2pos(eucl_motion, start_pos):
             (batch x 12)
             (batch x frames x 20)
         start_pos: Start position of simulation
-            (batch x 8 x 3)
-            (batch x frames x 8 x 3)
+            (batch x 24)
+            (batch x 24)
     Output:
         Converted eucledian motion to current xyz position
-            (batch x 8 x 3)
-            (batch x frames x 8 x 3)
+            (batch x 24)
+            (batch x frames x 24)
     """
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
@@ -42,10 +42,9 @@ def eucl2pos(eucl_motion, start_pos):
         mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
 
         out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
-
         return out
 
-    # In case of LSTM
+    # In case of LSTM/GRU
     else:
         rotations = eucl_motion[..., :9].reshape(eucl_motion.shape[0], eucl_motion.shape[1], 3, 3)
         flat_rotations = rotations.flatten(end_dim=1)
@@ -55,7 +54,6 @@ def eucl2pos(eucl_motion, start_pos):
 
         out = (mult + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]).flatten(start_dim=1)
         out = out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1])
-
         return out
 
 
@@ -69,6 +67,7 @@ def fast_rotVecQuat(v, q):
     Output:
         Rotated batch of vectors v by a batch quaternion q.
     """
+
     device = v.device
 
     q_norm = torch.div(q.T, torch.norm(q, dim=-1)).T
@@ -91,26 +90,23 @@ def quat2pos(quat, start_pos):
     """
     Input:
         - quat: Original predictions (quaternion motion)
-            (batch, .., 7)
+            (batch, 7) or (batch, frames, 7)
         - start_pos: Start position of simulation
-            (batch, .., 8, 3)
+            (batch, 24) or (batch, frames, 24)
     Output:
         - Converted quaternion to current xyz position
+            (batch, 24) or (batch, frames, 24)
     """
 
     device = quat.device
 
     # In case of fcnn
     if len(quat.shape) == 2:
-
-        out = torch.empty_like(start_pos, device=device)
-
+        # out = torch.empty_like(start_pos, device=device)
         rotated_start = fast_rotVecQuat(start_pos, quat[:, :4])
-
         repeated_trans = quat[:, 4:][:, None, :]
-
-        out = rotated_start + repeated_trans
-        return out.flatten(start_dim=1)
+        out = (rotated_start + repeated_trans).flatten(start_dim=1)
+        return out
 
     # In case of LSTM
     else:
@@ -128,7 +124,6 @@ def quat2pos(quat, start_pos):
         out = (rotated_start + quat_flat[:, 4:][:, None, :]).flatten(start_dim=1)
         # Fix shape
         out = out.reshape(quat.shape[0], quat.shape[1], out.shape[-1])
-
         return out
 
 
@@ -146,7 +141,8 @@ def log_quat2pos(log_quat, start_pos):
             Shape:
     Output:
         - Converted log quaternion to current xyz position
-
+            (batch, 24) or
+            (batch, frames, 24)
         a bi cj dk = a vec{v}
     """
     # In case of fcnn
@@ -210,6 +206,8 @@ def dualQ2pos(dualQ, start_pos):
             (* is only present for lstm)
     Output:
         - Converted Dual-quaternion to current position
+            (batch x 24) or
+            (batch x frames x 24)
     """
     device = dualQ.device
 
@@ -235,7 +233,6 @@ def dualQ2pos(dualQ, start_pos):
     quaternion = torch.cat((qr, t[..., :-1]), dim=-1)
 
     converted_pos = quat2pos(quaternion, start_pos)
-
     return converted_pos
 
 def log_dualQ2pos(logDualQ_in, start_pos):
@@ -243,11 +240,22 @@ def log_dualQ2pos(logDualQ_in, start_pos):
     Input bivector (6 numbers) returns position by first calculating the dual quaternion = exp(log_dualQ) . 
     (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
     """
+    """
+    Input:
+        - log_dualQ: Original predictions (logarithm of dual quaternion)
+            Shape (batch_size, 6) or (batch_size, frames, 6)
+        - start_pos: Start position of simulation
+            Shape (batch_size, 24) or (batch_size, frames, 24)
+
+            (* is only present for lstm)
+    Output:
+        - Converted Dual-quaternion to current position
+            (batch, 24) or
+            (batch, frames, 24)
+    """
     out_shape = list(logDualQ_in.shape)
     out_shape[-1] = 8
 
-    # 128, 6
-    # 128, 30, 6
     logDualQ = logDualQ_in.flatten(start_dim=0, end_dim=-2)
     l = logDualQ[:, 3] * logDualQ[:, 3] + logDualQ[:, 4] * logDualQ[:, 4] + logDualQ[:, 5] * logDualQ[:, 5]
     mask = (l == 0)[:, None]
@@ -287,8 +295,7 @@ def diff_pos_start2pos(true_preds, start_pos):
 
     if len(true_preds.shape) == 2:
         true_preds = true_preds[:, None, :]
-    if len(start_pos.shape) == 2:
-        start_pos = start_pos[:, None, :]
+    start_pos = start_pos[:, None, :]
 
     result = start_pos + true_preds
     return result.squeeze()
@@ -308,7 +315,7 @@ def convert(true_preds, start_pos, data_type):
         return true_preds
     elif data_type == "eucl_motion":
         return eucl2pos(true_preds, start_pos)
-    elif data_type =="eucl_motion_old":
+    elif data_type == "eucl_motion_old":
         return eucl2pos(true_preds, start_pos)
     elif data_type == "quat":
         return quat2pos(true_preds, start_pos)
@@ -320,6 +327,6 @@ def convert(true_preds, start_pos, data_type):
     #     return diff_pos2pos(true_preds, start_pos)
     elif data_type == "pos_diff_start":
         return diff_pos_start2pos(true_preds, start_pos)
-    elif data_type =="log_dualQ":
+    elif data_type == "log_dualQ":
         return log_dualQ2pos(true_preds, start_pos)
     raise Exception(f"{data_type} cannot be converted")

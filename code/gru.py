@@ -323,7 +323,7 @@ if __name__ == "__main__":
     for i in range(args.iterations):
         print(f"----- ITERATION {i}/{args.iterations} ------")
         # Divide the train en test dataset
-        n_sims_train_total = len(os.listdir(data_dir_train)) // 2
+        n_sims_train_total = len(os.listdir(data_dir_train)) // 4
         sims_train = {i for i in range(n_sims_train_total)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train_total)))
         test_sims = sims_train - train_sims
