@@ -84,9 +84,9 @@ def fast_rotVecQuat(v, q):
 def quat2pos(quat, start_pos):
     # print(quat.shape, start_pos.shape)
     # NN
-    # (128 x 7), (128 x 8 x 3)
+    # (batch x 7), (batch x 24)
     # LSTM
-    # (128 x 20 x 7), (128 x 20 x 8 x 3)
+    # (batch x frames x 7), (batch x frames x 24)
 
     """
     Input:
@@ -115,12 +115,14 @@ def quat2pos(quat, start_pos):
     # In case of LSTM
     else:
         quat_flat = quat.flatten(end_dim=1)
+        # For visualisation
         if len(start_pos.shape) != 3:
             start_pos = start_pos[:, None, :]
 
-        correct_start_pos = start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1)
+        repeated_start_pos = start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1)
+        print(repeated_start_pos.shape)
         # Rotate start by quaternion
-        rotated_start = fast_rotVecQuat(correct_start_pos, quat_flat[:, :4])
+        rotated_start = fast_rotVecQuat(repeated_start_pos, quat_flat[:, :4])
 
         # Add Translation
         out = (rotated_start + quat_flat[:, 4:][:, None, :]).flatten(start_dim=1)
@@ -135,7 +137,7 @@ def log_quat2pos(log_quat, start_pos):
     # NN
     # (128 x 7), (128 x 8 x 3)
     # LSTM
-    # (128 x 20 x 7), (128 x 8 x 3)
+    # (128 x 20 x 7), (128 x 24)
     """
     Input:
         - log_quat: Original predictions (log quaternion motion)

@@ -74,7 +74,7 @@ class MyDataset(data.Dataset):
 
         self.data = []
         self.target = []
-        self.pos_target = []
+        self.target_pos = []
         self.start_pos = []
 
         # Loop through all simulations
@@ -87,21 +87,17 @@ class MyDataset(data.Dataset):
                 # Add data and targets
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     # Always save the start position for converting
-                    # if self.data_type == "pos_diff_start":
                     self.start_pos.append(data_all["pos"][0].flatten())
-                    # else:
-                    #     self.start_pos.append(data_all["start"].flatten())
-
                     train_end = frame + self.n_frames_perentry
 
                     self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end + 1].flatten())
 
-                    self.pos_target.append(pos_data[train_end + 1].flatten())
+                    self.target_pos.append(pos_data[train_end + 1].flatten())
 
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
-        self.pos_target = torch.FloatTensor(np.asarray(self.pos_target))
+        self.target_pos = torch.FloatTensor(np.asarray(self.target_pos))
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
 
     def __len__(self):
@@ -113,7 +109,7 @@ class MyDataset(data.Dataset):
         data_point = self.data[idx]
         data_target = self.target[idx]
         data_start = self.start_pos[idx]
-        data_pos_target = self.pos_target[idx]
+        data_pos_target = self.target_pos[idx]
         return data_point, data_target, data_start, data_pos_target
 
 def train_log(loss, epoch, config):
@@ -125,9 +121,8 @@ def train_log(loss, epoch, config):
 def train_model(
     model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config, losses
 ):
-    print("--- Started Learning ---")
+    print("--- Started Training ---")
     # Set model to train mode
-    loss_type = config.loss_type
     model.train()
     wandb.watch(model, loss_module, log="all", log_freq=10)
 
@@ -136,22 +131,18 @@ def train_model(
         epoch_time = time.time()
         loss_epoch = 0
         for data_inputs, data_labels, start_pos, pos_target in data_loader:
-            start = time.time()
 
             # Set data to current device
-            data_inputs = data_inputs.to(device)
-            data_labels = data_labels.to(device)
-            start_pos = start_pos.to(device)
-            pos_target = pos_target.to(device)
+            data_inputs = data_inputs.to(device) # Shape: [batch, frames x n_data]
+            data_labels = data_labels.to(device) # Shape: [batch, n_data]
+            pos_target = pos_target.to(device) # Shape: [batch, n_data]
+            start_pos = start_pos.to(device) # Shape: [batch, n_data]
 
             # Get predictions
-            preds = model(data_inputs)
+            preds = model(data_inputs) # Shape: [batch, n_data]
 
-            # conv_time = time.time()
             # Convert predictions to xyz-data
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
-
-            # print("conv_time", time.time() - conv_time)
 
             # Determine norm penalty for quaternion data
             if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
@@ -170,14 +161,10 @@ def train_model(
             loss_epoch += loss
 
             # Perform backpropagation
-            # back_time = time.time()
             optimizer.zero_grad()
             loss.backward()
-            # print("backpropagate", time.time() - back_time)
 
-            # Update the parameters
             optimizer.step()
-            # print("total_time", time.time() - start)
 
         # Log to W&B
         train_log(loss_epoch / len(data_loader), epoch, config)
@@ -195,16 +182,6 @@ def train_model(
             round(convert_loss, 10), "\t", round(total_convert_loss, 10)
         )
 
-        # Write to file
-    # f = open(
-        #     f"results/{config.data_type}/{num_epochs}_{config.learning_rate}_{loss_type}.txt",
-        #     "a",
-        # )
-        # f.write(
-        #     f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n"
-        # )
-        # f.write("\n")
-        # f.close()
         print("epoch_time; ", time.time() - epoch_time)
 
 def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
@@ -223,8 +200,6 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
                     # Set data to current device
                     data_inputs = data_inputs.to(device)
                     data_labels = data_labels.to(device)
-                    # start_pos = start_pos.to(device)
-                    # pos_target = pos_target.to(device)
 
                     # Get predictions
                     preds = model(data_inputs)
@@ -305,6 +280,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
     )
+
     test_data_loaders = []
 
     for test_data_dir in config.data_dirs_test:

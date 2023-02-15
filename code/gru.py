@@ -130,15 +130,21 @@ class MyDataset(data.Dataset):
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     self.start_pos.append(data_all["pos"][0].flatten())
                     train_end = frame + self.n_frames_perentry
+                    # [frames, n_data]
                     self.data.append(data[frame:train_end].reshape(-1, self.n_datap_perframe))
+                    # [frames, n_data]
                     self.target.append(data[frame+1:train_end+1].reshape(-1, self.n_datap_perframe))
+                    # [frames, 8, 3]
                     self.target_pos.append(data_all["pos"][frame+1:train_end+1])
 
 
+        # Shape [(n_simsx(total_nr_frames-n_frames_perentry-1)), n_frames_perentry, n_data]
         self.data = torch.FloatTensor(np.asarray(self.data))
         self.target = torch.FloatTensor(np.asarray(self.target))
         self.target_pos = torch.FloatTensor(np.asarray(self.target_pos)).flatten(start_dim=2)
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+
+
 
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
@@ -170,22 +176,14 @@ def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_ep
         for data_inputs, data_labels, pos_target, start_pos in data_loader:
             # start = time.time()
 
-            data_inputs = data_inputs.to(device)
-            data_labels = data_labels.to(device)
-            pos_target = pos_target.to(device)
-            start_pos = start_pos.to(device)
+            data_inputs = data_inputs.to(device) # Shape: [batch, frames, n_data]
+            data_labels = data_labels.to(device) # Shape: [batch, frames, n_data]
+            pos_target = pos_target.to(device) # Shape: [batch, frames, n_data]
+            start_pos = start_pos.to(device) # Shape: [batch, n_data]
 
-            _, _, output = model(data_inputs)
-            # print(output.shape)
-            # if config['data_type'] == 'pos':
-            #     # print(output.shape, data_labels_pos.shape)
-            #     output = output.reshape((output.shape[0], output.shape[1], 8, 3))
+            _, _, preds = model(data_inputs) # Shape: preds [batch, frames, n_data]
 
-            # print("inputs", data_inputs.shape)
-            # print("labels", data_labels.shape)
-            # print("pos_target", pos_target.shape)
-
-            alt_preds = convert(output, start_pos, data_loader.dataset.data_type)
+            alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
 
             loss = loss_module(alt_preds, pos_target)
 
@@ -194,23 +192,15 @@ def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_ep
             # Perform backpropagation
             loss.backward()
 
-            ## Step 5: Update the parameters
             optimizer.step()
 
             loss_epoch += loss
-
-            # print("total_time", time.time() - start)
 
         train_log(loss_epoch/len(data_loader), epoch)
 
         convert_loss = eval_model(model, test_loaders, config, epoch, losses)
         model.train()
         print(epoch, round(loss_epoch.item()/len(data_loader), 10), '\t', round(convert_loss, 10))
-
-        # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
-        # f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
-        # f.write("\n")
-        # f.close()
         print("epoch_time; ", time.time() - epoch_time)
 
 
@@ -266,18 +256,17 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
 def make(config, ndata_dict, loss_dict, optimizer_dict):
     # Make the data
     data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
-    data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
+    # data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
 
     train_data_loader = data.DataLoader(data_set_train, batch_size=config.batch_size, shuffle=True)
 
-    print("-- Finished train dataloader")
+    print("-- Finished Train Dataloader --")
     # test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
 
 
     test_data_loaders = []
 
     for test_data_dir in config.data_dirs_test:
-        # print("data/"+test_data_dir)
         data_set_test = MyDataset(
             sims=config.test_sims,
             n_frames=config.n_frames,
@@ -291,7 +280,8 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         )
         test_data_loaders += [test_data_loader]
 
-    print("-- Finished Dataloaders --")
+    print("-- Finished Test Dataloader(s) --")
+
 
     # Make the model
     model = GRU(config, ndata_dict[config.data_type], num_outputs=3).to(device)
@@ -326,9 +316,6 @@ if __name__ == "__main__":
     # else:
     #     data_dirs_test = "data/" + args.data_dir_test
 
-    # print(data_dirs_test)
-    # exit()
-
     losses = [nn.MSELoss, nn.L1Loss]
     if not os.path.exists(data_dir_train):
         raise IndexError("No directory for the train data {args.data_dir_train}")
@@ -336,9 +323,9 @@ if __name__ == "__main__":
     for i in range(args.iterations):
         print(f"----- ITERATION {i}/{args.iterations} ------")
         # Divide the train en test dataset
-        n_sims_train = len(os.listdir(data_dir_train)) // 2
-        sims_train = {i for i in range(n_sims_train)}
-        train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+        n_sims_train_total = len(os.listdir(data_dir_train)) // 2
+        sims_train = {i for i in range(n_sims_train_total)}
+        train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train_total)))
         test_sims = sims_train - train_sims
 
         # if data_dir_train == data_dir_test:
@@ -368,7 +355,7 @@ if __name__ == "__main__":
             train_sims = list(train_sims),
             test_sims = list(test_sims),
             n_frames = 30,
-            n_sims = n_sims_train,
+            n_sims = n_sims_train_total,
             n_layers = 1,
             hidden_size = 96,
             data_dir_train=data_dir_train,

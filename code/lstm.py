@@ -66,10 +66,7 @@ class MyDataset(data.Dataset):
                 data_all = pickle.load(f)["data"]
                 data = data_all[self.data_type]
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    # if self.data_type == "pos_diff_start":
                     self.start_pos.append(data_all["pos"][0].flatten())
-                    # else:
-                    #     self.start_pos.append(data_all["start"].flatten())
                     train_end = frame + self.n_frames_perentry
                     self.data.append(data[frame:train_end].reshape(-1, self.n_datap_perframe))
                     self.target.append(data[frame+1:train_end+1].reshape(-1, self.n_datap_perframe))
@@ -109,24 +106,14 @@ def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_ep
         epoch_time = time.time()
 
         for data_inputs, data_labels, pos_target, start_pos in data_loader:
-            # start = time.time()
+            data_inputs = data_inputs.to(device)  # Shape: [batch, frames, n_data]
+            data_labels = data_labels.to(device)  # Shape: [batch, frames, n_data]
+            pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
+            start_pos = start_pos.to(device)  # Shape: [batch, n_data]
 
-            data_inputs = data_inputs.to(device)
-            data_labels = data_labels.to(device)
-            pos_target = pos_target.to(device)
-            start_pos = start_pos.to(device)
+            preds, _ = model(data_inputs) # Shape: [batch, frames, n_data]
 
-            output, _ = model(data_inputs)
-            # print(output.shape)
-            # if config['data_type'] == 'pos':
-            #     # print(output.shape, data_labels_pos.shape)
-            #     output = output.reshape((output.shape[0], output.shape[1], 8, 3))
-
-            # print("inputs", data_inputs.shape)
-            # print("labels", data_labels.shape)
-            # print("pos_target", pos_target.shape)
-
-            alt_preds = convert(output, start_pos, data_loader.dataset.data_type)
+            alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
 
             loss = loss_module(alt_preds, pos_target)
 
@@ -135,23 +122,15 @@ def train_model(model, optimizer, data_loader, test_loaders, loss_module, num_ep
             # Perform backpropagation
             loss.backward()
 
-            ## Step 5: Update the parameters
             optimizer.step()
 
             loss_epoch += loss
-
-            # print("total_time", time.time() - start)
 
         train_log(loss_epoch/len(data_loader), epoch)
 
         convert_loss = eval_model(model, test_loaders, config, epoch, losses)
         model.train()
         print(epoch, round(loss_epoch.item()/len(data_loader), 10), '\t', round(convert_loss, 10))
-
-        # f = open(f"results/{data_type}/{num_epochs}_{lr}_{loss_type}.txt", "a")
-        # f.write(f"{[epoch, round(loss_epoch.item()/len(data_loader), 10), round(true_loss, 10), round(convert_loss, 10)]} \n")
-        # f.write("\n")
-        # f.close()
         print("epoch_time; ", time.time() - epoch_time)
 
 
@@ -209,7 +188,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
 def make(config, ndata_dict, loss_dict, optimizer_dict):
     # Make the data
     data_set_train = MyDataset(sims=config.train_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
-    data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
+    # data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
 
     train_data_loader = data.DataLoader(data_set_train, batch_size=config.batch_size, shuffle=True)
     # test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
