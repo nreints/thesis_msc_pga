@@ -239,7 +239,7 @@ def eval_model(model, data_loaders, config, current_epoch, losses):
                     total_loss += loss_module(preds, data_labels)
                     total_convert_loss += loss_module(alt_preds, data_labels_pos)
 
-                print(f"\t Logging test loss: {config.data_dirs_test[i][5:]}, {str(loss_module)} => {round(total_convert_loss / len(data_loader), 10)}")
+                print(f"\t Logging test loss: {config.data_dirs_test[i][5:]}, {str(loss_module)} => {round((total_convert_loss / len(data_loader)).item(), 10)}")
                 wandb.log({f"Test loss {config.data_dirs_test[i][5:]}, {str(loss_module)}": total_convert_loss / len(data_loader)}, step=current_epoch)
 
     return total_convert_loss.item()/len(data_loader)
@@ -358,7 +358,7 @@ if __name__ == "__main__":
         config = dict(
             learning_rate = 0.005,
             epochs = 30,
-            batch_size = 1024,
+            batch_size = 512,
             dropout = 0.2,
             loss_type = args.loss,
             loss_reduction_type = "mean",
