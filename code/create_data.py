@@ -129,8 +129,10 @@ def create_empty_dataset():
         "pos_diff_start": np.empty((n_steps // 10, 8, 3)),
         # "pos_norm": np.empty((n_steps // 10, 8, 3)),
         # "trans": np.empty((n_steps // 10, 3)),
-        "log_dualQ": np.empty((n_steps // 10, 6))
+        "log_dualQ": np.empty((n_steps // 10, 6)),
         # "log_dualQ_old": np.empty((n_steps // 10, 6))
+        "rotation_axis": np.empty((n_steps // 10, 3)),
+        "rotation_axis_trans": np.empty((n_steps // 10, 6))
     }
 
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
@@ -148,15 +150,14 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-10, size=3)
     # data.qvel[0:3] = [0, 3, 0]
     data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-10, size=3)
-    # data.qvel[3:6] = [0, 40, 0]
-
+    # data.qvel[3:6] = [9, 0, 0]
 
     geom_id = model.geom(geom_name).id
     body_id = model.body("object_body").id
 
     xyz_local = get_vert_local(model, geom_id)
 
-    dataset = create_empty_dataset(xyz_local)
+    dataset = create_empty_dataset()
 
     if visualize:
         import mujoco_viewer
@@ -195,6 +196,10 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["dual_quat"][i] = dualQ_start
                 dataset["log_dualQ"][i] = logDual(dualQ_start)
 
+                rotation_axis = Quaternion([1, 0, 0, 0]).axis
+                dataset["rotation_axis"][i//10] = rotation_axis
+                dataset["rotation_axis_trans"][i//10] = np.append(rotation_axis, xpos)
+
             else:
                 # Collect euclidean motion data
                 current_rotMat = get_mat(data, geom_id)
@@ -206,7 +211,17 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                     rel_rot.flatten(), rel_trans
                 )
 
-                quaternion = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse).elements
+                quaternion_pyquat = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse)
+                quaternion = quaternion_pyquat.elements
+                rotation_axis = quaternion_pyquat.axis
+
+                dataset["rotation_axis"][i//10] = rotation_axis
+                print(rotation_axis)
+                dataset["rotation_axis_trans"][i//10] = np.append(rotation_axis, xpos)
+                print(rotation_axis)
+                # print(rel_trans)
+                # print(xpos)
+                # exit()
 
                 dataset["quat"][i // 10] = np.append(
                     quaternion, rel_trans
@@ -283,15 +298,16 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
             print(f"Generating sim {sim_id}/{num_sims}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
+        # euler ="0 0 0"
         # Define sizes
-        sizes = get_sizes(symmetry)
+        sizes_str = get_sizes(symmetry)
+        # sizes = "4 4 4"
         # Define position TODO fix no flying Quadrilaterally-faced hexahedrons
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(5, 10)}"
-
-        string = create_string(euler, pos, sizes, gravity, plane)
+        string = create_string(euler, pos, sizes_str, gravity, plane)
         # Create dataset
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
-        sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes, "gravity":gravity, "n_steps":n_steps//10}, "data": dataset}
+        sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes_str, "gravity":gravity, "n_steps":n_steps//10}, "data": dataset}
         with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
         f.close()
@@ -299,13 +315,13 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=100)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=5)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=6000)
     parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="full")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
     parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
-    parser.add_argument("-r_min", type=int, help="rotation qvel min", default=0)
-    parser.add_argument("-r_max", type=int, help="rotation qvel max", default=0)
+    parser.add_argument("-r_min", type=int, help="rotation qvel min", default=6)
+    parser.add_argument("-r_max", type=int, help="rotation qvel max", default=8)
     parser.add_argument('--gravity', action=argparse.BooleanOptionalAction)
     parser.add_argument('--plane', action=argparse.BooleanOptionalAction)
     parser.add_argument('--visualize', action=argparse.BooleanOptionalAction)

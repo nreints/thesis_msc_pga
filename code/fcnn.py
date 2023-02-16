@@ -13,7 +13,6 @@ import argparse
 from pathlib import Path
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-wandb.login(key="dc4407c06f6d57a37befe29cb0773deffd670c72")
 
 class fcnn(nn.Module):
     def __init__(self, n_data, config):
@@ -313,6 +312,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
 
 if __name__ == "__main__":
+    wandb.login(key="dc4407c06f6d57a37befe29cb0773deffd670c72")
     parser = argparse.ArgumentParser()
     # parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)

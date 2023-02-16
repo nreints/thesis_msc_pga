@@ -1,4 +1,3 @@
-from platform import architecture
 import torch
 import matplotlib.pyplot as plt
 from fcnn import fcnn
@@ -9,9 +8,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from convert import *
-import math
 import argparse
 import os
+import matplotlib.cm as cm
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -55,9 +54,8 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         - nr_frames: number of frames to collect.
     """
     # Select random simulation
-    print
-    if not i:
-        print("Using simulation number ", i, " data_type ", data_type)
+    if i is None:
+        print("Using random simulation number ", i, " data_type ", data_type)
         i = randint(0, nr_sims-1)
 
     with open(f'{data_dir}/sim_{i}.pickle', 'rb') as f:
@@ -71,14 +69,20 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
+        rot_axis = file["data"]["rotation_axis"]
+        rot_axis_trans = file["data"]["rotation_axis_trans"]
+
         # Load the data in correct data type
         original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
+
+        ranges = [(torch.min(plot_data[:,:,d])+5, torch.max(plot_data[:,:,d])-5) for d in range(3)]
+        ranges = [(torch.min(plot_data[:,:,:])+5, torch.max(plot_data[:,:,:])-5) for k in range(3)]
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
-    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i
+    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i, rot_axis, rot_axis_trans, ranges
 
 def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames, model):
     """
@@ -195,7 +199,7 @@ def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
     ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black")
 
-def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames, sim_id, data_dir):
+def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames, sim_id, data_dir, size=[15, 20, 30]):
     """
     Plots 3D animation of the cubes.
     Input:
@@ -220,9 +224,9 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
 
     plot_cubes(converted_cube, predicted_cube, check_cube, ax)
 
-    ax.set_xlim3d(-15, 15)
-    ax.set_ylim(-15, 15)
-    ax.set_zlim(0, 50)
+    ax.set_xlim3d(-size[0], size[0])
+    ax.set_ylim(-size[1], size[1])
+    ax.set_zlim(0, size[2])
 
     def update(idx):
         # Remove the previous scatter plot
@@ -252,10 +256,11 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
     ani = animation.FuncAnimation(fig, update, nr_frames, interval=75, repeat=False)
     plt.show()
 
-def plot_datatypes(plot_data, data_types, nr_frames):
+def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir, range_plot):
     """
     Plots 3D animation of the cubes in all data types
     """
+
     # Open figure
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -263,6 +268,12 @@ def plot_datatypes(plot_data, data_types, nr_frames):
     for i in range(len(data_types)):
         # Collect init data
         converted_cube = np.array(plot_data[i][0])
+        rot_axis_current = np.array(rot_axis[i][0])
+        rot_axis_plot = (rot_axis_current[:3].reshape(3,1) + rot_axis_current[3:].reshape(3,1))
+        rot_axis_plot = np.append(rot_axis_plot, (np.zeros((3,1)) + rot_axis_current[3:].reshape(3,1)), axis=1)
+        diff = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
+        rot_axis_plot[:,0] = rot_axis_plot[:, 0] - 50*diff
+        rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*diff
 
         # Scatter the corners
         ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], linewidth=0.5, color=colors[i], label=data_types[i])
@@ -272,11 +283,12 @@ def plot_datatypes(plot_data, data_types, nr_frames):
 
         # Plot the edges
         ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c=colors[i])
+        print(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2])
+        ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g")
 
-
-    ax.set_xlim3d(-15, 15)
-    ax.set_ylim(-15, 15)
-    ax.set_zlim(0, 50)
+    ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
+    ax.set_ylim(range_plot[1][0], range_plot[1][1])
+    ax.set_zlim(range_plot[2][0], range_plot[2][1])
     ax.legend()
 
     def update(idx):
@@ -293,26 +305,41 @@ def plot_datatypes(plot_data, data_types, nr_frames):
             # Get cube vertice data
             converted_cube = np.array(plot_data[i][idx])
 
+            rot_axis_current = np.array(rot_axis[i][idx])
+            rot_axis_plot = (rot_axis_current[:3].reshape(3,1) + rot_axis_current[3:].reshape(3,1))
+            rot_axis_plot = np.append(rot_axis_plot, (np.zeros((3,1)) + rot_axis_current[3:].reshape(3,1)), axis=1)
+            diff = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
+            rot_axis_plot[:,0] = rot_axis_plot[:, 0] - 50*diff
+            rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*diff
+
             # Scatter vertice data
-            ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], color=colors[i], linewidth=0.5)
+            # ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], color=colors[i], linewidth=0.5)
+
+            x_values = converted_cube.T[0]
+            colors_more = cm.rainbow(np.linspace(0, 1, len(x_values)))
+            for s, point in enumerate(converted_cube):
+                ax.scatter(point[0], point[1], point[2], color=colors_more[s])
 
             # Calculate the edges
             converted_cube_edges = calculate_edges(converted_cube)
 
             # Plot the edges
             ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
+            ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g")
+        print(diff)
+        # print(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2])
 
-        # if idx > 1:
+        # if idx > 2:
         #     exit()
 
-        ax.set_xlim3d(-15, 15)
-        ax.set_ylim3d(-15, 15)
-        ax.set_zlim3d(0, 40)
+        ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
+        ax.set_ylim(range_plot[1][0], range_plot[1][1])
+        ax.set_zlim(range_plot[2][0], range_plot[2][1])
 
         ax.set_xlabel('$X$')
         ax.set_ylabel('$Y$')
         ax.set_zlabel('$Z$')
-        ax.set_title(f"All Datatypes converted to xyz-position")
+        ax.set_title(f"Frame {idx}/{nr_frames} for sim {sim_id} on set {data_dir[5:]}")
         ax.legend()
 
     # Interval : Delay between frames in milliseconds.
@@ -328,7 +355,7 @@ if __name__ == "__main__":
     # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
     parser.add_argument("-data_type", type=str, help="data type to visualize", default="pos")
     parser.add_argument("-architecture", type=str, help="architecture", default="fcnn")
-    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(2, 5)_full_pNone_gNone")
+    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(6, 8)_full_pNone_gNone")
     args = parser.parse_args()
 
     data_dir = "data/" + args.data_dir
@@ -340,38 +367,41 @@ if __name__ == "__main__":
     if nr_sims == 0:
         raise KeyError(f"No simulations in {data_dir}")
 
-    data_type = args.data_type
-    architecture = args.architecture
-    print(f"Visualizing {architecture} trained on {data_type}")
 
     # -----------------------------------
+    # data_type = args.data_type
+    # architecture = args.architecture
+    # print(f"Visualizing {architecture} trained on {data_type}")
 
-    model, config = load_model(data_type, architecture, args.data_dir)
-    print("model loaded")
-    plot_data, ori_data, pos_data, start, nr_frames, sim_id = get_random_sim_data(data_type, nr_sims, data_dir)
+    # model, config = load_model(data_type, architecture, args.data_dir)
+    # print("model loaded")
+    # plot_data, ori_data, pos_data, start, nr_frames, sim_id = get_random_sim_data(data_type, nr_sims, data_dir)
 
-    nr_input_frames = config["n_frames"]
-    if architecture == "fcnn":
-        prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames, model)
-    elif architecture == "lstm" or architecture == "quaternet":
-        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, model, out_is_in=False)
+    # nr_input_frames = config["n_frames"]
+    # if architecture == "fcnn":
+    #     prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames, model)
+    # elif architecture == "lstm" or architecture == "quaternet":
+    #     prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, model, out_is_in=False)
 
-    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames, sim_id, args.data_dir)
+    # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames, sim_id, args.data_dir)
 
     # -----------------------------------'
 
     # Below the test for all datatypes
-    # plot_data = []
-    # i = randint(0, nr_sims-1)
-    # print("simulation", i)
-    # # Test all data types:
+    i = randint(0, nr_sims-1)
+    print("simulation", i)
+    # i=0
+    # Test all data types:
 
-    # data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
+    data_types = ["pos"]
+    plot_data, rot_axis, rot_trans_axis = [], [], []
 
-    # for data_thing in data_types:
-    #     result, _,_,_, nr_frames = get_random_sim_data(data_thing, nr_sims, data_dir, i)
-    #     plot_data.append(result)
+    for data_thing in data_types:
+        result, _, _, _, nr_frames, _, rotation_axis, rotation_axis_trans, range_plot = get_random_sim_data(data_thing, nr_sims, data_dir, i)
+        plot_data.append(result)
+        rot_axis.append(rotation_axis)
+        rot_trans_axis.append(rotation_axis_trans)
 
-    # plot_datatypes(plot_data, data_types, nr_frames)
+    plot_datatypes(plot_data, data_types, nr_frames, rot_trans_axis, i, args.data_dir, range_plot)
 
 
