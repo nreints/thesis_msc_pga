@@ -15,7 +15,7 @@ import os
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-def load_model(data_type, architecture):
+def load_model(data_type, architecture, data_dir):
     """
     Loads a pretrained model.
     Input:
@@ -26,7 +26,7 @@ def load_model(data_type, architecture):
         - config: config of the model.
     """
     # Load model
-    model_dict = torch.load(f"models/{data_type}_{architecture}.pickle", map_location=torch.device(device))
+    model_dict = torch.load(f"models/{architecture}/{data_type}_{architecture}_['{data_dir}'].pickle", map_location=torch.device(device))
     config = model_dict['config']
     ndata_dict = model_dict['data_dict']
 
@@ -78,7 +78,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
-    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames
+    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i
 
 def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames, model):
     """
@@ -195,7 +195,7 @@ def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
     ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black")
 
-def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames):
+def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames, sim_id, data_dir):
     """
     Plots 3D animation of the cubes.
     Input:
@@ -245,7 +245,7 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
         ax.set_xlabel('$X$')
         ax.set_ylabel('$Y$')
         ax.set_zlabel('$Z$')
-        ax.set_title(f"Frame {idx}/{nr_frames}")
+        ax.set_title(f"Frame {idx}/{nr_frames} for sim {sim_id} on set {data_dir[5:]}")
         ax.legend()
 
     # Interval : Delay between frames in milliseconds.
@@ -326,6 +326,8 @@ if __name__ == "__main__":
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
+    parser.add_argument("-data_type", type=str, help="data type to visualize", default="pos")
+    parser.add_argument("-architecture", type=str, help="architecture", default="fcnn")
     parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(2, 5)_full_pNone_gNone")
     args = parser.parse_args()
 
@@ -338,37 +340,38 @@ if __name__ == "__main__":
     if nr_sims == 0:
         raise KeyError(f"No simulations in {data_dir}")
 
-    data_type = "dual_quat"
-    architecture = "fcnn"
+    data_type = args.data_type
+    architecture = args.architecture
     print(f"Visualizing {architecture} trained on {data_type}")
 
     # -----------------------------------
 
-    # model, config = load_model(data_type, architecture)
-    # plot_data, ori_data, pos_data, start = get_random_sim_data(data_type, nr_frames, nr_sims, args.data_dir)
+    model, config = load_model(data_type, architecture, args.data_dir)
+    print("model loaded")
+    plot_data, ori_data, pos_data, start, nr_frames, sim_id = get_random_sim_data(data_type, nr_sims, data_dir)
 
-    # nr_input_frames = config["n_frames"]
-    # if architecture == "fcnn":
-    #     prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames, model)
-    # elif architecture == "lstm" or architecture == "quaternet":
-    #     prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, model, out_is_in=False)
+    nr_input_frames = config["n_frames"]
+    if architecture == "fcnn":
+        prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames, model)
+    elif architecture == "lstm" or architecture == "quaternet":
+        prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, model, out_is_in=False)
 
-    # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames)
+    plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames, sim_id, args.data_dir)
 
     # -----------------------------------'
 
     # Below the test for all datatypes
-    plot_data = []
-    i = randint(0, nr_sims-1)
-    print("simulation", i)
-    # Test all data types:
+    # plot_data = []
+    # i = randint(0, nr_sims-1)
+    # print("simulation", i)
+    # # Test all data types:
 
-    data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
+    # data_types = ["pos", "eucl_motion", "quat", "log_quat", "dual_quat", "log_dualQ", "pos_diff_start"]
 
-    for data_thing in data_types:
-        result, _,_,_, nr_frames = get_random_sim_data(data_thing, nr_sims, data_dir, i)
-        plot_data.append(result)
+    # for data_thing in data_types:
+    #     result, _,_,_, nr_frames = get_random_sim_data(data_thing, nr_sims, data_dir, i)
+    #     plot_data.append(result)
 
-    plot_datatypes(plot_data, data_types, nr_frames)
+    # plot_datatypes(plot_data, data_types, nr_frames)
 
 
