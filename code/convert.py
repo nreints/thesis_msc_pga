@@ -295,7 +295,8 @@ def diff_pos_start2pos(true_preds, start_pos):
 
     if len(true_preds.shape) == 2:
         true_preds = true_preds[:, None, :]
-    start_pos = start_pos[:, None, :]
+    if len(start_pos.shape) == 2:
+        start_pos = start_pos[:, None, :]
 
     result = start_pos + true_preds
     return result.squeeze()

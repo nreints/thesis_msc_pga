@@ -55,7 +55,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         - nr_frames: number of frames to collect.
     """
     # Select random simulation
-
+    print
     if not i:
         print("Using simulation number ", i, " data_type ", data_type)
         i = randint(0, nr_sims-1)
@@ -73,18 +73,6 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
 
         # Load the data in correct data type
         original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
-        print(data_type)
-        if data_type == "pos" or data_type == "pos_diff_start":
-            print(original_data[:20].reshape(20, 8,3))
-        elif data_type =="eucl_motion":
-            print(original_data[:20, :9].reshape(20, 3,3), "\n", original_data[:20, 9:].reshape(20, 3))
-        elif data_type == "quat" or data_type == "log_quat":
-            print(original_data[:20, :-3],"\n",  original_data[:20, -3:])
-        elif data_type == "dual_quat":
-            print(original_data[:20, :4], "\n", original_data[:20, 4:])
-        elif "log_dualQ":
-            print(original_data[:20])
-        print("----------------")
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
         # Load original xyz position data for validating plot_data
@@ -338,7 +326,7 @@ if __name__ == "__main__":
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
-    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(0, 0)_full_pNone_gNone")
+    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(2, 5)_full_pNone_gNone")
     args = parser.parse_args()
 
     data_dir = "data/" + args.data_dir
