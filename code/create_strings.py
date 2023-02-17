@@ -6,9 +6,9 @@ def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
         plane_str = ""
 
     if gravity:
-        gravity_str = ""
+        gravity_str = '<option integrator="RK4">'
     else:
-        gravity_str = '<option gravity="0 0 0"/>'
+        gravity_str = '<option integrator="RK4" gravity="0 0 0"/>'
     return f"""
     <mujoco>
     {gravity_str}
@@ -23,65 +23,6 @@ def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
     </worldbody>
     </mujoco>
     """
-
-    # if plane and gravity:
-    #     return f"""
-    #     <mujoco>
-    #     <worldbody>
-    #         <light name="top" pos="0 0 1"/>
-    #         <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
-    #         <geom type="plane" pos="0 0 0" size="10 10 10" rgba="1 1 1 1"/>
-    #         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
-    #             <joint name="joint1" type="free"/>
-    #             <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0 0 1"/>
-    #         </body>
-    #     </worldbody>
-    #     </mujoco>
-    #     """
-    # elif plane and not gravity:
-    #     return f"""
-    #     <mujoco>
-    #     <option gravity="0 0 0"/>
-    #     <worldbody>
-    #         <light name="top" pos="0 0 1"/>
-    #         <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
-    #         <geom type="plane" pos="0 0 0" size="10 10 10" rgba="1 1 1 1"/>
-    #         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
-    #             <joint name="joint1" type="free"/>
-    #             <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0 0 1"/>
-    #         </body>
-    #     </worldbody>
-    #     </mujoco>
-    #     """
-    # elif gravity and not plane:
-    #     return f"""
-    #     <mujoco>
-    #     <worldbody>
-    #         <light name="top" pos="0 0 1"/>
-    #         <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
-    #         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
-    #             <joint name="joint1" type="free"/>
-    #             <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0 0 1"/>
-    #         </body>
-    #     </worldbody>
-    #     </mujoco>
-    #     """
-    # elif not gravity and not plane:
-    #     return f"""
-    #     <mujoco>
-    #     <option gravity="0 0 0"/>
-    #     <worldbody>
-    #         <light name="top" pos="0 0 1"/>
-    #         <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
-    #         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
-    #             <joint name="joint1" type="free"/>
-    #             <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0 0 1"/>
-    #         </body>
-    #     </worldbody>
-    #     </mujoco>
-    #     """
-
-
 
 
 # def create_string():

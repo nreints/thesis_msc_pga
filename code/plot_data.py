@@ -72,13 +72,14 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         rot_axis = file["data"]["rotation_axis"]
         rot_axis_trans = file["data"]["rotation_axis_trans"]
 
+
         # Load the data in correct data type
         original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
 
-        ranges = [(torch.min(plot_data[:,:,d])+5, torch.max(plot_data[:,:,d])-5) for d in range(3)]
-        ranges = [(torch.min(plot_data[:,:,:])+5, torch.max(plot_data[:,:,:])-5) for k in range(3)]
+        # ranges = [(torch.min(plot_data[:,:,d])+5, torch.max(plot_data[:,:,d])-5) for d in range(3)]
+        ranges = [(torch.min(plot_data[:,:,:])+5, torch.max(plot_data[:,:,:])-5) for _ in range(3)]
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
@@ -297,9 +298,6 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
         if idx != 0:
             ax.cla()
 
-        if idx % 10 == 0:
-            print("step ", idx)
-
         for i in range(len(data_types)):
 
             # Get cube vertice data
@@ -311,7 +309,7 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
             diff = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
             rot_axis_plot[:,0] = rot_axis_plot[:, 0] - 50*diff
             rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*diff
-
+            # print(rot_axis_plot[:,0] - rot_axis_plot[:, 1])
             # Scatter vertice data
             # ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], color=colors[i], linewidth=0.5)
 
@@ -326,7 +324,7 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
             # Plot the edges
             ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
             ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g")
-        print(diff)
+
         # print(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2])
 
         # if idx > 2:
@@ -390,10 +388,10 @@ if __name__ == "__main__":
     # Below the test for all datatypes
     i = randint(0, nr_sims-1)
     print("simulation", i)
-    # i=0
+    # i=2
     # Test all data types:
 
-    data_types = ["pos"]
+    data_types = ["pos", "eucl_motion", "quat"]
     plot_data, rot_axis, rot_trans_axis = [], [], []
 
     for data_thing in data_types:

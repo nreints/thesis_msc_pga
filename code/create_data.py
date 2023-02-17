@@ -116,23 +116,23 @@ def create_empty_dataset():
     """
     return {
         # "start": local_start.T,
-        "pos": np.empty((n_steps // 10, 8, 3)),
-        "eucl_motion": np.empty((n_steps // 10, 1, 12)),
-        # "eucl_motion_old": np.empty((n_steps // 10, 1, 12)),
-        "quat": np.empty((n_steps // 10, 1, 7)),
-        # "quat_old": np.empty((n_steps // 10, 1, 7)),
-        "log_quat": np.empty((n_steps // 10, 1, 7)),
-        # "log_quat_old": np.empty((n_steps // 10, 1, 7)),
-        "dual_quat": np.empty((n_steps // 10, 1, 8)),
-        # "dual_quat_old": np.empty((n_steps // 10, 1, 8)),
-        # "pos_diff": np.empty((n_steps // 10, 8, 3)),
-        "pos_diff_start": np.empty((n_steps // 10, 8, 3)),
-        # "pos_norm": np.empty((n_steps // 10, 8, 3)),
-        # "trans": np.empty((n_steps // 10, 3)),
-        "log_dualQ": np.empty((n_steps // 10, 6)),
-        # "log_dualQ_old": np.empty((n_steps // 10, 6))
-        "rotation_axis": np.empty((n_steps // 10, 3)),
-        "rotation_axis_trans": np.empty((n_steps // 10, 6))
+        "pos": np.empty((n_steps , 8, 3)),
+        "eucl_motion": np.empty((n_steps , 1, 12)),
+        # "eucl_motion_old": np.empty((n_steps , 1, 12)),
+        "quat": np.empty((n_steps , 1, 7)),
+        # "quat_old": np.empty((n_steps , 1, 7)),
+        "log_quat": np.empty((n_steps , 1, 7)),
+        # "log_quat_old": np.empty((n_steps , 1, 7)),
+        "dual_quat": np.empty((n_steps , 1, 8)),
+        # "dual_quat_old": np.empty((n_steps , 1, 8)),
+        # "pos_diff": np.empty((n_steps , 8, 3)),
+        "pos_diff_start": np.empty((n_steps , 8, 3)),
+        # "pos_norm": np.empty((n_steps , 8, 3)),
+        # "trans": np.empty((n_steps , 3)),
+        "log_dualQ": np.empty((n_steps , 6)),
+        # "log_dualQ_old": np.empty((n_steps , 6))
+        "rotation_axis": np.empty((n_steps , 3)),
+        "rotation_axis_trans": np.empty((n_steps , 6))
     }
 
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
@@ -150,7 +150,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-10, size=3)
     # data.qvel[0:3] = [0, 3, 0]
     data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-10, size=3)
-    # data.qvel[3:6] = [9, 0, 0]
+    data.qvel[3:6] = [0, 100, 0]
 
     geom_id = model.geom(geom_name).id
     body_id = model.body("object_body").id
@@ -163,7 +163,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
         import mujoco_viewer
         viewer = mujoco_viewer.MujocoViewer(model, data)
 
-    for i in range(0, n_steps, 10):
+    for i in range(0, n_steps):
         if not visualize or viewer.is_alive:
             mujoco.mj_step(model, data)
 
@@ -174,7 +174,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
             xpos = data.geom_xpos[geom_id]
 
             # Collect position data
-            dataset["pos"][i // 10] = get_vert_coords(data, geom_id, xyz_local).T
+            dataset["pos"][i ] = get_vert_coords(data, geom_id, xyz_local).T
 
             if i == 0:
                 start_xpos = copy.deepcopy(data.geom_xpos[geom_id])
@@ -197,8 +197,8 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["log_dualQ"][i] = logDual(dualQ_start)
 
                 rotation_axis = Quaternion([1, 0, 0, 0]).axis
-                dataset["rotation_axis"][i//10] = rotation_axis
-                dataset["rotation_axis_trans"][i//10] = np.append(rotation_axis, xpos)
+                dataset["rotation_axis"][i] = rotation_axis
+                dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
 
             else:
                 # Collect euclidean motion data
@@ -207,7 +207,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 rel_trans = xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
 
-                dataset["eucl_motion"][i // 10] = np.append(
+                dataset["eucl_motion"][i ] = np.append(
                     rel_rot.flatten(), rel_trans
                 )
 
@@ -215,20 +215,20 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 quaternion = quaternion_pyquat.elements
                 rotation_axis = quaternion_pyquat.axis
 
-                dataset["rotation_axis"][i//10] = rotation_axis
-                print(rotation_axis)
-                dataset["rotation_axis_trans"][i//10] = np.append(rotation_axis, xpos)
-                print(rotation_axis)
+                dataset["rotation_axis"][i] = rotation_axis
+                # # print(rotation_axis)
+                dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
+                # print(rotation_axis)
                 # print(rel_trans)
                 # print(xpos)
                 # exit()
 
-                dataset["quat"][i // 10] = np.append(
+                dataset["quat"][i ] = np.append(
                     quaternion, rel_trans
                 )
 
                  # Collect Log Quaternion data
-                dataset["log_quat"][i // 10] = np.append(
+                dataset["log_quat"][i ] = np.append(
                     calculate_log_quat(quaternion), rel_trans
                 )
 
@@ -237,12 +237,12 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 )
 
                 # Collect Dual-Quaternion data
-                dataset["dual_quat"][i // 10] = dualQuaternion
+                dataset["dual_quat"][i ] = dualQuaternion
 
                 # Collect log_dualQ data (= bivector = rotation axis)
-                dataset["log_dualQ"][i // 10] = logDual(dualQuaternion)
+                dataset["log_dualQ"][i ] = logDual(dualQuaternion)
 
-                dataset["pos_diff_start"][i // 10] = (
+                dataset["pos_diff_start"][i ] = (
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
 
@@ -307,7 +307,7 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
         string = create_string(euler, pos, sizes_str, gravity, plane)
         # Create dataset
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
-        sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes_str, "gravity":gravity, "n_steps":n_steps//10}, "data": dataset}
+        sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes_str, "gravity":gravity, "n_steps":n_steps}, "data": dataset}
         with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
         f.close()
@@ -316,7 +316,7 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=5)
-    parser.add_argument("-n_frames", type=int, help="number of frames", default=6000)
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=5000)
     parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="full")
     parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
     parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
