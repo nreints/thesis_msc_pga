@@ -71,6 +71,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
 
         rot_axis = file["data"]["rotation_axis"]
         rot_axis_trans = file["data"]["rotation_axis_trans"]
+        rot_axis_trans_1step = file["data"]["rotation_axis_trans"]
 
 
         # Load the data in correct data type
@@ -83,7 +84,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
-    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i, rot_axis, rot_axis_trans, ranges
+    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i, rot_axis, rot_axis_trans, rot_axis_trans_1step, ranges
 
 def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames, model):
     """
@@ -200,7 +201,7 @@ def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
     ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black")
 
-def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames, sim_id, data_dir, size=[15, 20, 30]):
+def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames, sim_id, data_dir, range_plot):
     """
     Plots 3D animation of the cubes.
     Input:
@@ -225,9 +226,10 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
 
     plot_cubes(converted_cube, predicted_cube, check_cube, ax)
 
-    ax.set_xlim3d(-size[0], size[0])
-    ax.set_ylim(-size[1], size[1])
-    ax.set_zlim(0, size[2])
+    ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
+    ax.set_ylim(range_plot[1][0], range_plot[1][1])
+    ax.set_zlim(range_plot[2][0], range_plot[2][1])
+    ax.legend()
 
     def update(idx):
         # Remove the previous scatter plot
@@ -257,48 +259,9 @@ def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_f
     ani = animation.FuncAnimation(fig, update, nr_frames, interval=75, repeat=False)
     plt.show()
 
-def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir, range_plot):
-    """
-    Plots 3D animation of the cubes in all data types
-    """
-
-    # Open figure
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     colors = ["b", "g", "r", "m", "k", "c", "b"]
     for i in range(len(data_types)):
-        # Collect init data
-        converted_cube = np.array(plot_data[i][0])
-        rot_axis_current = np.array(rot_axis[i][0])
-        rot_axis_plot = (rot_axis_current[:3].reshape(3,1) + rot_axis_current[3:].reshape(3,1))
-        rot_axis_plot = np.append(rot_axis_plot, (np.zeros((3,1)) + rot_axis_current[3:].reshape(3,1)), axis=1)
-        diff = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
-        rot_axis_plot[:,0] = rot_axis_plot[:, 0] - 50*diff
-        rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*diff
-
-        # Scatter the corners
-        ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], linewidth=0.5, color=colors[i], label=data_types[i])
-
-        # Calculate the edges
-        converted_cube_edges = calculate_edges(converted_cube)
-
-        # Plot the edges
-        ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c=colors[i])
-        print(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2])
-        ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g")
-
-    ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
-    ax.set_ylim(range_plot[1][0], range_plot[1][1])
-    ax.set_zlim(range_plot[2][0], range_plot[2][1])
-    ax.legend()
-
-    def update(idx):
-
-        # Remove the previous scatter plot
-        if idx != 0:
-            ax.cla()
-
-        for i in range(len(data_types)):
 
             # Get cube vertice data
             converted_cube = np.array(plot_data[i][idx])
@@ -306,9 +269,9 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
             rot_axis_current = np.array(rot_axis[i][idx])
             rot_axis_plot = (rot_axis_current[:3].reshape(3,1) + rot_axis_current[3:].reshape(3,1))
             rot_axis_plot = np.append(rot_axis_plot, (np.zeros((3,1)) + rot_axis_current[3:].reshape(3,1)), axis=1)
-            diff = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
-            rot_axis_plot[:,0] = rot_axis_plot[:, 0] - 50*diff
-            rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*diff
+            direction = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
+            rot_axis_plot[:, 0] = rot_axis_plot[:, 0] - 50*direction
+            rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*direction
             # print(rot_axis_plot[:,0] - rot_axis_plot[:, 1])
             # Scatter vertice data
             # ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], color=colors[i], linewidth=0.5)
@@ -324,11 +287,38 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
             # Plot the edges
             ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
             ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g")
+            # ax.plot([0,rot_axis_current[3:][0]], [0,rot_axis_current[3:][1]], [0,rot_axis_current[3:][2]], color="darkred")
+            ax.quiver(0,0,0,rot_axis_current[3:][0],rot_axis_current[3:][1],rot_axis_current[3:][2], color="darkred")
+            ax.quiver(0,0,0,direction[0]*3,direction[1]*3,direction[2]*3, color="darkviolet")
+            ax.quiver(rot_axis_current[3:][0],rot_axis_current[3:][1],rot_axis_current[3:][2],direction[0]*3,direction[1]*3,direction[2]*3, color="darkviolet")
+            ax.scatter([0],[0],[0], color="darkred", marker="8")
+            # ax.plot([-10,10], [0,0], [0,0], color="grey")
+            # ax.plot([0,0], [-10,10], [0,0], color="grey")
+            # ax.plot([0,0], [0,0], [-10,10],color="grey")
 
-        # print(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2])
+def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir, range_plot):
+    """
+    Plots 3D animation of the cubes in all data types
+    """
 
-        # if idx > 2:
-        #     exit()
+    # Open figure
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    plot_datatype_cubes(data_types, plot_data, rot_axis, 0, ax)
+
+    ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
+    ax.set_ylim(range_plot[1][0], range_plot[1][1])
+    ax.set_zlim(range_plot[2][0], range_plot[2][1])
+    ax.legend()
+
+    def update(idx):
+
+        # Remove the previous scatter plot
+        if idx != 0:
+            ax.cla()
+
+        plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax)
+
 
         ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
         ax.set_ylim(range_plot[1][0], range_plot[1][1])
@@ -387,18 +377,19 @@ if __name__ == "__main__":
 
     # Below the test for all datatypes
     i = randint(0, nr_sims-1)
+    i=1
     print("simulation", i)
-    # i=2
     # Test all data types:
 
-    data_types = ["pos", "eucl_motion", "quat"]
-    plot_data, rot_axis, rot_trans_axis = [], [], []
+    data_types = ["pos"]
+    plot_data, rot_axis, rot_trans_axis, rot_1step = [], [], [], []
 
     for data_thing in data_types:
-        result, _, _, _, nr_frames, _, rotation_axis, rotation_axis_trans, range_plot = get_random_sim_data(data_thing, nr_sims, data_dir, i)
+        result, _, _, _, nr_frames, _, rotation_axis, rotation_axis_trans, rot_axis_1step, range_plot = get_random_sim_data(data_thing, nr_sims, data_dir, i)
         plot_data.append(result)
         rot_axis.append(rotation_axis)
         rot_trans_axis.append(rotation_axis_trans)
+        rot_1step.append(rot_axis_1step)
 
     plot_datatypes(plot_data, data_types, nr_frames, rot_trans_axis, i, args.data_dir, range_plot)
 

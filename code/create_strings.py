@@ -8,7 +8,7 @@ def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
     if gravity:
         gravity_str = '<option integrator="RK4">'
     else:
-        gravity_str = '<option integrator="RK4" gravity="0 0 0"/>'
+        gravity_str = '<option integrator="RK4" gravity="0 0 0" iterations="10"/>'
     return f"""
     <mujoco>
     {gravity_str}

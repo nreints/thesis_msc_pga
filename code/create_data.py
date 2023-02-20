@@ -17,12 +17,24 @@ import math
 def get_mat(data, obj_id):
     """
     Returns the rotation matrix of an object.
+
+    Input:
+        - data; MjData object containing the simulation information.
+        - obj_id; id of the object.
+    Output:
+        - rotation matrix describing the motion.
     """
     return data.geom_xmat[obj_id].reshape(3,3)
 
 def get_vert_local(model, obj_id):
     """
     Returns the locations of the vertices centered around zero.
+
+    Input:
+        - model; MjModel object containing the simulation information.
+        - obj_id; id of the object.
+    Output:
+        - xyz-positions of the vertices centered around zero and before rotation.
     """
     obj_size = model.geom_size[obj_id]
     offsets = np.array([-1, 1]) * obj_size[:, None]
@@ -30,7 +42,14 @@ def get_vert_local(model, obj_id):
 
 def get_vert_coords(data, obj_id, xyz_local):
     """
-    Returns the locations of the vertices during simulation
+    Returns the locations of the vertices during simulation.
+
+    Input:
+        - data; MjData object containing the simulation information.
+        - obj_id; id of the object.
+        - xyz_local; xyz-positions of the vertices centered around zero and before rotation.
+    Output:
+        - xyz-coordinates of the vertices in the world frame.
     """
     # Translation vector
     obj_pos = data.geom_xpos[obj_id]
@@ -44,16 +63,26 @@ def get_vert_coords(data, obj_id, xyz_local):
 def get_quat(data, obj_id):
     """
     Returns the quaternion of an object.
+
+    Input:
+        - data; MjData object containing the simulation information.
+        - obj_id; id of the object.
+    Output:
+        - Quaternion that describes the rotation of the object with obj_id.
     """
-    # MUJOCO DOCS Cartesian orientation of body frame
     # a bi cj dk convention (identity: 1 0 0 0)
-    # TODO WATCH OUT!!! If plane -> [obj_id]
     return data.xquat[obj_id]
 
 def calculate_log_quat(quat):
     """
-    Calculate the log quaternion based on the quaternion according
+    Calculates the log quaternion based on the quaternion according
         to https://en.wikipedia.org/wiki/Quaternion#Exponential,_logarithm,_and_power_functions
+
+    Input:
+        - quat; quaternion that describes the rotation (4 dimensional). Convention [a, bi, cj, dk].
+    Output:
+        - Logarithm of the quaternion. Calculated according
+        to https://en.wikipedia.org/wiki/Quaternion#Exponential,_logarithm,_and_power_functions.
     """
     norm = np.linalg.norm(quat)
     log_norm = np.log(norm)
@@ -74,6 +103,12 @@ def calculate_log_quat(quat):
 def get_dualQ(quat, translation):
     """
     Returns the dualquaternion of an object.
+
+    Input:
+        - quat; quaternion that describes the rotation (4 dimensional). Convention [a, bi, cj, dk].
+        - translation; translation vector that describes the translation (3 dimensional).
+    Output:
+        - Dual Quaternion that describes the rotation and translation (8 dimensional).
     """
     # https://cs.gmu.edu/~jmlien/teaching/cs451/uploads/Main/dual-quaternion.pdf
     qr = quat
@@ -90,7 +125,12 @@ def get_dualQ(quat, translation):
 
 def logDual(r):
     """
-    Input rotor (8 numbers) returns bivector (=log of rotor) (6 numbers)
+    Returns the logarithm of a dual quaternion r.
+
+    Input:
+        - r: rotor / dual quaternion (8 dimensional).
+    Output:
+        - bivector / logarithm of a rotor (6 dimensional).
     (14 mul, 5 add, 1 div, 1 acos, 1 sqrt)
     """
 
@@ -112,7 +152,7 @@ def logDual(r):
 
 def create_empty_dataset():
     """
-    Returns empyt data dictionary.
+    Returns empty data dictionary.
     """
     return {
         # "start": local_start.T,
@@ -132,12 +172,23 @@ def create_empty_dataset():
         "log_dualQ": np.empty((n_steps , 6)),
         # "log_dualQ_old": np.empty((n_steps , 6))
         "rotation_axis": np.empty((n_steps , 3)),
-        "rotation_axis_trans": np.empty((n_steps , 6))
+        "rotation_axis_trans": np.empty((n_steps , 6)),
+        "rotation_axis_trans_1step": np.empty((n_steps , 6))
     }
 
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
     """
-    Create the dataset of data_type for n_steps//10 steps.
+    Create the dataset of data_type for n_steps steps.
+
+    Input:
+        - string; XML string of the model.
+        - n_steps; number of steps to generate.
+        - visualize; boolian to visualize in MuJoCo.
+        - qvel_range_t; range to choose values for the linear velocity.
+        - qvel_range_r; range to choose values for the angular velocity.
+
+    Output:
+        - dataset; dictionary with all data.
     """
     geom_name = "object_geom"
 
@@ -150,7 +201,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-10, size=3)
     # data.qvel[0:3] = [0, 3, 0]
     data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-10, size=3)
-    data.qvel[3:6] = [0, 100, 0]
+    # data.qvel[3:6] = [0, 20, 0]
 
     geom_id = model.geom(geom_name).id
     body_id = model.body("object_body").id
@@ -188,6 +239,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["eucl_motion"][i] = np.append(np.eye(3), np.zeros(3))
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
+                quat_prev = start_quat
 
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
@@ -197,7 +249,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["log_dualQ"][i] = logDual(dualQ_start)
 
                 rotation_axis = Quaternion([1, 0, 0, 0]).axis
-                dataset["rotation_axis"][i] = rotation_axis
+                # dataset["rotation_axis"][i] = rotation_axis
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
 
             else:
@@ -207,28 +259,22 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 rel_trans = xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
 
-                dataset["eucl_motion"][i ] = np.append(
+                dataset["eucl_motion"][i] = np.append(
                     rel_rot.flatten(), rel_trans
                 )
 
                 quaternion_pyquat = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse)
-                quaternion = quaternion_pyquat.elements
                 rotation_axis = quaternion_pyquat.axis
-
-                dataset["rotation_axis"][i] = rotation_axis
-                # # print(rotation_axis)
+                # dataset["rotation_axis"][i] = rotation_axis
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
-                # print(rotation_axis)
-                # print(rel_trans)
-                # print(xpos)
-                # exit()
 
-                dataset["quat"][i ] = np.append(
+                quaternion = quaternion_pyquat.elements
+                dataset["quat"][i] = np.append(
                     quaternion, rel_trans
                 )
 
                  # Collect Log Quaternion data
-                dataset["log_quat"][i ] = np.append(
+                dataset["log_quat"][i] = np.append(
                     calculate_log_quat(quaternion), rel_trans
                 )
 
@@ -237,12 +283,12 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 )
 
                 # Collect Dual-Quaternion data
-                dataset["dual_quat"][i ] = dualQuaternion
+                dataset["dual_quat"][i] = dualQuaternion
 
                 # Collect log_dualQ data (= bivector = rotation axis)
-                dataset["log_dualQ"][i ] = logDual(dualQuaternion)
+                dataset["log_dualQ"][i] = logDual(dualQuaternion)
 
-                dataset["pos_diff_start"][i ] = (
+                dataset["pos_diff_start"][i] = (
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
 
@@ -280,6 +326,17 @@ def get_sizes(symmetry):
         raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}") #TODO baseExeption
 
 def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
+    """
+    Returns the name of the directory to write to.
+
+    Input:
+        - qvel_range_t; range of initial linear velocity.
+        - qvel_range_r; range of initial angular velocity.
+        - symmetry; shape of cuboid.
+        - num_sims; number of sims to generate.
+        - plane; boolian whether there is a plane in the simulation.
+        - grav; boolian whether there is gravity in the simulation.
+    """
     dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}_p{plane}_g{grav}"
     if not os.path.exists("data"):
         os.mkdir("data")
