@@ -20,6 +20,7 @@ def get_mat(data, obj_id):
     Input:
         - data; MjData object containing the simulation information.
         - obj_id; id of the object.
+
     Output:
         - rotation matrix describing the motion.
     """
@@ -32,6 +33,7 @@ def get_vert_local(model, obj_id):
     Input:
         - model; MjModel object containing the simulation information.
         - obj_id; id of the object.
+
     Output:
         - xyz-positions of the vertices centered around zero and before rotation.
     """
@@ -47,6 +49,7 @@ def get_vert_coords(data, obj_id, xyz_local):
         - data; MjData object containing the simulation information.
         - obj_id; id of the object.
         - xyz_local; xyz-positions of the vertices centered around zero and before rotation.
+
     Output:
         - xyz-coordinates of the vertices in the world frame.
     """
@@ -66,6 +69,7 @@ def get_quat(data, obj_id):
     Input:
         - data; MjData object containing the simulation information.
         - obj_id; id of the object.
+
     Output:
         - Quaternion that describes the rotation of the object with obj_id.
             a bi cj dk convention (identity: 1 0 0 0)
@@ -79,8 +83,10 @@ def get_quat(data, obj_id):
 def calculate_log_quat(quat):
     """
     Calculates the log quaternion based on the quaternion.
+
     Input:
         - quat; quaternion that describes the rotation (4 dimensional). Convention [a, bi, cj, dk].
+
     Output:
         - Logarithm of the quaternion. Calculated according
         to https://en.wikipedia.org/wiki/Quaternion#Exponential,_logarithm,_and_power_functions.
@@ -97,7 +103,6 @@ def calculate_log_quat(quat):
     part2 = inv_norm * part_arccos * quat[1:]
 
     logQuat = np.append(log_norm, part2)
-
     return logQuat
 
 def get_dualQ(quat, translation):
@@ -107,6 +112,7 @@ def get_dualQ(quat, translation):
     Input:
         - quat; quaternion that describes the rotation (4 dimensional). Convention [a, bi, cj, dk].
         - translation; translation vector that describes the translation (3 dimensional).
+
     Output:
         - Dual Quaternion that describes the rotation and translation (8 dimensional).
     """
@@ -129,6 +135,7 @@ def logDual(r):
 
     Input:
         - r: rotor / dual quaternion (8 dimensional).
+
     Output:
         - bivector / logarithm of a rotor (6 dimensional).
     (14 mul, 5 add, 1 div, 1 acos, 1 sqrt)
@@ -153,6 +160,9 @@ def logDual(r):
 def create_empty_dataset(n_steps):
     """
     Returns empty data dictionary.
+    
+    Input:
+        - n_steps; number of steps in simulation.
     """
     return {
         "pos": np.empty((n_steps, 8, 3)),
@@ -163,7 +173,6 @@ def create_empty_dataset(n_steps):
         "pos_diff_start": np.empty((n_steps, 8, 3)),
         "log_dualQ": np.empty((n_steps, 6)),
         "rotation_axis_trans": np.empty((n_steps, 6)),
-        "rotation_axis_trans1": np.empty((n_steps, 6))
     }
 
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
@@ -176,6 +185,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
         - visualize; boolean to visualize in MuJoCo.
         - qvel_range_t; range to choose values for the linear velocity.
         - qvel_range_r; range to choose values for the angular velocity.
+
     Output:
         - dataset; dictionary with all data.
     """
@@ -230,7 +240,6 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["eucl_motion"][i] = np.append(np.eye(3), np.zeros(3))
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
-                prev_quat = start_quat
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
 
@@ -240,7 +249,6 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
                 rotation_axis = Quaternion([1, 0, 0, 0]).axis
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
-                dataset["rotation_axis_trans1"][i] = np.append(rotation_axis, xpos)
 
             else:
                 # Collect rotation matrix
@@ -254,14 +262,16 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 )
 
                 quaternion_pyquat = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse)
+                if quaternion_pyquat.elements[0] < 0:
+                    quaternion_pyquat *= -1
                 rotation_axis = quaternion_pyquat.axis
-                quaternion_pyquat1 = (Quaternion(get_quat(data, body_id)) * Quaternion(prev_quat).inverse)
-                rotation_axis1 = quaternion_pyquat1.axis
+                # print(rotation_axis/quaternion_pyquat.elements[1:])
+                # print(quaternion_pyquat.elements, rotation_axis)
+                # rotation_axis = Quaternion(get_quat(data, body_id)).axis
+
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
-                dataset["rotation_axis_trans1"][i] = np.append(rotation_axis1, xpos)
 
                 quaternion = quaternion_pyquat.elements
-                prev_quat = quaternion
                 dataset["quat"][i] = np.append(
                     quaternion, rel_trans
                 )
@@ -296,12 +306,14 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 def get_sizes(symmetry):
     """
     Returns the sizes given the required symmetry.
+
     Input:
         - symmetry; symmetry type of the box
             - full; ratio 1:1:1
             - semi; ratio 1:1:10
             - tennis0; ratio 1:3:10
             - none; no specific ratio
+
     Output:
         - String containing the lengths of hight, width, and depth.
     """
@@ -327,9 +339,8 @@ def get_sizes(symmetry):
     #     ratio = np.array([1, 1, 10])
     #     size01 = np.random.uniform(0.5, 5)
     #     sizes = ratio * size01
-    #     return f"{sizes[0]} {sizes[1]} {sizes[2]}" #TODO random volgorde list shuffle
+    #     return f"{sizes[0]} {sizes[1]} {sizes[2]}"
     # elif symmetry == "tennis0":
-    #     # TODO FLYING Quadrilaterally-faced hexahedrons Not necessary if no plane
     #     ratio = np.array([1, 3, 10])
     #     random_size = np.random.uniform(0.2, 2)
     #     sizes = ratio * random_size
@@ -342,7 +353,7 @@ def get_sizes(symmetry):
     # elif symmetry == "none":
     #     return f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
     # else:
-    #     raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}") #TODO baseExeption
+    #     raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}")
 
 def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
     """
@@ -355,6 +366,7 @@ def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
         - num_sims; number of sims to generate.
         - plane; boolean whether there is a plane in the simulation.
         - grav; boolean whether there is gravity in the simulation.
+
     Output:
         - Directory with corresponding name.
     """
@@ -373,6 +385,7 @@ def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
 def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
     """
     Creates the XML string for a simulation.
+
     Input:
         - euler_obj; euler orientation of the object.
         - pos_obj; xyz-position of the objects center.
@@ -383,6 +396,7 @@ def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
         - plane; boolean;
             - True; create a plane.
             - False; create no plane.
+
     Output:
         - XML string to create a MuJoCo simulation.
     """

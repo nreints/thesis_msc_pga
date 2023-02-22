@@ -17,9 +17,11 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 def load_model(data_type, architecture, data_dir):
     """
     Loads a pretrained model.
+
     Input:
         - data_type: current data type.
         - architecture: architecture of the pretrained model.
+
     Output:
         - model: pretrained model.
         - config: config of the model.
@@ -42,12 +44,12 @@ def load_model(data_type, architecture, data_dir):
 def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
     """
     Collects the data from a random simulation.
-    
+
     Input:
         - data_type: type of the data that needs to be collected.
         - nr_sims: total number of available simulations ().
         - i: id of simulation to select, default; select random simulation.
-    
+
     Output:
         - plot_data; xyz data converted from data in data_type.
         - original_data; data in the format of data_type.
@@ -72,16 +74,15 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
         rot_axis_trans = file["data"]["rotation_axis_trans"]
-        rot_axis_trans_1step = file["data"]["rotation_axis_trans1"]
 
         # Load the data in correct data type
         original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
-
-        ranges = [(torch.min(plot_data[:,:,:])+5, torch.max(plot_data[:,:,:])-5) for _ in range(3)]
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
+
+        ranges = [(torch.min(plot_data[:,:,:])+5, torch.max(plot_data[:,:,:])-5) for _ in range(3)]
 
     return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i, rot_axis_trans, ranges
 
@@ -161,11 +162,27 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start_pos, nr_input_
 
     return result
 
+
+
+def distance_check(converted, check):
+    """
+    Checks whether the converted cube is close to the validation cube.
+
+    Input:
+        - converted: the xyz vertice positions of the converted cube.
+        - check: the xyz vertice positions of the validation cube.
+
+    Output: assertion
+    """
+    assert np.allclose(converted, check, atol=1e-4)
+
 def calculate_edges(cube):
     """
     Determines the edges of a cube.
+
     Input:
         - cube: xyz position of the vertices of the cube.
+
     Output:
         - edges: the edges of the cube.
     """
@@ -174,35 +191,42 @@ def calculate_edges(cube):
     edges = np.append(cube[0, :], edges_part).reshape(-1,3)
     return edges
 
-def distance_check(converted, check):
-    """
-    Checks whether the converted cube is close to the validation cube.
-    Input:
-        - converted: the xyz vertice positions of the converted cube.
-        - check: the xyz vertice positions of the validation cube.
-    Output: None
-    """
-
-    assert np.allclose(converted, check, atol=1e-4)
-
 def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     """
     Plots the cubes.
+
+    Input:
+        - conv_cube; xyz-position of vertices converted from original data_type.
+        - pred_cube; predicted xyz-position of vertices by network.
+        - check_cube; real xyz-position of vertices.
+
+    Output:
+        - plots the cubes
     """
-    # Scatter the corners
-    ax.scatter(conv_cube[:, 0], conv_cube[:, 1], conv_cube[:, 2], linewidth=0.5, color='b', label="converted pos")
-    ax.scatter(pred_cube[:, 0], pred_cube[:, 1], pred_cube[:, 2], color='r', label="prediction")
-    ax.scatter(check_cube[:, 0], check_cube[:, 1],  check_cube[:, 2], color="black", label="real pos")
+    # # Scatter the corners
+    # ax.scatter(conv_cube[:, 0], conv_cube[:, 1], conv_cube[:, 2], linewidth=0.5, color='b', label="converted pos")
+    # ax.scatter(pred_cube[:, 0], pred_cube[:, 1], pred_cube[:, 2], color='r', label="prediction")
+    # ax.scatter(check_cube[:, 0], check_cube[:, 1],  check_cube[:, 2], color="black", label="real pos")
 
-    # Calculate the edges
-    converted_cube_edges = calculate_edges(conv_cube)
-    predicted_cube_edges = calculate_edges(pred_cube)
-    check_cube_edges = calculate_edges(check_cube)
+    # # Calculate the edges
+    # converted_cube_edges = calculate_edges(conv_cube)
+    # predicted_cube_edges = calculate_edges(pred_cube)
+    # check_cube_edges = calculate_edges(check_cube)
 
-    # Plot the edges
-    ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c="b")
-    ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
-    ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black")
+    # # Plot the edges
+    # ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c="b")
+    # ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
+    # ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black")
+
+    plot_cube(conv_cube, ax, 'converted', 'b')
+    plot_cube(pred_cube, ax, 'predicted', 'r')
+    plot_cube(check_cube, ax, 'real pos', 'black')
+
+def plot_cube(cube_data, ax, label, color_cube):
+    ax.scatter(cube_data[:, 0], cube_data[:, 1], cube_data[:, 2], linewidth=0.5, color=color_cube, label=label)
+    cube_edges = calculate_edges(cube_data)
+    ax.plot(cube_edges[:, 0], cube_edges[:, 1], cube_edges[:, 2], c=color_cube)
+
 
 def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames, sim_id, data_dir, range_plot):
     """
@@ -281,14 +305,16 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
         # Plot the edges
         ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
 
-
     rot_axis_current = np.array(rot_axis[i][idx]).reshape(2, 3).T
-    rot_axis_plot = np.sum(rot_axis_current, axis=1).reshape(3,1)
-    rot_axis_plot = np.append(rot_axis_plot, (np.zeros((3,1)) + rot_axis_current[:, -1].reshape(3,1)), axis=1)
-    direction = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
-    rot_axis_plot[:, 0] = rot_axis_plot[:, 0] - 50*direction
-    rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*direction
-
+    # Add translation to rotation vector.
+    rot_axis_translated = np.sum(rot_axis_current, axis=1).reshape(3,)
+    # TODO Rotation axis flipt...
+    print(rot_axis_current[:,0], rot_axis_translated)
+    # Get direction of rotation axis.
+    direction = (rot_axis_translated - (np.zeros((3,)) + rot_axis_current[:, -1])).reshape(3,)
+    rot_axis_plot = np.empty_like(rot_axis_current)
+    rot_axis_plot[:, 0] = rot_axis_translated - 50*direction
+    rot_axis_plot[:, 1] = rot_axis_translated + 50*direction
 
     # ROTATION AXIS
     ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g", label="rotation axis")
@@ -298,6 +324,7 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
 
     # DIRECTION ROTATION AXIS
     ax.quiver(0,0,0,direction[0]*10,direction[1]*10,direction[2]*10, color="darkviolet", label="direction rotaxis")
+    # DIRECTION ROTATION AXIS Translated
     ax.quiver(rot_axis_current[0, -1],rot_axis_current[1, -1],rot_axis_current[2, -1],direction[0]*10,direction[1]*10,direction[2]*10, color="darkviolet")
 
     # ORIGIN
@@ -337,8 +364,8 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
         ax.set_ylabel('$Y$')
         ax.set_zlabel('$Z$')
         ax.set_title(f"Frame {idx}/{nr_frames} for sim {sim_id} on set {data_dir[5:]}")
-        ax.legend(bbox_to_anchor=(1.5, 1),
-          ncol=2, fancybox=True)
+        # ax.legend(bbox_to_anchor=(1.5, 1),
+        #   ncol=2, fancybox=True)
 
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, frames=nr_frames, interval=1, repeat=False)
