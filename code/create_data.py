@@ -150,7 +150,7 @@ def logDual(r):
                     b * r[1]
                 ])
 
-def create_empty_dataset():
+def create_empty_dataset(n_steps):
     """
     Returns empty data dictionary.
     """
@@ -208,7 +208,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
     xyz_local = get_vert_local(model, geom_id)
 
-    dataset = create_empty_dataset()
+    dataset = create_empty_dataset(n_steps)
 
     if visualize:
         import mujoco_viewer
@@ -384,20 +384,13 @@ if __name__ == "__main__":
     parser.add_argument('--visualize', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
-    ## Create random data
-    n_sims = args.n_sims
-    n_steps = args.n_frames
-
     qvel_range_t=(args.t_min,args.t_max)
     qvel_range_r=(args.r_min,args.r_max)
     print(f"Creating dataset qvel_range_t={qvel_range_t}, qvel_range_r={qvel_range_r}, symmetry={args.symmetry}")
 
-
     dir = get_dir(qvel_range_t, qvel_range_r, args.symmetry, args.n_sims, args.plane, args.gravity)
 
     # print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
-    write_data_nsim(n_sims, n_steps, args.symmetry, args.gravity, dir, args.visualize, qvel_range_t, qvel_range_r, args.plane)
+    write_data_nsim(args.n_sims, args.n_steps, args.symmetry, args.gravity, dir, args.visualize, qvel_range_t, qvel_range_r, args.plane)
 
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")
-
-    # write_data_nsim(n_sims, n_steps, obj_type, visualize=False, qvel_range_t=(t_min,t_max), qvel_range_r=(0,0))

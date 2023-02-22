@@ -147,7 +147,7 @@ def log_quat2pos(log_quat, start_pos):
     """
     # In case of fcnn
     if len(log_quat.shape) == 2:
-
+        # Select the second part of the quaternion.
         v = log_quat[:, 1:4]
 
         v_norm = torch.linalg.norm(v, dim=1)
@@ -172,7 +172,7 @@ def log_quat2pos(log_quat, start_pos):
 
         return quat2pos(full_quat, start_pos)
 
-    # In case of LSTM
+    # In case of LSTM /GRU
     else:
         v = log_quat[:, :, 1:4]
         v_norm = torch.linalg.norm(v, dim=2)
@@ -330,4 +330,4 @@ def convert(true_preds, start_pos, data_type):
         return diff_pos_start2pos(true_preds, start_pos)
     elif data_type == "log_dualQ":
         return log_dualQ2pos(true_preds, start_pos)
-    raise Exception(f"{data_type} cannot be converted")
+    raise Exception(f"No function to convert {data_type}")
