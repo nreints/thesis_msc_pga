@@ -82,7 +82,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
-        ranges = [(torch.min(plot_data[:,:,:])+5, torch.max(plot_data[:,:,:])-5) for _ in range(3)]
+        ranges = [(torch.min(plot_data_true_pos)+5, torch.max(plot_data_true_pos)-5) for _ in range(3)]
 
     return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i, rot_axis_trans, ranges
 
@@ -162,8 +162,6 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start_pos, nr_input_
 
     return result
 
-
-
 def distance_check(converted, check):
     """
     Checks whether the converted cube is close to the validation cube.
@@ -227,10 +225,10 @@ def plot_cube(cube_data, ax, label, color_cube):
     cube_edges = calculate_edges(cube_data)
     ax.plot(cube_edges[:, 0], cube_edges[:, 1], cube_edges[:, 2], c=color_cube)
 
-
 def plot_3D_animation(data, result, real_pos_data, data_type, architecture, nr_frames, sim_id, data_dir, range_plot):
     """
     Plots 3D animation of the cubes.
+
     Input:
         - data: converted xyz vertice positions.
         - result: predicted xyz vertice positions.
@@ -400,7 +398,7 @@ if __name__ == "__main__":
 
     # model, config = load_model(data_type, architecture, args.data_dir)
     # print("model loaded")
-    # plot_data, ori_data, pos_data, start, nr_frames, sim_id = get_random_sim_data(data_type, nr_sims, data_dir)
+    # plot_data, ori_data, pos_data, start, nr_frames, sim_id, range_plot = get_random_sim_data(data_type, nr_sims, data_dir)
 
     # nr_input_frames = config["n_frames"]
     # if architecture == "fcnn":
@@ -408,13 +406,13 @@ if __name__ == "__main__":
     # elif architecture == "lstm" or architecture == "quaternet":
     #     prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, model, out_is_in=False)
 
-    # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames, sim_id, args.data_dir)
+    # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames, sim_id, args.data_dir, range_plot)
 
     # -----------------------------------'
 
     # Below the test for all datatypes
     i = randint(0, nr_sims-1)
-    i=1
+    i = 1
     print("simulation", i)
     # Test all data types:
 
