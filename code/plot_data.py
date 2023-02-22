@@ -343,7 +343,7 @@ if __name__ == "__main__":
     # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
     parser.add_argument("-data_type", type=str, help="data type to visualize", default="pos")
     parser.add_argument("-architecture", type=str, help="architecture", default="fcnn")
-    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(6, 8)_full_pNone_gNone")
+    parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(0, 0)_r(6, 8)_tennis0_pNone_gNone")
     args = parser.parse_args()
 
     data_dir = "data/" + args.data_dir

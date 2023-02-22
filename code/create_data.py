@@ -1,7 +1,6 @@
 import mujoco
 import numpy as np
 import itertools
-from create_strings import create_string
 import pickle
 from convert import *
 from pyquaternion import Quaternion
@@ -155,25 +154,14 @@ def create_empty_dataset(n_steps):
     Returns empty data dictionary.
     """
     return {
-        # "start": local_start.T,
         "pos": np.empty((n_steps , 8, 3)),
         "eucl_motion": np.empty((n_steps , 1, 12)),
-        # "eucl_motion_old": np.empty((n_steps , 1, 12)),
         "quat": np.empty((n_steps , 1, 7)),
-        # "quat_old": np.empty((n_steps , 1, 7)),
         "log_quat": np.empty((n_steps , 1, 7)),
-        # "log_quat_old": np.empty((n_steps , 1, 7)),
         "dual_quat": np.empty((n_steps , 1, 8)),
-        # "dual_quat_old": np.empty((n_steps , 1, 8)),
-        # "pos_diff": np.empty((n_steps , 8, 3)),
         "pos_diff_start": np.empty((n_steps , 8, 3)),
-        # "pos_norm": np.empty((n_steps , 8, 3)),
-        # "trans": np.empty((n_steps , 3)),
-        "log_dualQ": np.empty((n_steps , 6)),
-        # "log_dualQ_old": np.empty((n_steps , 6))
-        "rotation_axis": np.empty((n_steps , 3)),
-        "rotation_axis_trans": np.empty((n_steps , 6)),
-        "rotation_axis_trans_1step": np.empty((n_steps , 6))
+        "log_dualQ": np.empty((n_steps, 6)),
+        "rotation_axis": np.empty((n_steps, 3)),
     }
 
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
@@ -183,31 +171,32 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     Input:
         - string; XML string of the model.
         - n_steps; number of steps to generate.
-        - visualize; boolian to visualize in MuJoCo.
+        - visualize; boolean to visualize in MuJoCo.
         - qvel_range_t; range to choose values for the linear velocity.
         - qvel_range_r; range to choose values for the angular velocity.
-
     Output:
         - dataset; dictionary with all data.
     """
-    geom_name = "object_geom"
 
+    # Generate model object.
     model = mujoco.MjModel.from_xml_string(string)
-
+    # Generate MjData object
     data = mujoco.MjData(model)
-    # qvel 012 -> linear velocity
-    # qvel 345 -> angular velocity
-    # Set random initial velocities
-    data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-10, size=3)
+
+    # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
+    data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-20, size=3)
     # data.qvel[0:3] = [0, 3, 0]
-    data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-10, size=3)
+    data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-20, size=3)
     # data.qvel[3:6] = [0, 20, 0]
 
-    geom_id = model.geom(geom_name).id
+    # Collect geom_id and body_id
+    geom_id = model.geom("object_geom").id
     body_id = model.body("object_body").id
 
+    # Calculate vertice positions before rotation and translation.
     xyz_local = get_vert_local(model, geom_id)
 
+    # Initialize data dictionary
     dataset = create_empty_dataset(n_steps)
 
     if visualize:
@@ -218,19 +207,19 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
         if not visualize or viewer.is_alive:
             mujoco.mj_step(model, data)
 
-            if visualize and (i%5==0 or i==0):
-
+            if visualize:
                 viewer.render()
 
             xpos = data.geom_xpos[geom_id]
+            global_pos = get_vert_coords(data, geom_id, xyz_local).T
 
-            # Collect position data
-            dataset["pos"][i ] = get_vert_coords(data, geom_id, xyz_local).T
+            # Collect position data after rotation and translation.
+            dataset["pos"][i] = global_pos
 
             if i == 0:
-                start_xpos = copy.deepcopy(data.geom_xpos[geom_id])
+                start_xpos = copy.deepcopy(xpos)
 
-                start_xyz = get_vert_coords(data, geom_id, xyz_local).T
+                start_xyz = global_pos
 
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
@@ -239,7 +228,6 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["eucl_motion"][i] = np.append(np.eye(3), np.zeros(3))
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
-                quat_prev = start_quat
 
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
@@ -249,7 +237,6 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["log_dualQ"][i] = logDual(dualQ_start)
 
                 rotation_axis = Quaternion([1, 0, 0, 0]).axis
-                # dataset["rotation_axis"][i] = rotation_axis
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
 
             else:
@@ -265,7 +252,6 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
                 quaternion_pyquat = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse)
                 rotation_axis = quaternion_pyquat.axis
-                # dataset["rotation_axis"][i] = rotation_axis
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
 
                 quaternion = quaternion_pyquat.elements
@@ -301,29 +287,55 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     return dataset
 
 def get_sizes(symmetry):
-    if symmetry == "full":
-        size = np.random.uniform(5, 10)
-        return f"{size} {size} {size}"
-    elif symmetry == "semi": #TODO think whether it needs to be more random
-        ratio = np.array([1,1,10])
-        size01 = np.random.uniform(0.5, 5)
-        sizes = ratio * size01
-        return f"{sizes[0]} {sizes[1]} {sizes[2]}" #TODO random volgorde list shuffle
-    elif symmetry == "tennis0":
-        # TODO FLYING Quadrilaterally-faced hexahedrons Not necessary if no plane
-        ratio = np.array([1, 3, 10])
-        random_size = np.random.uniform(0.2, 2)
-        sizes = ratio * random_size
-        return f"{sizes[0]} {sizes[1]} {sizes[2]}"
-    elif symmetry == "tennis1":
-        ratio = np.array([1, 2, 3])
-        random_size = np.random.uniform(0.5, 1.5)
-        sizes = ratio * random_size
-        return f"{sizes[0]} {sizes[1]} {sizes[2]}"
-    elif symmetry == "none":
+    """
+    Returns the sizes given the required symmetry.
+    Input:
+        - symmetry; symmetry type of the box
+            - full; ratio 1:1:1
+            - semi; ratio 1:1:10
+            - tennis0; ratio 1:3:10
+            - none; no specific ratio
+    Output:
+        - String containing the lengths of hight, width, and depth.
+    """
+    if symmetry == "none":
         return f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
+    elif symmetry == "full":
+        ratio = np.array([1,1,1])
+    elif symmetry == "semi":
+        ratio = np.array([1,1,10])
+    elif symmetry == "tennis0":
+        ratio = np.array([1,3,10])
     else:
-        raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}") #TODO baseExeption
+        raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}")
+    random_size = np.random.uniform(0.5, 5) #TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
+    sizes = ratio * random_size
+    return f"{sizes[0]} {sizes[1]} {sizes[2]}"
+
+
+    # if symmetry == "full":
+    #     size = np.random.uniform(5, 10)
+    #     return f"{size} {size} {size}"
+    # elif symmetry == "semi":
+    #     ratio = np.array([1, 1, 10])
+    #     size01 = np.random.uniform(0.5, 5)
+    #     sizes = ratio * size01
+    #     return f"{sizes[0]} {sizes[1]} {sizes[2]}" #TODO random volgorde list shuffle
+    # elif symmetry == "tennis0":
+    #     # TODO FLYING Quadrilaterally-faced hexahedrons Not necessary if no plane
+    #     ratio = np.array([1, 3, 10])
+    #     random_size = np.random.uniform(0.2, 2)
+    #     sizes = ratio * random_size
+    #     return f"{sizes[0]} {sizes[1]} {sizes[2]}"
+    # # elif symmetry == "tennis1":
+    # #     ratio = np.array([1, 2, 3])
+    # #     random_size = np.random.uniform(0.5, 1.5)
+    # #     sizes = ratio * random_size
+    # #     return f"{sizes[0]} {sizes[1]} {sizes[2]}"
+    # elif symmetry == "none":
+    #     return f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
+    # else:
+    #     raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}") #TODO baseExeption
 
 def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
     """
@@ -334,8 +346,10 @@ def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
         - qvel_range_r; range of initial angular velocity.
         - symmetry; shape of cuboid.
         - num_sims; number of sims to generate.
-        - plane; boolian whether there is a plane in the simulation.
-        - grav; boolian whether there is gravity in the simulation.
+        - plane; boolean whether there is a plane in the simulation.
+        - grav; boolean whether there is gravity in the simulation.
+    Output:
+        - Directory with corresponding name.
     """
     dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}_p{plane}_g{grav}"
     if not os.path.exists("data"):
@@ -343,31 +357,69 @@ def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
     if not os.path.exists(dir):
             print("Creating directory")
             os.mkdir(dir)
+    # Warn if directory already exists with more simulations.
     elif len(os.listdir(dir)) > num_sims:
-        print(f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory.")
+        print(f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory manually.")
         raise IndexError(f"This directory ({dir}) already exists with less simulations.")
     return dir
 
-def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0), plane=False):
+def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
+    """
+    Creates the XML string for a simulation.
+    Input:
+        - euler_obj; euler orientation of the object.
+        - pos_obj; xyz-position of the objects center.
+        - size_obj; size of the object.
+        - gravity; boolean;
+            - True; use gravity in the simulation.
+            - False; use no gravity in the simulation.
+        - plane; boolean;
+            - True; create a plane.
+            - False; create no plane.
+    Output:
+        - XML string to create a MuJoCo simulation.
+    """
+    if plane:
+        plane_str = '<geom type="plane" pos="0 0 0" size="10 10 10" rgba="1 1 1 1"/>'
+    else:
+        plane_str = ""
 
+    if gravity:
+        gravity_str = '<option integrator="RK4">'
+    else:
+        gravity_str = '<option integrator="RK4" gravity="0 0 0" iterations="10"/>'
+    return f"""
+    <mujoco>
+    {gravity_str}
+    <worldbody>
+        <light name="top" pos="0 0 1"/>
+        <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
+        <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
+            <joint name="joint1" type="free"/>
+            <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0 0 1"/>
+        </body>
+        {plane_str}
+    </worldbody>
+    </mujoco>
+    """
+
+def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0), plane=False):
     for sim_id in range(num_sims):
-        if sim_id % 100 == 0 or sim_id == num_sims:
-            print(f"Generating sim {sim_id}/{num_sims}")
+        if sim_id % 100 == 0 or sim_id == num_sims-1:
+            print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-        # euler ="0 0 0"
         # Define sizes
         sizes_str = get_sizes(symmetry)
-        # sizes = "4 4 4"
-        # Define position TODO fix no flying Quadrilaterally-faced hexahedrons
-        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(5, 10)}"
+        # Define position
+        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
         string = create_string(euler, pos, sizes_str, gravity, plane)
         # Create dataset
         dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
         sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes_str, "gravity":gravity, "n_steps":n_steps}, "data": dataset}
+        # Write data to file
         with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
-        f.close()
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -390,7 +442,6 @@ if __name__ == "__main__":
 
     dir = get_dir(qvel_range_t, qvel_range_r, args.symmetry, args.n_sims, args.plane, args.gravity)
 
-    # print(f"qvel_range_t=({t_min}, {t_max}), qvel_range_r=({r_min}, {r_max})")
-    write_data_nsim(args.n_sims, args.n_steps, args.symmetry, args.gravity, dir, args.visualize, qvel_range_t, qvel_range_r, args.plane)
+    write_data_nsim(args.n_sims, args.n_frames, args.symmetry, args.gravity, dir, args.visualize, qvel_range_t, qvel_range_r, args.plane)
 
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")
