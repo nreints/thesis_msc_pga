@@ -68,15 +68,17 @@ def get_quat(data, obj_id):
         - obj_id; id of the object.
     Output:
         - Quaternion that describes the rotation of the object with obj_id.
+            a bi cj dk convention (identity: 1 0 0 0)
     """
-    # a bi cj dk convention (identity: 1 0 0 0)
-    return data.xquat[obj_id]
+    quat = data.xquat[obj_id]
+    # Ensure that the first element of the quaternion is positive.
+    if quat[0] < 0:
+        quat *= -1
+    return quat
 
 def calculate_log_quat(quat):
     """
-    Calculates the log quaternion based on the quaternion according
-        to https://en.wikipedia.org/wiki/Quaternion#Exponential,_logarithm,_and_power_functions
-
+    Calculates the log quaternion based on the quaternion.
     Input:
         - quat; quaternion that describes the rotation (4 dimensional). Convention [a, bi, cj, dk].
     Output:
@@ -86,7 +88,6 @@ def calculate_log_quat(quat):
     norm = np.linalg.norm(quat)
     log_norm = np.log(norm)
 
-    # TODO np.linalg.norm(quat[1:]) = 0
     if np.linalg.norm(quat[1:]) == 0:
         inv_norm = 0
     else:
@@ -154,19 +155,20 @@ def create_empty_dataset(n_steps):
     Returns empty data dictionary.
     """
     return {
-        "pos": np.empty((n_steps , 8, 3)),
+        "pos": np.empty((n_steps, 8, 3)),
         "eucl_motion": np.empty((n_steps , 1, 12)),
-        "quat": np.empty((n_steps , 1, 7)),
-        "log_quat": np.empty((n_steps , 1, 7)),
-        "dual_quat": np.empty((n_steps , 1, 8)),
-        "pos_diff_start": np.empty((n_steps , 8, 3)),
+        "quat": np.empty((n_steps, 1, 7)),
+        "log_quat": np.empty((n_steps, 1, 7)),
+        "dual_quat": np.empty((n_steps, 1, 8)),
+        "pos_diff_start": np.empty((n_steps, 8, 3)),
         "log_dualQ": np.empty((n_steps, 6)),
-        "rotation_axis": np.empty((n_steps, 3)),
+        "rotation_axis_trans": np.empty((n_steps, 6)),
+        "rotation_axis_trans1": np.empty((n_steps, 6))
     }
 
 def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
     """
-    Create the dataset of data_type for n_steps steps.
+    Create the dataset (dictionary) of data_type for n_steps steps.
 
     Input:
         - string; XML string of the model.
@@ -187,7 +189,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-20, size=3)
     # data.qvel[0:3] = [0, 3, 0]
     data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-20, size=3)
-    # data.qvel[3:6] = [0, 20, 0]
+    data.qvel[3:6] = [0, 20, 0]
 
     # Collect geom_id and body_id
     geom_id = model.geom("object_geom").id
@@ -228,7 +230,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["eucl_motion"][i] = np.append(np.eye(3), np.zeros(3))
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
-
+                prev_quat = start_quat
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
 
@@ -238,9 +240,10 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
                 rotation_axis = Quaternion([1, 0, 0, 0]).axis
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
+                dataset["rotation_axis_trans1"][i] = np.append(rotation_axis, xpos)
 
             else:
-                # Collect euclidean motion data
+                # Collect rotation matrix
                 current_rotMat = get_mat(data, geom_id)
 
                 rel_trans = xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
@@ -252,9 +255,13 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
 
                 quaternion_pyquat = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse)
                 rotation_axis = quaternion_pyquat.axis
+                quaternion_pyquat1 = (Quaternion(get_quat(data, body_id)) * Quaternion(prev_quat).inverse)
+                rotation_axis1 = quaternion_pyquat1.axis
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
+                dataset["rotation_axis_trans1"][i] = np.append(rotation_axis1, xpos)
 
                 quaternion = quaternion_pyquat.elements
+                prev_quat = quaternion
                 dataset["quat"][i] = np.append(
                     quaternion, rel_trans
                 )
@@ -443,5 +450,5 @@ if __name__ == "__main__":
     dir = get_dir(qvel_range_t, qvel_range_r, args.symmetry, args.n_sims, args.plane, args.gravity)
 
     write_data_nsim(args.n_sims, args.n_frames, args.symmetry, args.gravity, dir, args.visualize, qvel_range_t, qvel_range_r, args.plane)
-
+    print(f"Saved in {dir}")
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")

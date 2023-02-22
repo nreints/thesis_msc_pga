@@ -42,10 +42,12 @@ def load_model(data_type, architecture, data_dir):
 def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
     """
     Collects the data from a random simulation.
+    
     Input:
         - data_type: type of the data that needs to be collected.
         - nr_sims: total number of available simulations ().
         - i: id of simulation to select, default; select random simulation.
+    
     Output:
         - plot_data; xyz data converted from data in data_type.
         - original_data; data in the format of data_type.
@@ -69,26 +71,24 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             start_pos = torch.tensor(file["data"]["pos"][0], dtype=torch.float32).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
-        rot_axis = file["data"]["rotation_axis"]
         rot_axis_trans = file["data"]["rotation_axis_trans"]
-        rot_axis_trans_1step = file["data"]["rotation_axis_trans"]
-
+        rot_axis_trans_1step = file["data"]["rotation_axis_trans1"]
 
         # Load the data in correct data type
         original_data = torch.tensor(file["data"][data_type], dtype=torch.float32).flatten(start_dim=1)
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(nr_frames, 8, 3)
 
-        # ranges = [(torch.min(plot_data[:,:,d])+5, torch.max(plot_data[:,:,d])-5) for d in range(3)]
         ranges = [(torch.min(plot_data[:,:,:])+5, torch.max(plot_data[:,:,:])-5) for _ in range(3)]
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(file["data"]["pos"], dtype=torch.float32).reshape(nr_frames, 8, 3)
 
-    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i, rot_axis, rot_axis_trans, rot_axis_trans_1step, ranges
+    return plot_data, original_data, plot_data_true_pos, start_pos[0], nr_frames, i, rot_axis_trans, ranges
 
 def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_frames, model):
     """
     Gets prediction of the pre-trained fcnn.
+    
     Input:
         - original_data: input data in data_type.
         - data_type: data type currently used.
@@ -96,6 +96,7 @@ def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_
         - start_pos: start position of the simulation.
         - nr_input_frames: number of frames the fcnn is trained on.
         - model: the trained model.
+    
     Output:
         - result: converted to xyz positions output of the model based on original_data and start_pos.
     """
@@ -117,6 +118,7 @@ def get_prediction_fcnn(original_data, data_type, xyz_data, start_pos, nr_input_
 def get_prediction_lstm(original_data, data_type, xyz_data, start_pos, nr_input_frames, model, out_is_in=False):
     """
     Gets prediction of the pre-trained lstm.
+    
     Input:
         - original_data: input data in data_type.
         - data_type: data type currently used.
@@ -127,6 +129,7 @@ def get_prediction_lstm(original_data, data_type, xyz_data, start_pos, nr_input_
         - out_is_in:
                     False; do not use output of the model as input.
                     True; do use output of the model as input.
+    
     Output:
         - result: converted to xyz positions output of the model based on original_data and start_pos.
     """
@@ -263,38 +266,43 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     colors = ["b", "g", "r", "m", "k", "c", "b"]
     for i in range(len(data_types)):
 
-            # Get cube vertice data
-            converted_cube = np.array(plot_data[i][idx])
+        # Get cube vertice data
+        converted_cube = np.array(plot_data[i][idx])
 
-            rot_axis_current = np.array(rot_axis[i][idx])
-            rot_axis_plot = (rot_axis_current[:3].reshape(3,1) + rot_axis_current[3:].reshape(3,1))
-            rot_axis_plot = np.append(rot_axis_plot, (np.zeros((3,1)) + rot_axis_current[3:].reshape(3,1)), axis=1)
-            direction = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
-            rot_axis_plot[:, 0] = rot_axis_plot[:, 0] - 50*direction
-            rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*direction
-            # print(rot_axis_plot[:,0] - rot_axis_plot[:, 1])
-            # Scatter vertice data
-            # ax.scatter(converted_cube[:, 0], converted_cube[:, 1], converted_cube[:, 2], color=colors[i], linewidth=0.5)
+        # Scatter vertice data in different colors
+        x_values = converted_cube.T[0]
+        colors_more = cm.rainbow(np.linspace(0, 1, len(x_values)))
+        for s, point in enumerate(converted_cube):
+            ax.scatter(point[0], point[1], point[2], color=colors_more[s])
 
-            x_values = converted_cube.T[0]
-            colors_more = cm.rainbow(np.linspace(0, 1, len(x_values)))
-            for s, point in enumerate(converted_cube):
-                ax.scatter(point[0], point[1], point[2], color=colors_more[s])
+        # Calculate the edges
+        converted_cube_edges = calculate_edges(converted_cube)
 
-            # Calculate the edges
-            converted_cube_edges = calculate_edges(converted_cube)
+        # Plot the edges
+        ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
 
-            # Plot the edges
-            ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], label=data_types[i], color=colors[i])
-            ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g")
-            # ax.plot([0,rot_axis_current[3:][0]], [0,rot_axis_current[3:][1]], [0,rot_axis_current[3:][2]], color="darkred")
-            ax.quiver(0,0,0,rot_axis_current[3:][0],rot_axis_current[3:][1],rot_axis_current[3:][2], color="darkred")
-            ax.quiver(0,0,0,direction[0]*3,direction[1]*3,direction[2]*3, color="darkviolet")
-            ax.quiver(rot_axis_current[3:][0],rot_axis_current[3:][1],rot_axis_current[3:][2],direction[0]*3,direction[1]*3,direction[2]*3, color="darkviolet")
-            ax.scatter([0],[0],[0], color="darkred", marker="8")
-            # ax.plot([-10,10], [0,0], [0,0], color="grey")
-            # ax.plot([0,0], [-10,10], [0,0], color="grey")
-            # ax.plot([0,0], [0,0], [-10,10],color="grey")
+
+    rot_axis_current = np.array(rot_axis[i][idx]).reshape(2, 3).T
+    rot_axis_plot = np.sum(rot_axis_current, axis=1).reshape(3,1)
+    rot_axis_plot = np.append(rot_axis_plot, (np.zeros((3,1)) + rot_axis_current[:, -1].reshape(3,1)), axis=1)
+    direction = rot_axis_plot[:, 0] - rot_axis_plot[:, 1]
+    rot_axis_plot[:, 0] = rot_axis_plot[:, 0] - 50*direction
+    rot_axis_plot[:, 1] = rot_axis_plot[:, 1] + 50*direction
+
+
+    # ROTATION AXIS
+    ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g", label="rotation axis")
+
+    # ARROW TO CENTER
+    ax.quiver(0,0,0,rot_axis_current[0, -1],rot_axis_current[1, -1],rot_axis_current[2, -1], color="darkred")
+
+    # DIRECTION ROTATION AXIS
+    ax.quiver(0,0,0,direction[0]*10,direction[1]*10,direction[2]*10, color="darkviolet", label="direction rotaxis")
+    ax.quiver(rot_axis_current[0, -1],rot_axis_current[1, -1],rot_axis_current[2, -1],direction[0]*10,direction[1]*10,direction[2]*10, color="darkviolet")
+
+    # ORIGIN
+    ax.scatter([0],[0],[0], color="darkred", marker="8", label="origin")
+
 
 def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir, range_plot):
     """
@@ -309,7 +317,8 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
     ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
     ax.set_ylim(range_plot[1][0], range_plot[1][1])
     ax.set_zlim(range_plot[2][0], range_plot[2][1])
-    ax.legend()
+    ax.legend(bbox_to_anchor=(1.5, 1.05),
+          ncol=2, fancybox=True)
 
     def update(idx):
 
@@ -328,7 +337,8 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
         ax.set_ylabel('$Y$')
         ax.set_zlabel('$Z$')
         ax.set_title(f"Frame {idx}/{nr_frames} for sim {sim_id} on set {data_dir[5:]}")
-        ax.legend()
+        ax.legend(bbox_to_anchor=(1.5, 1),
+          ncol=2, fancybox=True)
 
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, frames=nr_frames, interval=1, repeat=False)
@@ -381,15 +391,13 @@ if __name__ == "__main__":
     print("simulation", i)
     # Test all data types:
 
-    data_types = ["pos"]
-    plot_data, rot_axis, rot_trans_axis, rot_1step = [], [], [], []
+    data_types = ["pos", "eucl_motion", "quat", "dual_quat"]
+    plot_data, rot_axis, rot_trans_axis = [], [], []
 
     for data_thing in data_types:
-        result, _, _, _, nr_frames, _, rotation_axis, rotation_axis_trans, rot_axis_1step, range_plot = get_random_sim_data(data_thing, nr_sims, data_dir, i)
+        result, _, _, _, nr_frames, _, rotation_axis_trans, range_plot = get_random_sim_data(data_thing, nr_sims, data_dir, i)
         plot_data.append(result)
-        rot_axis.append(rotation_axis)
         rot_trans_axis.append(rotation_axis_trans)
-        rot_1step.append(rot_axis_1step)
 
     plot_datatypes(plot_data, data_types, nr_frames, rot_trans_axis, i, args.data_dir, range_plot)
 
