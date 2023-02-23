@@ -75,11 +75,6 @@ def fast_rotVecQuat(v, q):
 
 
 def quat2pos(quat, start_pos):
-    # print(quat.shape, start_pos.shape)
-    # NN
-    # (batch x 7), (batch x 24)
-    # LSTM
-    # (batch x frames x 7), (batch x frames x 24)
     """
     Input:
         - quat: Original predictions (quaternion motion)
@@ -118,17 +113,12 @@ def quat2pos(quat, start_pos):
 
 
 def log_quat2pos(log_quat, start_pos):
-    # print(start_pos.shape, log_quat.shape)
-    # NN
-    # (128 x 7), (128 x 8 x 3)
-    # LSTM
-    # (128 x 20 x 7), (128 x 24)
     """
     Input:
         - log_quat: Original predictions (log quaternion motion)
-            Shape:
+            Shape: (batch, 7) or (batch, frames, 7)
         - start_pos: Start position of simulation
-            Shape:
+            Shape: (batch, 24) or (batch, frames, 24)
 
     Output:
         - Converted log quaternion to current xyz position
@@ -191,9 +181,9 @@ def dualQ2pos(dualQ, start_pos):
     """
     Input:
         - dualQ: Original predictions (Dual quaternion)
-            Shape (batch_size x * x 8)
+            Shape (batch_size, *, 8)
         - start_pos: Start position of simulation
-            Shape (batch_size x * x 8 x 3)
+            Shape (batch_size, *, 8, 3)
 
     Output:
         - Converted Dual-quaternion to current position

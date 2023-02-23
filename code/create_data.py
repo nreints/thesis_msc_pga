@@ -4,17 +4,11 @@ import itertools
 import pickle
 from convert import *
 from pyquaternion import Quaternion
-
-# import mujoco_viewer
-import random
 import os
 import argparse
 import time
 import copy
 import math
-
-# from tqdm import trange
-
 
 def get_mat(data, obj_id):
     """
@@ -261,6 +255,7 @@ def generate_data(
                 dataset["eucl_motion"][i] = np.append(np.eye(3), np.zeros(3))
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
+                prev_quat = start_quat
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
 
@@ -317,6 +312,7 @@ def generate_data(
             # if i>100:
             #     exit()
         else:
+            print("Visualisation failed")
             break
 
     if visualize:
@@ -333,7 +329,7 @@ def get_sizes(symmetry):
         - symmetry; symmetry type of the box
             - full; ratio 1:1:1
             - semi; ratio 1:1:10
-            - tennis0; ratio 1:3:10
+            - tennis; ratio 1:3:10
             - none; no specific ratio
 
     Output:
