@@ -1,22 +1,27 @@
-# Efficient Generation of Justifications for Collective Decision Making
-This code has been implemented for the bachelor thesis: Efficient Generation of Justifications for Collective Decision Making.
-Handed in on June 26th at the University of Amsterdam.
+# MSc AI Thesis
 
-#### Currently implemented axioms:
-1. Pareto principle
-2. Condorcet principle
-3. Faithulness
-4. Cancellation
-5. Neutrality
-6. Anonymity
-
-#### This code uses the packages numpy, collections and pylgl:
+### How to run:
+#### To install the required packages:
 please run `pip install -r requirements.txt` or `pip3 install -r requirements.txt` before running the code
 
-#### Two algorithms have been implemented:
-1. Algorithm to generate justifications based on axioms that refer to one profile (axiom 1 until 4). <br>
-   How to run: `python3 oneProfile.py` <br>
-2. Algorithm to generate justifications based on axioms that refer to at most two profiles (axioms 1 until 6). <br>
-   How to run: `python3 twoProfile.py`
+#### Create data:
+To generate 100 simulations each of 500 frames for a rod-like cuboid (ratio [1,1,10]) run and a initial angular velocity:
+`python create_data.py -symmetry="semi" -n_sims=100 -n_frames=500 -l_min 0 -l_max 0 -a_min 2 -a_max 5`
+To generate 100 simulations each of 500 frames for a tennis-like cuboid (ratio [1,3,10]) run and a initial linear velocity:
+`python create_data.py -symmetry="tennis" -n_sims=100 -n_frames=500 -l_min 4 -l_max 10 -a_min 0 -a_max 0`
 
-In the files `oneProfile.py` and `twoProfile.py` the target profile and target outcome can be changed as well as the axioms in the corpus.
+etc.
+
+#### Train a network:
+1. FCNN: currently trained on 1 dataset, and evaluated on all other present datasets<br>
+
+2. LSTM: currently trained on 1 dataset, and evaluated on all other present datasets<br>
+
+3. GRU: currently trained on 1 dataset, and evaluated on all other present datasets<br>
+
+
+#### Plots:
+
+#### Plot prediction of a model:
+
+#### Plot different data types:
