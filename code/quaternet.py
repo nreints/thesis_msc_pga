@@ -425,5 +425,5 @@ if __name__ == "__main__":
 
             torch.save(
                 model_dict,
-                f"models/{config['data_type']}_{config['architecture']}.pickle",
+                f"models/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'.pickle",
             )

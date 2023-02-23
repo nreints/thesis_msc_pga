@@ -64,8 +64,10 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
     """
     # Select random simulation
     if i is None:
-        print("Using random simulation number ", i, " data_type ", data_type)
         i = randint(0, nr_sims - 1)
+        print(f"Using random simulation number {i}, data_type {data_type}")
+    else:
+        print(f"Using simulation {i}")
 
     with open(f"{data_dir}/sim_{i}.pickle", "rb") as f:
         file = pickle.load(f)
@@ -82,23 +84,25 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             ).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
-        rot_axis_trans = file["data"]["rotation_axis_trans"]
+        # rot_axis_trans = file["data"]["rotation_axis_trans"]
 
         # Load the data in correct data type
         original_data = torch.tensor(
             file["data"][data_type], dtype=torch.float32
         ).flatten(start_dim=1)
+
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(
             nr_frames, 8, 3
         )
+
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(
             file["data"]["pos"], dtype=torch.float32
         ).reshape(nr_frames, 8, 3)
 
         ranges = [
-            (torch.min(plot_data_true_pos) + 5, torch.max(plot_data_true_pos) - 5)
+            (torch.min(plot_data_true_pos), torch.max(plot_data_true_pos))
             for _ in range(3)
         ]
 
@@ -109,7 +113,6 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         start_pos[0],
         nr_frames,
         i,
-        rot_axis_trans,
         ranges,
     )
 
@@ -131,7 +134,7 @@ def get_prediction_fcnn(
     Output:
         - prediction: converted to xyz positions output of the model based on original_data and start_pos.
     """
-    prediction = torch.zeros_like(xyz_data)
+    result = torch.zeros_like(xyz_data)
 
     for frame_id in range(nr_input_frames, xyz_data.shape[0]):
         # Get nr_input_frames frames shape: (nr_input_frames, n_data)
@@ -139,14 +142,14 @@ def get_prediction_fcnn(
         # Reshape to (1, nr_input_frames*n_data)
         input_data = input_data.unsqueeze(dim=0).flatten(start_dim=1)
 
-        # Save the prediction in prediction
+        # Save the prediction in result
         with torch.no_grad():
             prediction = model(input_data)
-            prediction[frame_id] = convert(prediction, start_pos, data_type).reshape(
+            result[frame_id] = convert(prediction, start_pos, data_type).reshape(
                 -1, 8, 3
             )
 
-    return prediction
+    return result
 
 
 def get_prediction_lstm(
@@ -179,7 +182,7 @@ def get_prediction_lstm(
     frames, vert, dim = xyz_data.shape
 
     # Because LSTM predicts 1 more frame
-    prediction = torch.zeros((frames + 1, vert, dim))
+    result = torch.zeros((frames + 1, vert, dim))
 
     # Get first position
     start_pos = start_pos[None, :]
@@ -192,18 +195,18 @@ def get_prediction_lstm(
             input_data = original_data[frame_id : frame_id + nr_input_frames]
             input_data = input_data.unsqueeze(dim=0)
 
-        # Save the prediction in prediction
+        # Save the prediction in result
         with torch.no_grad():  # Deactivate gradients for the following code
             prediction, (hidden, cell) = model(input_data, (hidden, cell))
             if out_is_in:
                 input_data = prediction
 
             out_shape = prediction[frame_id + 1 : frame_id + nr_input_frames + 1].shape
-            prediction[frame_id + 1 : frame_id + nr_input_frames + 1] = convert(
+            result[frame_id + 1 : frame_id + nr_input_frames + 1] = convert(
                 prediction, start_pos, data_type
             ).reshape(-1, 8, 3)[: out_shape[0], :, :]
 
-    return prediction
+    return result
 
 
 def distance_check(converted, check):
@@ -467,9 +470,6 @@ def plot_datatypes(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
-    # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
-    # parser.add_argument("-data_dir", type=str, help="data_directory", default="data_t(-10, 10)_r(-5, 5)_none")
     parser.add_argument(
         "-data_type", type=str, help="data type to visualize", default="pos"
     )
@@ -478,12 +478,12 @@ if __name__ == "__main__":
         "-data_dir",
         type=str,
         help="data_directory",
-        default="data_t(0, 0)_r(6, 8)_tennis_pNone_gNone",
+        default="data_t(0, 0)_r(2, 5)_full_pNone_gNone",
     )
     args = parser.parse_args()
 
     data_dir = "data/" + args.data_dir
-    print(data_dir)
+    print(f"Using data from directory: {data_dir}")
     if not os.path.exists(data_dir):
         raise KeyError(f"Not such a directory {data_dir}")
 
@@ -492,47 +492,74 @@ if __name__ == "__main__":
         raise KeyError(f"No simulations in {data_dir}")
 
     # -----------------------------------
-    # data_type = args.data_type
-    # architecture = args.architecture
-    # print(f"Visualizing {architecture} trained on {data_type}")
+    data_type = args.data_type
+    architecture = args.architecture
+    print(f"Visualizing {architecture} trained on {data_type}")
 
-    # model, config = load_model(data_type, architecture, args.data_dir)
-    # print("model loaded")
-    # plot_data, ori_data, pos_data, start, nr_frames, sim_id, range_plot = get_random_sim_data(data_type, nr_sims, data_dir)
+    model, config = load_model(data_type, architecture, args.data_dir)
+    (
+        plot_data,
+        ori_data,
+        pos_data,
+        start,
+        nr_frames,
+        sim_id,
+        range_plot,
+    ) = get_random_sim_data(data_type, nr_sims, data_dir)
 
-    # nr_input_frames = config["n_frames"]
-    # if architecture == "fcnn":
-    #     prediction = get_prediction_fcnn(ori_data, data_type, plot_data, start, nr_input_frames, model)
-    # elif architecture == "lstm" or architecture == "quaternet":
-    #     prediction = get_prediction_lstm(ori_data, data_type, plot_data, start, nr_input_frames, model, out_is_in=False)
+    nr_input_frames = config["n_frames"]
+    if architecture == "fcnn":
+        prediction = get_prediction_fcnn(
+            ori_data, data_type, plot_data, start, nr_input_frames, model
+        )
+    elif architecture == "lstm" or architecture == "quaternet" or architecture == "gru":
+        prediction = get_prediction_lstm(
+            ori_data,
+            data_type,
+            plot_data,
+            start,
+            nr_input_frames,
+            model,
+            out_is_in=False,
+        )
 
-    # plot_3D_animation(np.array(plot_data), np.array(prediction), np.array(pos_data), data_type, architecture, nr_frames, sim_id, args.data_dir, range_plot)
+    plot_3D_animation(
+        np.array(plot_data),
+        np.array(prediction),
+        np.array(pos_data),
+        data_type,
+        architecture,
+        nr_frames,
+        sim_id,
+        args.data_dir,
+        range_plot,
+    )
 
     # -----------------------------------'
 
-    # Below the test for all datatypes
-    i = randint(0, nr_sims - 1)
-    i = 1
-    print("simulation", i)
-    # Test all data types:
+    # # Below the test for all datatypes
+    # i = randint(0, nr_sims - 1)
+    # i = 1
+    # print("simulation", i)
+    # # Test all data types:
 
-    data_types = ["pos", "eucl_motion", "quat", "dual_quat"]
-    plot_data, rot_axis, rot_trans_axis = [], [], []
+    # data_types = ["pos", "eucl_motion", "quat", "dual_quat"]
+    # plot_data, rot_axis, rot_trans_axis = [], [], []
 
-    for data_thing in data_types:
-        (
-            prediction,
-            _,
-            _,
-            _,
-            nr_frames,
-            _,
-            rotation_axis_trans,
-            range_plot,
-        ) = get_random_sim_data(data_thing, nr_sims, data_dir, i)
-        plot_data.append(prediction)
-        rot_trans_axis.append(rotation_axis_trans)
+    # for data_thing in data_types:
+    #     (
+    #         prediction,
+    #         _,
+    #         _,
+    #         _,
+    #         nr_frames,
+    #         _,
+    #         rotation_axis_trans,
+    #         range_plot,
+    #     ) = get_random_sim_data(data_thing, nr_sims, data_dir, i)
+    #     plot_data.append(prediction)
+    #     rot_trans_axis.append(rotation_axis_trans)
 
-    plot_datatypes(
-        plot_data, data_types, nr_frames, rot_trans_axis, i, args.data_dir, range_plot
-    )
+    # plot_datatypes(
+    #     plot_data, data_types, nr_frames, rot_trans_axis, i, args.data_dir, range_plot
+    # )

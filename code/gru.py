@@ -423,7 +423,7 @@ if __name__ == "__main__":
             loss_reduction_type="mean",
             optimizer="Adam",
             data_type=args.data_type,
-            architecture="lstm",
+            architecture="gru",
             train_sims=list(train_sims),
             test_sims=list(test_sims),
             n_frames=30,
@@ -467,5 +467,5 @@ if __name__ == "__main__":
 
         torch.save(
             model_dict,
-            f"models/lstm/{config['data_type']}_{config['architecture']}_{args.data_dir_train}.pickle",
+            f"models/lstm/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'.pickle",
         )
