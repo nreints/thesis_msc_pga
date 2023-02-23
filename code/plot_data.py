@@ -482,8 +482,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-data_dir",
         type=str,
-        help="data_directory",
-        default="data_t(0, 0)_r(6, 8)_full_pNone_gNone",
+        help="data directory",
+        default="data_t(0, 0)_r(2, 5)_full_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -492,10 +492,14 @@ if __name__ == "__main__":
     print(f"Using data from directory: {data_dir}")
     if not os.path.exists(data_dir):
         raise KeyError(f"Not such a directory {data_dir}")
+    else:
+        print("Found the requested data directory.")
 
     nr_sims = len(os.listdir(data_dir))
     if nr_sims == 0:
         raise KeyError(f"No simulations in {data_dir}")
+    else:
+        print(f"Found {nr_sims} simulations")
 
     # -----------------------------------
     if args.prediction:
