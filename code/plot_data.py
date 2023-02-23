@@ -84,7 +84,11 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             ).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
 
-        # rot_axis_trans = file["data"]["rotation_axis_trans"]
+        if "rotation_axis_trans" in file["data"].keys():
+            rot_axis_trans = file["data"]["rotation_axis_trans"]
+        else:
+            print("NO ROTATION AXIS")
+            rot_axis_trans = None
 
         # Load the data in correct data type
         original_data = torch.tensor(
@@ -113,6 +117,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         start_pos[0],
         nr_frames,
         i,
+        rot_axis_trans,
         ranges,
     )
 
@@ -504,6 +509,7 @@ if __name__ == "__main__":
         start,
         nr_frames,
         sim_id,
+        _,
         range_plot,
     ) = get_random_sim_data(data_type, nr_sims, data_dir)
 

@@ -10,7 +10,6 @@ import wandb
 import time
 import os
 import argparse
-from pathlib import Path
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -345,8 +344,6 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 if __name__ == "__main__":
     wandb.login(key="dc4407c06f6d57a37befe29cb0773deffd670c72")
     parser = argparse.ArgumentParser()
-    # parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
-    # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument(
         "-mode_wandb",
         type=str,
@@ -361,7 +358,6 @@ if __name__ == "__main__":
         default="data_t(0, 0)_r(2, 5)_none_pNone_gNone",
     )
     parser.add_argument("-loss", type=str, help="Loss type", default="L2")
-    # parser.add_argument("-data_dir_test", type=list, help="directory of the test data", default="")
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
     parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
     args = parser.parse_args()
