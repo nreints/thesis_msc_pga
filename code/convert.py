@@ -1,5 +1,6 @@
 import torch
 import roma
+
 # import time
 
 
@@ -30,13 +31,19 @@ def eucl2pos(eucl_motion, start_pos):
 
     # In case of LSTM/GRU
     else:
-        rotations = eucl_motion[..., :9].reshape(eucl_motion.shape[0], eucl_motion.shape[1], 3, 3)
+        rotations = eucl_motion[..., :9].reshape(
+            eucl_motion.shape[0], eucl_motion.shape[1], 3, 3
+        )
         flat_rotations = rotations.flatten(end_dim=1)
 
-        correct_start_pos = start_pos.repeat(1, eucl_motion.shape[1], 1).flatten(end_dim=1)
+        correct_start_pos = start_pos.repeat(1, eucl_motion.shape[1], 1).flatten(
+            end_dim=1
+        )
         mult = torch.bmm(flat_rotations, correct_start_pos.reshape(-1, 8, 3).mT).mT
 
-        out = (mult + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]).flatten(start_dim=1)
+        out = (mult + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]).flatten(
+            start_dim=1
+        )
         out = out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1])
         return out
 
@@ -60,7 +67,9 @@ def fast_rotVecQuat(v, q):
     # Swap columns for roma calculations (bi, cj, dk, a)
     q_new1 = torch.index_select(q_norm, 1, torch.tensor([1, 2, 3, 0], device=device))
 
-    rotated_v = torch.bmm(roma.unitquat_to_rotmat(q_new1), v.reshape(-1, 8, 3).mT).mT.to(device)
+    rotated_v = torch.bmm(
+        roma.unitquat_to_rotmat(q_new1), v.reshape(-1, 8, 3).mT
+    ).mT.to(device)
 
     return rotated_v
 
@@ -177,6 +186,7 @@ def log_quat2pos(log_quat, start_pos):
 
         return quat2pos(full_quat, start_pos)
 
+
 def dualQ2pos(dualQ, start_pos):
     """
     Input:
@@ -191,7 +201,6 @@ def dualQ2pos(dualQ, start_pos):
             (batch x frames x 24)
     """
     device = dualQ.device
-
 
     qr_dim = dualQ[..., :4].shape
 
@@ -215,6 +224,7 @@ def dualQ2pos(dualQ, start_pos):
     converted_pos = quat2pos(quaternion, start_pos)
     return converted_pos
 
+
 def log_dualQ2pos(logDualQ_in, start_pos):
     """
     Input bivector (6 numbers) returns position by first calculating the dual quaternion = exp(log_dualQ).
@@ -236,26 +246,47 @@ def log_dualQ2pos(logDualQ_in, start_pos):
     out_shape[-1] = 8
 
     logDualQ = logDualQ_in.flatten(start_dim=0, end_dim=-2)
-    l = logDualQ[:, 3] * logDualQ[:, 3] + logDualQ[:, 4] * logDualQ[:, 4] + logDualQ[:, 5] * logDualQ[:, 5]
+    l = (
+        logDualQ[:, 3] * logDualQ[:, 3]
+        + logDualQ[:, 4] * logDualQ[:, 4]
+        + logDualQ[:, 5] * logDualQ[:, 5]
+    )
     mask = (l == 0)[:, None]
     ones = torch.ones_like(l)
     zeros = torch.zeros_like(l)
-    alternative = torch.stack([ones, zeros, zeros, zeros, zeros, -logDualQ[:, 0], -logDualQ[:, 1], -logDualQ[:, 2]]).T
-    m = logDualQ[:, 0] * logDualQ[:, 5] + logDualQ[:, 1] * logDualQ[:, 4] + logDualQ[:, 2] * logDualQ[:, 3]
+    alternative = torch.stack(
+        [
+            ones,
+            zeros,
+            zeros,
+            zeros,
+            zeros,
+            -logDualQ[:, 0],
+            -logDualQ[:, 1],
+            -logDualQ[:, 2],
+        ]
+    ).T
+    m = (
+        logDualQ[:, 0] * logDualQ[:, 5]
+        + logDualQ[:, 1] * logDualQ[:, 4]
+        + logDualQ[:, 2] * logDualQ[:, 3]
+    )
     a = torch.sqrt(l)
     c = torch.cos(a)
     s = torch.sin(a) / a
     t = m / l * (c - s)
-    dualQ = torch.stack([
-                        c,
-                        s * logDualQ[:, 5],
-                        s * logDualQ[:, 4],
-                        s * logDualQ[:, 3],
-                        m * s,
-                        -s * logDualQ[:, 0] - t * logDualQ[:, 5],
-                        -s * logDualQ[:, 1] - t * logDualQ[:, 4],
-                        -s * logDualQ[:, 2] - t * logDualQ[:, 3]
-                    ]).T
+    dualQ = torch.stack(
+        [
+            c,
+            s * logDualQ[:, 5],
+            s * logDualQ[:, 4],
+            s * logDualQ[:, 3],
+            m * s,
+            -s * logDualQ[:, 0] - t * logDualQ[:, 5],
+            -s * logDualQ[:, 1] - t * logDualQ[:, 4],
+            -s * logDualQ[:, 2] - t * logDualQ[:, 3],
+        ]
+    ).T
     dualQ = mask * alternative + (~mask) * dualQ
 
     return dualQ2pos(dualQ.reshape(out_shape), start_pos)

@@ -14,6 +14,7 @@ from pathlib import Path
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
+
 class fcnn(nn.Module):
     def __init__(self, n_data, config):
         super().__init__()
@@ -111,11 +112,15 @@ class MyDataset(data.Dataset):
         data_pos_target = self.target_pos[idx]
         return data_point, data_target, data_start, data_pos_target
 
+
 def train_log(loss, epoch, config):
     """
     Log the train loss to Weights and Biases
     """
-    wandb.log({"Epoch": epoch, f"Train loss {config.data_dir_train[5:-12]}": loss}, step=epoch)
+    wandb.log(
+        {"Epoch": epoch, f"Train loss {config.data_dir_train[5:-12]}": loss}, step=epoch
+    )
+
 
 def train_model(
     model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config, losses
@@ -132,13 +137,13 @@ def train_model(
         for data_inputs, data_labels, start_pos, pos_target in data_loader:
 
             # Set data to current device
-            data_inputs = data_inputs.to(device) # Shape: [batch, frames x n_data]
-            data_labels = data_labels.to(device) # Shape: [batch, n_data]
-            pos_target = pos_target.to(device) # Shape: [batch, n_data]
-            start_pos = start_pos.to(device) # Shape: [batch, n_data]
+            data_inputs = data_inputs.to(device)  # Shape: [batch, frames x n_data]
+            data_labels = data_labels.to(device)  # Shape: [batch, n_data]
+            pos_target = pos_target.to(device)  # Shape: [batch, n_data]
+            start_pos = start_pos.to(device)  # Shape: [batch, n_data]
 
             # Get predictions
-            preds = model(data_inputs) # Shape: [batch, n_data]
+            preds = model(data_inputs)  # Shape: [batch, n_data]
 
             # Convert predictions to xyz-data
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
@@ -169,7 +174,9 @@ def train_model(
         train_log(loss_epoch / len(data_loader), epoch, config)
 
         # Evaluate model
-        true_loss, convert_loss, total_convert_loss = eval_model(model, test_loaders, loss_module, config, epoch, losses)
+        true_loss, convert_loss, total_convert_loss = eval_model(
+            model, test_loaders, loss_module, config, epoch, losses
+        )
 
         # Set model to train mode
         model.train()
@@ -178,10 +185,13 @@ def train_model(
             epoch,
             round(loss_epoch.item() / len(data_loader), 10),
             "\t",
-            round(convert_loss, 10), "\t", round(total_convert_loss, 10)
+            round(convert_loss, 10),
+            "\t",
+            round(total_convert_loss, 10),
         )
 
         print("epoch_time; ", time.time() - epoch_time)
+
 
 def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
 
@@ -210,7 +220,10 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
                     )
 
                     # Determine norm penalty for quaternion data
-                    if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
+                    if (
+                        config["data_type"] == "quat"
+                        or config["data_type"] == "dual_quat"
+                    ):
                         norm_penalty = (
                             config["lam"]
                             * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1))) ** 2
@@ -227,25 +240,43 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
                     total_loss += loss_module(preds, data_labels)
 
                 # Log loss to W&B
-                print(f"\t Logging test loss {loss_module}: {config.data_dirs_test[i][5:]} => \t {wandb_total_convert_loss / len(data_loader)}")
-                wandb.log({f"Test loss {config.data_dirs_test[i][5:-12]} {loss_module}": wandb_total_convert_loss / len(data_loader)}, step=current_epoch)
+                print(
+                    f"\t Logging test loss {loss_module}: {config.data_dirs_test[i][5:]} => \t {wandb_total_convert_loss / len(data_loader)}"
+                )
+                wandb.log(
+                    {
+                        f"Test loss {config.data_dirs_test[i][5:-12]} {loss_module}": wandb_total_convert_loss
+                        / len(data_loader)
+                    },
+                    step=current_epoch,
+                )
                 # wandb.log({f"Test loss {config.data_dirs_test[i][5:]}": wandb_total_convert_loss / len(data_loader)})
 
     # Return the average loss
-    return total_loss.item() / len(data_loader), wandb_total_convert_loss.item() / len(
-        data_loader), total_convert_loss.item() / len(
-        data_loader)
+    return (
+        total_loss.item() / len(data_loader),
+        wandb_total_convert_loss.item() / len(data_loader),
+        total_convert_loss.item() / len(data_loader),
+    )
 
-def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb, losses):
+
+def model_pipeline(
+    hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb, losses
+):
     # tell wandb to get started
-    with wandb.init(project="thesis", config=hyperparameters, mode=mode_wandb, tags=[device.type]):
+    with wandb.init(
+        project="thesis", config=hyperparameters, mode=mode_wandb, tags=[device.type]
+    ):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
         wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}"
 
         # make the model, data, and optimization problem
         model, train_loader, test_loaders, criterion, optimizer = make(
-            config, ndata_dict, loss_dict, optimizer_dict,
+            config,
+            ndata_dict,
+            loss_dict,
+            optimizer_dict,
         )
         print("Datatype:", config["data_type"])
 
@@ -258,7 +289,7 @@ def model_pipeline(hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_
             criterion,
             config.epochs,
             config,
-            losses
+            losses,
         )
 
         # and test its final performance
@@ -274,7 +305,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         n_frames=config.n_frames,
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
-        dir=config.data_dir_train
+        dir=config.data_dir_train,
     )
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
@@ -290,7 +321,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
             n_frames=config.n_frames,
             n_data=ndata_dict[config.data_type],
             data_type=config.data_type,
-            dir="data/"+test_data_dir
+            dir="data/" + test_data_dir,
         )
         test_data_loader = data.DataLoader(
             data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
@@ -316,8 +347,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
     # parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
-    parser.add_argument("-mode_wandb", type=str, help="mode of wandb: online, offline, disabled", default="online")
-    parser.add_argument("-data_dir_train", type=str, help="directory of the train data", nargs="+", default="data_t(0, 0)_r(2, 5)_none_pNone_gNone")
+    parser.add_argument(
+        "-mode_wandb",
+        type=str,
+        help="mode of wandb: online, offline, disabled",
+        default="online",
+    )
+    parser.add_argument(
+        "-data_dir_train",
+        type=str,
+        help="directory of the train data",
+        nargs="+",
+        default="data_t(0, 0)_r(2, 5)_none_pNone_gNone",
+    )
     parser.add_argument("-loss", type=str, help="Loss type", default="L2")
     # parser.add_argument("-data_dir_test", type=list, help="directory of the test data", default="")
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
@@ -327,8 +369,8 @@ if __name__ == "__main__":
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
     data_dirs_test = os.listdir("data")
-    if '.DS_Store' in data_dirs_test:
-        data_dirs_test.remove('.DS_Store')
+    if ".DS_Store" in data_dirs_test:
+        data_dirs_test.remove(".DS_Store")
 
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
@@ -383,7 +425,7 @@ if __name__ == "__main__":
             lam=0.01,
             data_dir_train=data_dir_train,
             data_dirs_test=data_dirs_test,
-            iter=i
+            iter=i,
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
@@ -399,11 +441,13 @@ if __name__ == "__main__":
             "pos_diff": 24,
             "pos_diff_start": 24,
             "pos_norm": 24,
-            "log_dualQ": 6
+            "log_dualQ": 6,
         }
 
         start_time = time.time()
-        model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses)
+        model = model_pipeline(
+            config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses
+        )
         print(f"It took {time.time() - start_time} seconds to train & eval the model.")
 
         # Save model
@@ -416,5 +460,6 @@ if __name__ == "__main__":
             os.mkdir("models")
 
         torch.save(
-            model_dict, f"models/fcnn/{config['data_type']}_{config['architecture']}_{args.data_dir_train}.pickle"
+            model_dict,
+            f"models/fcnn/{config['data_type']}_{config['architecture']}_{args.data_dir_train}.pickle",
         )

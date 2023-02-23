@@ -4,6 +4,7 @@ import itertools
 import pickle
 from convert import *
 from pyquaternion import Quaternion
+
 # import mujoco_viewer
 import random
 import os
@@ -11,7 +12,9 @@ import argparse
 import time
 import copy
 import math
+
 # from tqdm import trange
+
 
 def get_mat(data, obj_id):
     """
@@ -24,7 +27,8 @@ def get_mat(data, obj_id):
     Output:
         - rotation matrix describing the motion.
     """
-    return data.geom_xmat[obj_id].reshape(3,3)
+    return data.geom_xmat[obj_id].reshape(3, 3)
+
 
 def get_vert_local(model, obj_id):
     """
@@ -40,6 +44,7 @@ def get_vert_local(model, obj_id):
     obj_size = model.geom_size[obj_id]
     offsets = np.array([-1, 1]) * obj_size[:, None]
     return np.stack(list(itertools.product(*offsets))).T
+
 
 def get_vert_coords(data, obj_id, xyz_local):
     """
@@ -62,6 +67,7 @@ def get_vert_coords(data, obj_id, xyz_local):
     # R @ v + t
     return obj_mat @ xyz_local + obj_pos[:, None]
 
+
 def get_quat(data, obj_id):
     """
     Returns the quaternion of an object.
@@ -79,6 +85,7 @@ def get_quat(data, obj_id):
     # if quat[0] < 0:
     #     quat *= -1
     return quat
+
 
 def calculate_log_quat(quat):
     """
@@ -105,6 +112,7 @@ def calculate_log_quat(quat):
     logQuat = np.append(log_norm, part2)
     return logQuat
 
+
 def get_dualQ(quat, translation):
     """
     Returns the dualquaternion of an object.
@@ -129,6 +137,7 @@ def get_dualQ(quat, translation):
     dual = np.append(qr, qd)
     return dual
 
+
 def logDual(r):
     """
     Returns the logarithm of a dual quaternion r.
@@ -148,14 +157,17 @@ def logDual(r):
 
     b = np.arccos(r[0]) * np.sqrt(a)
     c = a * r[4] * (1 - r[0] * b)
-    return np.array([
-                    c * r[1] - b * r[5],
-                    c * r[2] - b * r[6],
-                    c * r[3] - b * r[7],
-                    b * r[3],
-                    b * r[2],
-                    b * r[1]
-                ])
+    return np.array(
+        [
+            c * r[1] - b * r[5],
+            c * r[2] - b * r[6],
+            c * r[3] - b * r[7],
+            b * r[3],
+            b * r[2],
+            b * r[1],
+        ]
+    )
+
 
 def create_empty_dataset(n_steps):
     """
@@ -169,7 +181,7 @@ def create_empty_dataset(n_steps):
     """
     return {
         "pos": np.empty((n_steps, 8, 3)),
-        "eucl_motion": np.empty((n_steps , 1, 12)),
+        "eucl_motion": np.empty((n_steps, 1, 12)),
         "quat": np.empty((n_steps, 1, 7)),
         "log_quat": np.empty((n_steps, 1, 7)),
         "dual_quat": np.empty((n_steps, 1, 8)),
@@ -178,7 +190,10 @@ def create_empty_dataset(n_steps):
         "rotation_axis_trans": np.empty((n_steps, 6)),
     }
 
-def generate_data(string, n_steps, visualize=False, vel_range_l=(0,0), vel_range_a=(0,0)):
+
+def generate_data(
+    string, n_steps, visualize=False, vel_range_l=(0, 0), vel_range_a=(0, 0)
+):
     """
     Create the dataset (dictionary) of data_type for n_steps steps.
 
@@ -201,9 +216,9 @@ def generate_data(string, n_steps, visualize=False, vel_range_l=(0,0), vel_range
     data = mujoco.MjData(model)
 
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
-    data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1]+1e-20, size=3)
+    data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1] + 1e-20, size=3)
     # data.qvel[0:3] = [0, 3, 0]
-    data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1]+1e-20, size=3)
+    data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1] + 1e-20, size=3)
     data.qvel[3:6] = [0, 70, 0]
 
     # Collect geom_id and body_id
@@ -218,6 +233,7 @@ def generate_data(string, n_steps, visualize=False, vel_range_l=(0,0), vel_range
 
     if visualize:
         import mujoco_viewer
+
         viewer = mujoco_viewer.MujocoViewer(model, data)
 
     for i in range(0, n_steps):
@@ -259,14 +275,16 @@ def generate_data(string, n_steps, visualize=False, vel_range_l=(0,0), vel_range
                 # Collect rotation matrix
                 current_rotMat = get_mat(data, geom_id)
 
-                rel_trans = xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
+                rel_trans = (
+                    xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
+                )
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
 
-                dataset["eucl_motion"][i] = np.append(
-                    rel_rot.flatten(), rel_trans
-                )
+                dataset["eucl_motion"][i] = np.append(rel_rot.flatten(), rel_trans)
 
-                quaternion_pyquat = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse)
+                quaternion_pyquat = (
+                    Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse
+                )
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
                 # TODO Steven van Leo
                 if quaternion_pyquat.elements[0] < 0:
@@ -278,18 +296,14 @@ def generate_data(string, n_steps, visualize=False, vel_range_l=(0,0), vel_range
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
 
                 quaternion = quaternion_pyquat.elements
-                dataset["quat"][i] = np.append(
-                    quaternion, rel_trans
-                )
+                dataset["quat"][i] = np.append(quaternion, rel_trans)
 
-                 # Collect Log Quaternion data
+                # Collect Log Quaternion data
                 dataset["log_quat"][i] = np.append(
                     calculate_log_quat(quaternion), rel_trans
                 )
 
-                dualQuaternion = get_dualQ(
-                    quaternion, rel_trans
-                )
+                dualQuaternion = get_dualQ(quaternion, rel_trans)
 
                 # Collect Dual-Quaternion data
                 dataset["dual_quat"][i] = dualQuaternion
@@ -310,6 +324,7 @@ def generate_data(string, n_steps, visualize=False, vel_range_l=(0,0), vel_range
 
     return dataset
 
+
 def get_sizes(symmetry):
     """
     Returns the sizes given the required symmetry.
@@ -327,16 +342,21 @@ def get_sizes(symmetry):
     if symmetry == "none":
         return f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
     elif symmetry == "full":
-        ratio = np.array([1,1,1])
+        ratio = np.array([1, 1, 1])
     elif symmetry == "semi":
-        ratio = np.array([1,1,10])
+        ratio = np.array([1, 1, 10])
     elif symmetry == "tennis0":
-        ratio = np.array([1,3,10])
+        ratio = np.array([1, 3, 10])
     else:
-        raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}")
-    random_size = np.random.uniform(0.5, 5) #TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
+        raise argparse.ArgumentError(
+            f"Not a valid string for argument symmetry: {symmetry}"
+        )
+    random_size = np.random.uniform(
+        0.5, 5
+    )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
     sizes = ratio * random_size
     return f"{sizes[0]} {sizes[1]} {sizes[2]}"
+
 
 def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav):
     """
@@ -357,13 +377,18 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav):
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(dir):
-            print("Creating directory")
-            os.mkdir(dir)
+        print("Creating directory")
+        os.mkdir(dir)
     # Warn if directory already exists with more simulations.
     elif len(os.listdir(dir)) > num_sims:
-        print(f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory manually.")
-        raise IndexError(f"This directory ({dir}) already exists with less simulations.")
+        print(
+            f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory manually."
+        )
+        raise IndexError(
+            f"This directory ({dir}) already exists with less simulations."
+        )
     return dir
+
 
 def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
     """
@@ -392,7 +417,9 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
     if gravity:
         gravity_str = f'<option integrator="{integrator}">'
     else:
-        gravity_str = f'<option integrator="{integrator}" gravity="0 0 0" iterations="10"/>'
+        gravity_str = (
+            f'<option integrator="{integrator}" gravity="0 0 0" iterations="10"/>'
+        )
     return f"""
     <mujoco>
     {gravity_str}
@@ -408,14 +435,26 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
     </mujoco>
     """
 
-def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize, vel_range_l, vel_range_a, plane, integrator):
+
+def write_data_nsim(
+    num_sims,
+    n_steps,
+    symmetry,
+    gravity,
+    dir,
+    visualize,
+    vel_range_l,
+    vel_range_a,
+    plane,
+    integrator,
+):
     """
     Computes and writes data of num_sims each with n_steps.
 
     Input:
         - num_sims; number of simulations.
         - n_steps; number of steps per simulation.
-        - symmetry; 
+        - symmetry;
         - gravity; boolean;
             - True; use gravity in the simulation.
             - False; use no gravity in the simulation.
@@ -434,7 +473,7 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize, vel_ra
         - None; writes to the corresponding pickle file.
     """
     for sim_id in range(num_sims):
-        if sim_id % 100 == 0 or sim_id == num_sims-1:
+        if sim_id % 100 == 0 or sim_id == num_sims - 1:
             print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
@@ -445,34 +484,69 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize, vel_ra
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
         dataset = generate_data(string, n_steps, visualize, vel_range_l, vel_range_a)
-        sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes_str, "gravity":gravity, "n_steps":n_steps}, "data": dataset}
+        sim_data = {
+            "vars": {
+                "euler": euler,
+                "pos": pos,
+                "sizes": sizes_str,
+                "gravity": gravity,
+                "n_steps": n_steps,
+            },
+            "data": dataset,
+        }
         # Write data to file
         with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
             pickle.dump(sim_data, f)
+
 
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=5)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=5000)
-    parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="full")
+    parser.add_argument(
+        "-symmetry",
+        type=str,
+        help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side",
+        default="full",
+    )
     parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
     parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
     parser.add_argument("-a_min", type=int, help="angular qvel min", default=6)
     parser.add_argument("-a_max", type=int, help="angular qvel max", default=8)
-    parser.add_argument("-integrator", type=str, help="type of integrator to use (Euler or RK4)", default="Euler")
-    parser.add_argument('--gravity', action=argparse.BooleanOptionalAction)
-    parser.add_argument('--plane', action=argparse.BooleanOptionalAction)
-    parser.add_argument('--visualize', action=argparse.BooleanOptionalAction)
+    parser.add_argument(
+        "-integrator",
+        type=str,
+        help="type of integrator to use (Euler or RK4)",
+        default="Euler",
+    )
+    parser.add_argument("--gravity", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--plane", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--visualize", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
-    vel_range_l=(args.l_min, args.l_max)
-    vel_range_a=(args.a_min, args.a_max)
+    vel_range_l = (args.l_min, args.l_max)
+    vel_range_a = (args.a_min, args.a_max)
 
-    print(f"Creating dataset vel_range_l={vel_range_l}, vel_range_a={vel_range_a}, symmetry={args.symmetry}")
+    print(
+        f"Creating dataset vel_range_l={vel_range_l}, vel_range_a={vel_range_a}, symmetry={args.symmetry}"
+    )
 
-    data_dir = get_dir(vel_range_l, vel_range_a, args.symmetry, args.n_sims, args.plane, args.gravity)
+    data_dir = get_dir(
+        vel_range_l, vel_range_a, args.symmetry, args.n_sims, args.plane, args.gravity
+    )
 
-    write_data_nsim(args.n_sims, args.n_frames, args.symmetry, args.gravity, data_dir, args.visualize, vel_range_l, vel_range_a, args.plane, args.integrator)
+    write_data_nsim(
+        args.n_sims,
+        args.n_frames,
+        args.symmetry,
+        args.gravity,
+        data_dir,
+        args.visualize,
+        vel_range_l,
+        vel_range_a,
+        args.plane,
+        args.integrator,
+    )
     print(f"Saved in {data_dir}")
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")
