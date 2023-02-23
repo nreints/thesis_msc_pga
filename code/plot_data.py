@@ -483,8 +483,9 @@ if __name__ == "__main__":
         "-data_dir",
         type=str,
         help="data_directory",
-        default="data_t(0, 0)_r(2, 5)_full_pNone_gNone",
+        default="data_t(0, 0)_r(6, 8)_full_pNone_gNone",
     )
+    parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     data_dir = "data/" + args.data_dir
@@ -497,75 +498,87 @@ if __name__ == "__main__":
         raise KeyError(f"No simulations in {data_dir}")
 
     # -----------------------------------
-    data_type = args.data_type
-    architecture = args.architecture
-    print(f"Visualizing {architecture} trained on {data_type}")
+    if args.prediction:
+        print("Houweh")
+        data_type = args.data_type
+        architecture = args.architecture
+        print(f"Visualizing {architecture} trained on {data_type}")
 
-    model, config = load_model(data_type, architecture, args.data_dir)
-    (
-        plot_data,
-        ori_data,
-        pos_data,
-        start,
-        nr_frames,
-        sim_id,
-        _,
-        range_plot,
-    ) = get_random_sim_data(data_type, nr_sims, data_dir)
-
-    nr_input_frames = config["n_frames"]
-    if architecture == "fcnn":
-        prediction = get_prediction_fcnn(
-            ori_data, data_type, plot_data, start, nr_input_frames, model
-        )
-    elif architecture == "lstm" or architecture == "quaternet" or architecture == "gru":
-        prediction = get_prediction_lstm(
-            ori_data,
-            data_type,
+        model, config = load_model(data_type, architecture, args.data_dir)
+        (
             plot_data,
+            ori_data,
+            pos_data,
             start,
-            nr_input_frames,
-            model,
-            out_is_in=False,
-        )
+            nr_frames,
+            sim_id,
+            _,
+            range_plot,
+        ) = get_random_sim_data(data_type, nr_sims, data_dir)
 
-    plot_3D_animation(
-        np.array(plot_data),
-        np.array(prediction),
-        np.array(pos_data),
-        data_type,
-        architecture,
-        nr_frames,
-        sim_id,
-        args.data_dir,
-        range_plot,
-    )
+        nr_input_frames = config["n_frames"]
+        if architecture == "fcnn":
+            prediction = get_prediction_fcnn(
+                ori_data, data_type, plot_data, start, nr_input_frames, model
+            )
+        elif (
+            architecture == "lstm"
+            or architecture == "quaternet"
+            or architecture == "gru"
+        ):
+            prediction = get_prediction_lstm(
+                ori_data,
+                data_type,
+                plot_data,
+                start,
+                nr_input_frames,
+                model,
+                out_is_in=False,
+            )
+
+        plot_3D_animation(
+            np.array(plot_data),
+            np.array(prediction),
+            np.array(pos_data),
+            data_type,
+            architecture,
+            nr_frames,
+            sim_id,
+            args.data_dir,
+            range_plot,
+        )
 
     # -----------------------------------'
+    else:
+        # Below the test for all datatypes
+        i = randint(0, nr_sims - 1)
 
-    # # Below the test for all datatypes
-    # i = randint(0, nr_sims - 1)
-    # i = 1
-    # print("simulation", i)
-    # # Test all data types:
+        print("simulation", i)
+        # Test all data types:
 
-    # data_types = ["pos", "eucl_motion", "quat", "dual_quat"]
-    # plot_data, rot_axis, rot_trans_axis = [], [], []
+        data_types = ["pos", "eucl_motion", "quat", "dual_quat"]
+        plot_data, rot_axis, rot_trans_axis = [], [], []
 
-    # for data_thing in data_types:
-    #     (
-    #         prediction,
-    #         _,
-    #         _,
-    #         _,
-    #         nr_frames,
-    #         _,
-    #         rotation_axis_trans,
-    #         range_plot,
-    #     ) = get_random_sim_data(data_thing, nr_sims, data_dir, i)
-    #     plot_data.append(prediction)
-    #     rot_trans_axis.append(rotation_axis_trans)
+        for data_thing in data_types:
+            (
+                prediction,
+                _,
+                _,
+                _,
+                nr_frames,
+                _,
+                rotation_axis_trans,
+                range_plot,
+            ) = get_random_sim_data(data_thing, nr_sims, data_dir, i)
+            plot_data.append(prediction)
+            rot_trans_axis.append(rotation_axis_trans)
 
-    # plot_datatypes(
-    #     plot_data, data_types, nr_frames, rot_trans_axis, i, args.data_dir, range_plot
-    # )
+        plot_datatypes(
+            plot_data,
+            data_types,
+            nr_frames,
+            rot_trans_axis,
+            i,
+            args.data_dir,
+            range_plot,
+        )
