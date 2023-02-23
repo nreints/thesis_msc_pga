@@ -295,7 +295,6 @@ if __name__ == "__main__":
         nargs="+",
         default="data_t(0, 0)_r(0, 0)_none",
     )
-    # parser.add_argument("-data_dir_test", type=list, help="directory of the test data", default="")
     parser.add_argument("-loss", type=str, help="Loss type", default="L2")
     parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
     parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)

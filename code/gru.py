@@ -369,7 +369,6 @@ if __name__ == "__main__":
         nargs="+",
         default="data_t(0, 0)_r(0, 0)_none_pNone_gNone",
     )
-    # parser.add_argument("-data_dir_test", type=list, help="directory of the test data", default="")
     parser.add_argument("-loss", type=str, help="Loss type", default="L2")
     parser.add_argument(
         "-data_type", type=str, help="Type of data. Default: pos", default="pos"
