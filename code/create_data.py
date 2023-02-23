@@ -75,9 +75,9 @@ def get_quat(data, obj_id):
             a bi cj dk convention (identity: 1 0 0 0)
     """
     quat = data.xquat[obj_id]
-    # Ensure that the first element of the quaternion is positive.
-    if quat[0] < 0:
-        quat *= -1
+    # Ensure that the first element of the quaternion is positive. TODO Steven van Leo
+    # if quat[0] < 0:
+    #     quat *= -1
     return quat
 
 def calculate_log_quat(quat):
@@ -199,7 +199,7 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-20, size=3)
     # data.qvel[0:3] = [0, 3, 0]
     data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-20, size=3)
-    data.qvel[3:6] = [0, 20, 0]
+    data.qvel[3:6] = [0, 70, 0]
 
     # Collect geom_id and body_id
     geom_id = model.geom("object_geom").id
@@ -262,12 +262,13 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 )
 
                 quaternion_pyquat = (Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse)
+                # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
+                # TODO Steven van Leo
                 if quaternion_pyquat.elements[0] < 0:
                     quaternion_pyquat *= -1
+                # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
+                # print("----")
                 rotation_axis = quaternion_pyquat.axis
-                # print(rotation_axis/quaternion_pyquat.elements[1:])
-                # print(quaternion_pyquat.elements, rotation_axis)
-                # rotation_axis = Quaternion(get_quat(data, body_id)).axis
 
                 dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
 
@@ -294,7 +295,8 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
                 dataset["pos_diff_start"][i] = (
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
-
+            # if i>100:
+            #     exit()
         else:
             break
 

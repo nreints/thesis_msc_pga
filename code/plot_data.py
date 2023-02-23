@@ -318,7 +318,7 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     ax.plot(rot_axis_plot[0], rot_axis_plot[1], rot_axis_plot[2], color="g", label="rotation axis")
 
     # ARROW TO CENTER
-    ax.quiver(0,0,0,rot_axis_current[0, -1],rot_axis_current[1, -1],rot_axis_current[2, -1], color="darkred")
+    # ax.quiver(0,0,0,rot_axis_current[0, -1],rot_axis_current[1, -1],rot_axis_current[2, -1], color="darkred")
 
     # DIRECTION ROTATION AXIS
     ax.quiver(0,0,0,direction[0]*10,direction[1]*10,direction[2]*10, color="darkviolet", label="direction rotaxis")
@@ -326,24 +326,35 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     ax.quiver(rot_axis_current[0, -1],rot_axis_current[1, -1],rot_axis_current[2, -1],direction[0]*10,direction[1]*10,direction[2]*10, color="darkviolet")
 
     # ORIGIN
-    ax.scatter([0],[0],[0], color="darkred", marker="8", label="origin")
+    ax.scatter([0],[0],[0], color="darkred", marker="*", label="origin")
+
+    # X, Y = np.meshgrid(np.arange(-60, 60), np.arange(-60, 60))
+    # Z = 0*X
+    # ax.plot_surface(Z, Y, X, alpha=0.7)
+
+def set_ax_properties(ax, idx, sim_id, data_dir):
+    ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
+    ax.set_ylim(range_plot[1][0], range_plot[1][1])
+    ax.set_zlim(range_plot[2][0], range_plot[2][1])
+    ax.legend(bbox_to_anchor=(1.5, 1.05),
+          ncol=2, fancybox=True)
+    ax.set_proj_type('persp', focal_length=0.3)
+    ax.set_xlabel('$X$')
+    ax.set_ylabel('$Y$')
+    ax.set_zlabel('$Z$')
+    ax.set_title(f"Frame {idx}/{nr_frames} for sim {sim_id} on set {data_dir[5:]}")
 
 
 def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir, range_plot):
     """
     Plots 3D animation of the cubes in all data types
     """
-
     # Open figure
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     plot_datatype_cubes(data_types, plot_data, rot_axis, 0, ax)
 
-    ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
-    ax.set_ylim(range_plot[1][0], range_plot[1][1])
-    ax.set_zlim(range_plot[2][0], range_plot[2][1])
-    ax.legend(bbox_to_anchor=(1.5, 1.05),
-          ncol=2, fancybox=True)
+    set_ax_properties(ax, 0, sim_id, data_dir)
 
     def update(idx):
 
@@ -352,18 +363,7 @@ def plot_datatypes(plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir,
             ax.cla()
 
         plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax)
-
-
-        ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
-        ax.set_ylim(range_plot[1][0], range_plot[1][1])
-        ax.set_zlim(range_plot[2][0], range_plot[2][1])
-
-        ax.set_xlabel('$X$')
-        ax.set_ylabel('$Y$')
-        ax.set_zlabel('$Z$')
-        ax.set_title(f"Frame {idx}/{nr_frames} for sim {sim_id} on set {data_dir[5:]}")
-        # ax.legend(bbox_to_anchor=(1.5, 1),
-        #   ncol=2, fancybox=True)
+        set_ax_properties(ax, idx, sim_id, data_dir)
 
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, frames=nr_frames, interval=1, repeat=False)
