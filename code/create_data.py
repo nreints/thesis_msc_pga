@@ -345,7 +345,7 @@ def get_sizes(symmetry):
         ratio = np.array([1, 1, 1])
     elif symmetry == "semi":
         ratio = np.array([1, 1, 10])
-    elif symmetry == "tennis0":
+    elif symmetry == "tennis":
         ratio = np.array([1, 3, 10])
     else:
         raise argparse.ArgumentError(
@@ -507,7 +507,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-symmetry",
         type=str,
-        help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side",
+        help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis: tennis_racket effect 1,3,10\n;none: random lengths for each side",
         default="full",
     )
     parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)

@@ -129,9 +129,9 @@ def get_prediction_fcnn(
         - model: the trained model.
 
     Output:
-        - result: converted to xyz positions output of the model based on original_data and start_pos.
+        - prediction: converted to xyz positions output of the model based on original_data and start_pos.
     """
-    result = torch.zeros_like(xyz_data)
+    prediction = torch.zeros_like(xyz_data)
 
     for frame_id in range(nr_input_frames, xyz_data.shape[0]):
         # Get nr_input_frames frames shape: (nr_input_frames, n_data)
@@ -139,14 +139,14 @@ def get_prediction_fcnn(
         # Reshape to (1, nr_input_frames*n_data)
         input_data = input_data.unsqueeze(dim=0).flatten(start_dim=1)
 
-        # Save the prediction in result
+        # Save the prediction in prediction
         with torch.no_grad():
             prediction = model(input_data)
-            result[frame_id] = convert(prediction, start_pos, data_type).reshape(
+            prediction[frame_id] = convert(prediction, start_pos, data_type).reshape(
                 -1, 8, 3
             )
 
-    return result
+    return prediction
 
 
 def get_prediction_lstm(
@@ -173,13 +173,13 @@ def get_prediction_lstm(
                     True; do use output of the model as input.
 
     Output:
-        - result: converted to xyz positions output of the model based on original_data and start_pos.
+        - prediction: converted to xyz positions output of the model based on original_data and start_pos.
     """
-    # Result should be xyz data for plot
+    # prediction should be xyz data for plot
     frames, vert, dim = xyz_data.shape
 
     # Because LSTM predicts 1 more frame
-    result = torch.zeros((frames + 1, vert, dim))
+    prediction = torch.zeros((frames + 1, vert, dim))
 
     # Get first position
     start_pos = start_pos[None, :]
@@ -192,18 +192,18 @@ def get_prediction_lstm(
             input_data = original_data[frame_id : frame_id + nr_input_frames]
             input_data = input_data.unsqueeze(dim=0)
 
-        # Save the prediction in result
+        # Save the prediction in prediction
         with torch.no_grad():  # Deactivate gradients for the following code
             prediction, (hidden, cell) = model(input_data, (hidden, cell))
             if out_is_in:
                 input_data = prediction
 
-            out_shape = result[frame_id + 1 : frame_id + nr_input_frames + 1].shape
-            result[frame_id + 1 : frame_id + nr_input_frames + 1] = convert(
+            out_shape = prediction[frame_id + 1 : frame_id + nr_input_frames + 1].shape
+            prediction[frame_id + 1 : frame_id + nr_input_frames + 1] = convert(
                 prediction, start_pos, data_type
             ).reshape(-1, 8, 3)[: out_shape[0], :, :]
 
-    return result
+    return prediction
 
 
 def distance_check(converted, check):
@@ -282,7 +282,7 @@ def plot_cube(cube_data, ax, label, color_cube):
 
 def plot_3D_animation(
     data,
-    result,
+    prediction,
     real_pos_data,
     data_type,
     architecture,
@@ -296,7 +296,7 @@ def plot_3D_animation(
 
     Input:
         - data: converted xyz vertice positions.
-        - result: predicted xyz vertice positions.
+        - prediction: predicted xyz vertice positions.
         - real_pos_data: original xyz vertice positions.
         - data_type: original data type of data.
         - architecture: architecture of the pretrained model.
@@ -309,17 +309,14 @@ def plot_3D_animation(
 
     # Collect init data
     converted_cube = data[0]
-    predicted_cube = result[0]
+    predicted_cube = prediction[0]
     check_cube = real_pos_data[0]
 
     distance_check(converted_cube, check_cube)
 
     plot_cubes(converted_cube, predicted_cube, check_cube, ax)
 
-    ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
-    ax.set_ylim(range_plot[1][0], range_plot[1][1])
-    ax.set_zlim(range_plot[2][0], range_plot[2][1])
-    ax.legend()
+    set_ax_properties(ax, 0, sim_id, data_dir, range_plot)
 
     def update(idx):
         # Remove the previous scatter plot
@@ -328,22 +325,14 @@ def plot_3D_animation(
 
         # Get cube vertice data
         converted_cube = data[idx]
-        predicted_cube = result[idx]
+        predicted_cube = prediction[idx]
         check_cube = real_pos_data[idx]
 
         distance_check(converted_cube, check_cube)
 
         plot_cubes(converted_cube, predicted_cube, check_cube, ax)
 
-        ax.set_xlim3d(-15, 15)
-        ax.set_ylim3d(-15, 15)
-        ax.set_zlim3d(0, 40)
-
-        ax.set_xlabel("$X$")
-        ax.set_ylabel("$Y$")
-        ax.set_zlabel("$Z$")
-        ax.set_title(f"Frame {idx}/{nr_frames} for sim {sim_id} on set {data_dir[5:]}")
-        ax.legend()
+        set_ax_properties(ax, idx, sim_id, data_dir, range_plot)
 
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(fig, update, nr_frames, interval=75, repeat=False)
@@ -433,7 +422,7 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     # ax.plot_surface(Z, Y, X, alpha=0.7)
 
 
-def set_ax_properties(ax, idx, sim_id, data_dir):
+def set_ax_properties(ax, idx, sim_id, data_dir, range_plot):
     ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
     ax.set_ylim(range_plot[1][0], range_plot[1][1])
     ax.set_zlim(range_plot[2][0], range_plot[2][1])
@@ -456,7 +445,7 @@ def plot_datatypes(
     ax = fig.add_subplot(111, projection="3d")
     plot_datatype_cubes(data_types, plot_data, rot_axis, 0, ax)
 
-    set_ax_properties(ax, 0, sim_id, data_dir)
+    set_ax_properties(ax, 0, sim_id, data_dir, range_plot)
 
     def update(idx):
 
@@ -465,7 +454,7 @@ def plot_datatypes(
             ax.cla()
 
         plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax)
-        set_ax_properties(ax, idx, sim_id, data_dir)
+        set_ax_properties(ax, idx, sim_id, data_dir, range_plot)
 
     # Interval : Delay between frames in milliseconds.
     ani = animation.FuncAnimation(
@@ -489,7 +478,7 @@ if __name__ == "__main__":
         "-data_dir",
         type=str,
         help="data_directory",
-        default="data_t(0, 0)_r(6, 8)_tennis0_pNone_gNone",
+        default="data_t(0, 0)_r(6, 8)_tennis_pNone_gNone",
     )
     args = parser.parse_args()
 
@@ -532,7 +521,7 @@ if __name__ == "__main__":
 
     for data_thing in data_types:
         (
-            result,
+            prediction,
             _,
             _,
             _,
@@ -541,7 +530,7 @@ if __name__ == "__main__":
             rotation_axis_trans,
             range_plot,
         ) = get_random_sim_data(data_thing, nr_sims, data_dir, i)
-        plot_data.append(result)
+        plot_data.append(prediction)
         rot_trans_axis.append(rotation_axis_trans)
 
     plot_datatypes(
