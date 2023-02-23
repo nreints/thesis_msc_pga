@@ -306,7 +306,6 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     rot_axis_current = np.array(rot_axis[i][idx]).reshape(2, 3).T
     # Add translation to rotation vector.
     rot_axis_translated = np.sum(rot_axis_current, axis=1).reshape(3,)
-    # TODO Rotation axis flipt...
     print(rot_axis_current[:,0], rot_axis_translated)
     # Get direction of rotation axis.
     direction = (rot_axis_translated - (np.zeros((3,)) + rot_axis_current[:, -1])).reshape(3,)
@@ -336,8 +335,8 @@ def set_ax_properties(ax, idx, sim_id, data_dir):
     ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
     ax.set_ylim(range_plot[1][0], range_plot[1][1])
     ax.set_zlim(range_plot[2][0], range_plot[2][1])
-    ax.legend(bbox_to_anchor=(1.5, 1.05),
-          ncol=2, fancybox=True)
+    ax.legend(bbox_to_anchor=(1.75, 1),
+          ncol=1, fancybox=True)
     ax.set_proj_type('persp', focal_length=0.3)
     ax.set_xlabel('$X$')
     ax.set_ylabel('$Y$')

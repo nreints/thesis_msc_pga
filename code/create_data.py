@@ -160,9 +160,12 @@ def logDual(r):
 def create_empty_dataset(n_steps):
     """
     Returns empty data dictionary.
-    
+
     Input:
         - n_steps; number of steps in simulation.
+
+    Output:
+        - Dictionary to store the data in.
     """
     return {
         "pos": np.empty((n_steps, 8, 3)),
@@ -175,16 +178,18 @@ def create_empty_dataset(n_steps):
         "rotation_axis_trans": np.empty((n_steps, 6)),
     }
 
-def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0)):
+def generate_data(string, n_steps, visualize=False, vel_range_l=(0,0), vel_range_a=(0,0)):
     """
     Create the dataset (dictionary) of data_type for n_steps steps.
 
     Input:
         - string; XML string of the model.
         - n_steps; number of steps to generate.
-        - visualize; boolean to visualize in MuJoCo.
-        - qvel_range_t; range to choose values for the linear velocity.
-        - qvel_range_r; range to choose values for the angular velocity.
+        - visualize; boolean;
+            - True; visualize in MuJoCo.
+            - False; do not visualize in MuJoCo.
+        - vel_range_l; range to choose values from for the linear velocity.
+        - vel_range_a; range to choose values from for the angular velocity.
 
     Output:
         - dataset; dictionary with all data.
@@ -196,9 +201,9 @@ def generate_data(string, n_steps, visualize=False, qvel_range_t=(0,0), qvel_ran
     data = mujoco.MjData(model)
 
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
-    data.qvel[0:3] = np.random.uniform(qvel_range_t[0], qvel_range_t[1]+1e-20, size=3)
+    data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1]+1e-20, size=3)
     # data.qvel[0:3] = [0, 3, 0]
-    data.qvel[3:6] = np.random.uniform(qvel_range_r[0], qvel_range_r[1]+1e-20, size=3)
+    data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1]+1e-20, size=3)
     data.qvel[3:6] = [0, 70, 0]
 
     # Collect geom_id and body_id
@@ -333,37 +338,13 @@ def get_sizes(symmetry):
     sizes = ratio * random_size
     return f"{sizes[0]} {sizes[1]} {sizes[2]}"
 
-
-    # if symmetry == "full":
-    #     size = np.random.uniform(5, 10)
-    #     return f"{size} {size} {size}"
-    # elif symmetry == "semi":
-    #     ratio = np.array([1, 1, 10])
-    #     size01 = np.random.uniform(0.5, 5)
-    #     sizes = ratio * size01
-    #     return f"{sizes[0]} {sizes[1]} {sizes[2]}"
-    # elif symmetry == "tennis0":
-    #     ratio = np.array([1, 3, 10])
-    #     random_size = np.random.uniform(0.2, 2)
-    #     sizes = ratio * random_size
-    #     return f"{sizes[0]} {sizes[1]} {sizes[2]}"
-    # # elif symmetry == "tennis1":
-    # #     ratio = np.array([1, 2, 3])
-    # #     random_size = np.random.uniform(0.5, 1.5)
-    # #     sizes = ratio * random_size
-    # #     return f"{sizes[0]} {sizes[1]} {sizes[2]}"
-    # elif symmetry == "none":
-    #     return f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
-    # else:
-    #     raise argparse.ArgumentError(f"Not a valid string for argument symmetry: {symmetry}")
-
-def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
+def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav):
     """
     Returns the name of the directory to write to.
 
     Input:
-        - qvel_range_t; range of initial linear velocity.
-        - qvel_range_r; range of initial angular velocity.
+        - vel_range_l; range of initial linear velocity.
+        - vel_range_a; range of initial angular velocity.
         - symmetry; shape of cuboid.
         - num_sims; number of sims to generate.
         - plane; boolean whether there is a plane in the simulation.
@@ -372,7 +353,7 @@ def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
     Output:
         - Directory with corresponding name.
     """
-    dir = f"data/data_t{qvel_range_t}_r{qvel_range_r}_{symmetry}_p{plane}_g{grav}"
+    dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}"
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(dir):
@@ -384,7 +365,7 @@ def get_dir(qvel_range_t, qvel_range_r, symmetry, num_sims, plane, grav):
         raise IndexError(f"This directory ({dir}) already exists with less simulations.")
     return dir
 
-def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
+def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
     """
     Creates the XML string for a simulation.
 
@@ -398,6 +379,7 @@ def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
         - plane; boolean;
             - True; create a plane.
             - False; create no plane.
+        - integrator; type of integrator to use in MuJoCo.
 
     Output:
         - XML string to create a MuJoCo simulation.
@@ -408,9 +390,9 @@ def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
         plane_str = ""
 
     if gravity:
-        gravity_str = '<option integrator="RK4">'
+        gravity_str = f'<option integrator="{integrator}">'
     else:
-        gravity_str = '<option integrator="RK4" gravity="0 0 0" iterations="10"/>'
+        gravity_str = f'<option integrator="{integrator}" gravity="0 0 0" iterations="10"/>'
     return f"""
     <mujoco>
     {gravity_str}
@@ -426,7 +408,31 @@ def create_string(euler_obj, pos_obj, size_obj, gravity, plane):
     </mujoco>
     """
 
-def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, qvel_range_t=(0,0), qvel_range_r=(0,0), plane=False):
+def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize, vel_range_l, vel_range_a, plane, integrator):
+    """
+    Computes and writes data of num_sims each with n_steps.
+
+    Input:
+        - num_sims; number of simulations.
+        - n_steps; number of steps per simulation.
+        - symmetry; 
+        - gravity; boolean;
+            - True; use gravity in the simulation.
+            - False; use no gravity in the simulation.
+        - dir; data directory to save the pickle files in.
+        - visualize;  boolean;
+            - True; visualize in MuJoCo.
+            - False; do not visualize in MuJoCo.
+        - vel_range_l; range to choose values from for the linear velocity.
+        - vel_range_a; range to choose values from for the angular velocity.
+        - plane; boolean;
+            - True; create a plane.
+            - False; create no plane.
+        - integrator; type of integrator to use in MuJoCo.
+
+    Output:
+        - None; writes to the corresponding pickle file.
+    """
     for sim_id in range(num_sims):
         if sim_id % 100 == 0 or sim_id == num_sims-1:
             print(f"Generating sim {sim_id}/{num_sims-1}")
@@ -436,9 +442,9 @@ def write_data_nsim(num_sims, n_steps, symmetry, gravity, dir, visualize=False, 
         sizes_str = get_sizes(symmetry)
         # Define position
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
-        string = create_string(euler, pos, sizes_str, gravity, plane)
+        string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
-        dataset = generate_data(string, n_steps, visualize, qvel_range_t, qvel_range_r)
+        dataset = generate_data(string, n_steps, visualize, vel_range_l, vel_range_a)
         sim_data = {"vars": {"euler":euler, "pos":pos, "sizes":sizes_str, "gravity":gravity, "n_steps":n_steps}, "data": dataset}
         # Write data to file
         with open(f"{dir}/sim_{sim_id}.pickle", "wb") as f:
@@ -450,21 +456,23 @@ if __name__ == "__main__":
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=5)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=5000)
     parser.add_argument("-symmetry", type=str, help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis0: tennis_racket effect 1,3,10\n;tennis1: tennis_racket effect 1,2,3\n;none: random lengths for each side", default="full")
-    parser.add_argument("-t_min", type=int, help="translation qvel min", default=0)
-    parser.add_argument("-t_max", type=int, help="translation qvel max", default=0)
-    parser.add_argument("-r_min", type=int, help="rotation qvel min", default=6)
-    parser.add_argument("-r_max", type=int, help="rotation qvel max", default=8)
+    parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=6)
+    parser.add_argument("-a_max", type=int, help="angular qvel max", default=8)
+    parser.add_argument("-integrator", type=str, help="type of integrator to use (Euler or RK4)", default="Euler")
     parser.add_argument('--gravity', action=argparse.BooleanOptionalAction)
     parser.add_argument('--plane', action=argparse.BooleanOptionalAction)
     parser.add_argument('--visualize', action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
-    qvel_range_t=(args.t_min,args.t_max)
-    qvel_range_r=(args.r_min,args.r_max)
-    print(f"Creating dataset qvel_range_t={qvel_range_t}, qvel_range_r={qvel_range_r}, symmetry={args.symmetry}")
+    vel_range_l=(args.l_min, args.l_max)
+    vel_range_a=(args.a_min, args.a_max)
 
-    dir = get_dir(qvel_range_t, qvel_range_r, args.symmetry, args.n_sims, args.plane, args.gravity)
+    print(f"Creating dataset vel_range_l={vel_range_l}, vel_range_a={vel_range_a}, symmetry={args.symmetry}")
 
-    write_data_nsim(args.n_sims, args.n_frames, args.symmetry, args.gravity, dir, args.visualize, qvel_range_t, qvel_range_r, args.plane)
-    print(f"Saved in {dir}")
+    data_dir = get_dir(vel_range_l, vel_range_a, args.symmetry, args.n_sims, args.plane, args.gravity)
+
+    write_data_nsim(args.n_sims, args.n_frames, args.symmetry, args.gravity, data_dir, args.visualize, vel_range_l, vel_range_a, args.plane, args.integrator)
+    print(f"Saved in {data_dir}")
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")
