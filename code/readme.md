@@ -7,7 +7,7 @@ please run `pip install -r requirements.txt` or `pip3 install -r requirements.tx
 #### Create data:
 To generate 100 simulations each of 500 frames for a rod-like cuboid (ratio [1,1,10]) run and a initial angular velocity:<br>
 
-`python create_data.py -symmetry="semi" -n_sims=100 -n_frames=500 -l_min 0 -l_max 0 -a_min 2 -a_max 5`<br>
+`python create_data.py -symmetry="semi" -n_sims=100 -n_frames=500 -l_min 0 -l_max 0 -a_min 2 -a_max 5`</br>
 
 To generate 100 simulations each of 500 frames for a tennis-like cuboid (ratio [1,3,10]) run and a initial linear velocity:<br>
 
