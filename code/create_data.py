@@ -10,6 +10,7 @@ import time
 import copy
 import math
 
+
 def get_mat(data, obj_id):
     """
     Returns the rotation matrix of an object.
@@ -213,7 +214,7 @@ def generate_data(
     data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1] + 1e-20, size=3)
     # data.qvel[0:3] = [0, 3, 0]
     data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1] + 1e-20, size=3)
-    data.qvel[3:6] = [0, 70, 0]
+    # data.qvel[3:6] = [0, 70, 0]
 
     # Collect geom_id and body_id
     geom_id = model.geom("object_geom").id
@@ -282,8 +283,8 @@ def generate_data(
                 )
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
                 # TODO Steven van Leo
-                if quaternion_pyquat.elements[0] < 0:
-                    quaternion_pyquat *= -1
+                # if quaternion_pyquat.elements[0] < 0:
+                #     quaternion_pyquat *= -1
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
                 # print("----")
                 rotation_axis = quaternion_pyquat.axis
@@ -498,12 +499,13 @@ def write_data_nsim(
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=5)
-    parser.add_argument("-n_frames", type=int, help="number of frames", default=5000)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=500)
     parser.add_argument(
         "-symmetry",
         type=str,
-        help="symmetry of the box.\nfull: symmetric box\n; semi: 2 sides of same length, other longer\n;tennis: tennis_racket effect 1,3,10\n;none: random lengths for each side",
+        choices=["full", "semi", "tennis", "none"],
+        help="symmetry of the box.\nfull: symmetric box 1:1:1\n; semi: 2 sides of same length, other longer 1:1:10\n;tennis: tennis_racket effect 1:3:10\n;none: random lengths for each side",
         default="full",
     )
     parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
@@ -513,7 +515,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-integrator",
         type=str,
-        help="type of integrator to use (Euler or RK4)",
+        choices=["RK4", "Euler"],
+        help="type of integrator to use",
         default="Euler",
     )
     parser.add_argument("--gravity", action=argparse.BooleanOptionalAction)

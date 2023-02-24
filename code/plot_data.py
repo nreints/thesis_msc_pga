@@ -476,11 +476,11 @@ def plot_datatypes(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-data_type", type=str, help="data type to visualize", default="pos"
+        "--data_type", type=str, help="data type to visualize", default="pos"
     )
     parser.add_argument("-architecture", type=str, help="architecture", default="fcnn")
     parser.add_argument(
-        "-data_dir",
+        "--data_dir",
         type=str,
         help="data directory",
         default="data_t(0, 0)_r(2, 5)_full_pNone_gNone",

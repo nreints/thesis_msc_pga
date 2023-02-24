@@ -98,6 +98,9 @@ class MyDataset(data.Dataset):
         self.target = torch.FloatTensor(np.asarray(self.target))
         self.target_pos = torch.FloatTensor(np.asarray(self.target_pos))
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+        self.mean = torch.mean(self.data)
+        self.std = torch.std(self.data)
+        self.normalized_data = (self.data - self.mean) / self.std
 
     def __len__(self):
         # Number of data point we have
@@ -109,7 +112,8 @@ class MyDataset(data.Dataset):
         data_target = self.target[idx]
         data_start = self.start_pos[idx]
         data_pos_target = self.target_pos[idx]
-        return data_point, data_target, data_start, data_pos_target
+        data_normalized = self.normalized_data[idx]
+        return data_point, data_target, data_start, data_pos_target, data_normalized
 
 
 def train_log(loss, epoch, config):
@@ -122,7 +126,15 @@ def train_log(loss, epoch, config):
 
 
 def train_model(
-    model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config, losses
+    model,
+    optimizer,
+    data_loader,
+    test_loaders,
+    loss_module,
+    num_epochs,
+    config,
+    losses,
+    data_set_train,
 ):
     print("--- Started Training ---")
     # Set model to train mode
@@ -133,16 +145,19 @@ def train_model(
     for epoch in range(num_epochs):
         epoch_time = time.time()
         loss_epoch = 0
-        for data_inputs, data_labels, start_pos, pos_target in data_loader:
+        for data_inputs, data_labels, start_pos, pos_target, data_norm in data_loader:
 
             # Set data to current device
             data_inputs = data_inputs.to(device)  # Shape: [batch, frames x n_data]
+            data_norm = data_norm.to(device)
             data_labels = data_labels.to(device)  # Shape: [batch, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
 
             # Get predictions
-            preds = model(data_inputs)  # Shape: [batch, n_data]
+            # preds = model(data_inputs)  # Shape: [batch, n_data]
+            preds = model(data_norm)
+            preds = preds * data_set_train.std + data_set_train.mean
 
             # Convert predictions to xyz-data
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
@@ -174,7 +189,7 @@ def train_model(
 
         # Evaluate model
         true_loss, convert_loss, total_convert_loss = eval_model(
-            model, test_loaders, loss_module, config, epoch, losses
+            model, test_loaders, loss_module, config, epoch, losses, data_set_train
         )
 
         # Set model to train mode
@@ -192,7 +207,9 @@ def train_model(
         print("epoch_time; ", time.time() - epoch_time)
 
 
-def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
+def eval_model(
+    model, data_loaders, loss_module, config, current_epoch, losses, data_set_train
+):
 
     model.eval()  # Set model to eval mode
 
@@ -203,15 +220,18 @@ def eval_model(model, data_loaders, loss_module, config, current_epoch, losses):
                 total_loss = 0
                 total_convert_loss = 0
                 wandb_total_convert_loss = 0
-                for data_inputs, data_labels, start_pos, pos_target in data_loader:
+                for data_inputs, data_labels, start_pos, pos_target, _ in data_loader:
 
                     # Set data to current device
                     data_inputs = data_inputs.to(device)
+                    data_norm = (data_inputs - data_set_train.mean) / data_set_train.std
                     data_labels = data_labels.to(device)
 
                     # Get predictions
-                    preds = model(data_inputs)
+                    # preds = model(data_inputs)
+                    preds = model(data_norm)
                     preds = preds.squeeze(dim=1)
+                    preds = preds * data_set_train.std + data_set_train.mean
 
                     # Convert predictions to xyz-data
                     alt_preds = convert(
@@ -268,10 +288,10 @@ def model_pipeline(
     ):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}"
+        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/norm"
 
         # make the model, data, and optimization problem
-        model, train_loader, test_loaders, criterion, optimizer = make(
+        model, train_loader, test_loaders, criterion, optimizer, data_set_train = make(
             config,
             ndata_dict,
             loss_dict,
@@ -289,10 +309,11 @@ def model_pipeline(
             config.epochs,
             config,
             losses,
+            data_set_train,
         )
 
         # and test its final performance
-        eval_model(model, test_loaders, criterion, config, config.epochs, losses)
+        eval_model(model, test_loaders, criterion, config, config.epochs, losses, data_set_train)
 
     return model
 
@@ -338,7 +359,14 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         model.parameters(), lr=config.learning_rate
     )
 
-    return model, train_data_loader, test_data_loaders, criterion, optimizer
+    return (
+        model,
+        train_data_loader,
+        test_data_loaders,
+        criterion,
+        optimizer,
+        data_set_train,
+    )
 
 
 if __name__ == "__main__":
@@ -351,14 +379,14 @@ if __name__ == "__main__":
         default="online",
     )
     parser.add_argument(
-        "-data_dir_train",
+        "--data_dir_train",
         type=str,
         help="directory of the train data",
         nargs="+",
         default="data_t(0, 0)_r(2, 5)_none_pNone_gNone",
     )
-    parser.add_argument("-loss", type=str, help="Loss type", default="L2")
-    parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
+    parser.add_argument("--loss", type=str, help="Loss type", default="L2")
+    parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
     parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
     args = parser.parse_args()
 
@@ -367,6 +395,7 @@ if __name__ == "__main__":
     data_dirs_test = os.listdir("data")
     if ".DS_Store" in data_dirs_test:
         data_dirs_test.remove(".DS_Store")
+    data_dirs_test = [" ".join(args.data_dir_train)]
 
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
@@ -380,7 +409,7 @@ if __name__ == "__main__":
     for i in range(args.iterations):
         # Divide the train en test dataset
         # n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 2000
+        n_sims_train = 5000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims
@@ -402,9 +431,9 @@ if __name__ == "__main__":
         print(f"Number of test simulations: {len(test_sims)}")
         # Set config
         config = dict(
-            learning_rate=0.0025,
+            learning_rate=0.0001,
             epochs=30,
-            batch_size=2048,
+            batch_size=1024,
             loss_type=args.loss,
             loss_reduction_type="mean",
             optimizer="Adam",
@@ -417,7 +446,7 @@ if __name__ == "__main__":
             hidden_sizes=[128, 256],
             activation_func=["ReLU", "ReLU"],
             dropout=[0.2, 0.4],
-            batch_norm=[True, True, True],
+            batch_norm=[False, False, False],
             lam=0.01,
             data_dir_train=data_dir_train,
             data_dirs_test=data_dirs_test,
