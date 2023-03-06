@@ -101,7 +101,7 @@ def quat2pos(quat, start_pos):
             start_pos = start_pos[:, None, :]
 
         repeated_start_pos = start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1)
-        print(repeated_start_pos.shape)
+
         # Rotate start by quaternion
         rotated_start = fast_rotVecQuat(repeated_start_pos, quat_flat[:, :4])
 

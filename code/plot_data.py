@@ -377,7 +377,7 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     rot_axis_translated = np.sum(rot_axis_current, axis=1).reshape(
         3,
     )
-    print(rot_axis_current[:, 0], rot_axis_translated)
+    # print(rot_axis_current[:, 0], rot_axis_translated)
     # Get direction of rotation axis.
     direction = (
         rot_axis_translated - (np.zeros((3,)) + rot_axis_current[:, -1])
@@ -394,7 +394,7 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
         rot_axis_plot[1],
         rot_axis_plot[2],
         color="g",
-        label="rotation axis",
+        # label="rotation axis",
     )
 
     # ARROW TO CENTER
@@ -409,7 +409,7 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
         direction[1] * 10,
         direction[2] * 10,
         color="darkviolet",
-        label="direction rotaxis",
+        # label="direction rotaxis",
     )
     # DIRECTION ROTATION AXIS Translated
     ax.quiver(
@@ -423,7 +423,7 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     )
 
     # ORIGIN
-    ax.scatter([0], [0], [0], color="darkred", marker="*", label="origin")
+    ax.scatter([0], [0], [0], color="darkred", marker="*")  # , label="origin")
 
     # X, Y = np.meshgrid(np.arange(-60, 60), np.arange(-60, 60))
     # Z = 0*X
@@ -483,7 +483,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(0, 0)_r(2, 5)_full_pNone_gNone",
+        default="data_t(0, 0)_r(6, 8)_tennis_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -503,7 +503,7 @@ if __name__ == "__main__":
 
     # -----------------------------------
     if args.prediction:
-        print("Houweh")
+
         data_type = args.data_type
         architecture = args.architecture
         print(f"Visualizing {architecture} trained on {data_type}")
@@ -552,7 +552,7 @@ if __name__ == "__main__":
             range_plot,
         )
 
-    # -----------------------------------'
+    # -----------------------------------
     else:
         # Below the test for all datatypes
         i = randint(0, nr_sims - 1)
@@ -560,7 +560,7 @@ if __name__ == "__main__":
         print("simulation", i)
         # Test all data types:
 
-        data_types = ["pos", "eucl_motion", "quat", "dual_quat"]
+        data_types = ["pos"]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 
         for data_thing in data_types:

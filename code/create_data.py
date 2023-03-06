@@ -9,6 +9,7 @@ import argparse
 import time
 import copy
 import math
+import random
 
 
 def get_mat(data, obj_id):
@@ -187,7 +188,12 @@ def create_empty_dataset(n_steps):
 
 
 def generate_data(
-    string, n_steps, visualize=False, vel_range_l=(0, 0), vel_range_a=(0, 0)
+    string,
+    n_steps,
+    visualize=False,
+    vel_range_l=(0, 0),
+    vel_range_a=(0, 0),
+    pure_tennis=False,
 ):
     """
     Create the dataset (dictionary) of data_type for n_steps steps.
@@ -214,7 +220,8 @@ def generate_data(
     data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1] + 1e-20, size=3)
     # data.qvel[0:3] = [0, 3, 0]
     data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1] + 1e-20, size=3)
-    # data.qvel[3:6] = [0, 70, 0]
+    if pure_tennis:
+        data.qvel[3:6] = [0, random.uniform(15, 50), 0.01]
 
     # Collect geom_id and body_id
     geom_id = model.geom("object_geom").id
@@ -328,9 +335,9 @@ def get_sizes(symmetry):
 
     Input:
         - symmetry; symmetry type of the box
-            - full; ratio 1:1:1
-            - semi; ratio 1:1:10
-            - tennis; ratio 1:3:10
+            - full; ratio of the vertices 1:1:1
+            - semi; ratio of the vertices 1:1:10
+            - tennis; ratio of the vertices 1:3:10
             - none; no specific ratio
 
     Output:
@@ -352,10 +359,10 @@ def get_sizes(symmetry):
         0.5, 5
     )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
     sizes = ratio * random_size
-    return f"{sizes[0]} {sizes[1]} {sizes[2]}"
+    return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
 
-def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav):
+def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav, tennis_effect):
     """
     Returns the name of the directory to write to.
 
@@ -371,6 +378,8 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav):
         - Directory with corresponding name.
     """
     dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}"
+    if tennis_effect:
+        dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}_tennisEffect"
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(dir):
@@ -382,7 +391,7 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav):
             f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory manually."
         )
         raise IndexError(
-            f"This directory ({dir}) already exists with less simulations."
+            f"This directory ({dir}) already exists with fewer simulations."
         )
     return dir
 
@@ -423,6 +432,7 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
     <worldbody>
         <light name="top" pos="0 0 1"/>
         <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
+        <camera name="camera2" pos="10 -70 70" xyaxes="1 0 0 0 1 1.5"/>
         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
             <joint name="joint1" type="free"/>
             <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0 0 1"/>
@@ -444,6 +454,7 @@ def write_data_nsim(
     vel_range_a,
     plane,
     integrator,
+    tennis_effect,
 ):
     """
     Computes and writes data of num_sims each with n_steps.
@@ -465,27 +476,32 @@ def write_data_nsim(
             - True; create a plane.
             - False; create no plane.
         - integrator; type of integrator to use in MuJoCo.
+        - tennis_effect; explicitly cause the tennis effect.
 
     Output:
         - None; writes to the corresponding pickle file.
     """
+    if tennis_effect and not symmetry == "tennis":
+        raise BaseException("Cannot create tenniseffect if symmetry is not tennis.")
     for sim_id in range(num_sims):
         if sim_id % 100 == 0 or sim_id == num_sims - 1:
             print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
         # Define sizes
-        sizes_str = get_sizes(symmetry)
+        sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
-        dataset = generate_data(string, n_steps, visualize, vel_range_l, vel_range_a)
+        dataset = generate_data(
+            string, n_steps, visualize, vel_range_l, vel_range_a, tennis_effect
+        )
         sim_data = {
             "vars": {
                 "euler": euler,
                 "pos": pos,
-                "sizes": sizes_str,
+                "sizes": sizes_list,
                 "gravity": gravity,
                 "n_steps": n_steps,
             },
@@ -500,7 +516,7 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
-    parser.add_argument("-n_frames", type=int, help="number of frames", default=500)
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=2000)
     parser.add_argument(
         "-symmetry",
         type=str,
@@ -522,6 +538,7 @@ if __name__ == "__main__":
     parser.add_argument("--gravity", action=argparse.BooleanOptionalAction)
     parser.add_argument("--plane", action=argparse.BooleanOptionalAction)
     parser.add_argument("--visualize", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--tennis_effect", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     vel_range_l = (args.l_min, args.l_max)
@@ -532,7 +549,7 @@ if __name__ == "__main__":
     )
 
     data_dir = get_dir(
-        vel_range_l, vel_range_a, args.symmetry, args.n_sims, args.plane, args.gravity
+        vel_range_l, vel_range_a, args.symmetry, args.n_sims, args.plane, args.gravity, args.tennis_effect
     )
 
     write_data_nsim(
@@ -546,6 +563,7 @@ if __name__ == "__main__":
         vel_range_a,
         args.plane,
         args.integrator,
+        args.tennis_effect,
     )
     print(f"Saved in {data_dir}")
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")

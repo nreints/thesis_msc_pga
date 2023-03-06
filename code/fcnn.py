@@ -155,9 +155,9 @@ def train_model(
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
 
             # Get predictions
-            # preds = model(data_inputs)  # Shape: [batch, n_data]
-            preds = model(data_norm)
-            preds = preds * data_set_train.std + data_set_train.mean
+            preds = model(data_inputs)  # Shape: [batch, n_data]
+            # preds = model(data_norm)
+            # preds = preds * data_set_train.std + data_set_train.mean
 
             # Convert predictions to xyz-data
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
@@ -223,15 +223,15 @@ def eval_model(
                 for data_inputs, data_labels, start_pos, pos_target, _ in data_loader:
 
                     # Set data to current device
-                    data_inputs = data_inputs.to(device)
-                    data_norm = (data_inputs - data_set_train.mean) / data_set_train.std
+                    # data_inputs = data_inputs.to(device)
+                    # data_norm = (data_inputs - data_set_train.mean) / data_set_train.std
                     data_labels = data_labels.to(device)
 
                     # Get predictions
-                    # preds = model(data_inputs)
-                    preds = model(data_norm)
+                    preds = model(data_inputs)
+                    # preds = model(data_norm)
                     preds = preds.squeeze(dim=1)
-                    preds = preds * data_set_train.std + data_set_train.mean
+                    # preds = preds * data_set_train.std + data_set_train.mean
 
                     # Convert predictions to xyz-data
                     alt_preds = convert(
@@ -288,7 +288,7 @@ def model_pipeline(
     ):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/norm"
+        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/basic"
 
         # make the model, data, and optimization problem
         model, train_loader, test_loaders, criterion, optimizer, data_set_train = make(
@@ -313,7 +313,15 @@ def model_pipeline(
         )
 
         # and test its final performance
-        eval_model(model, test_loaders, criterion, config, config.epochs, losses, data_set_train)
+        eval_model(
+            model,
+            test_loaders,
+            criterion,
+            config,
+            config.epochs,
+            losses,
+            data_set_train,
+        )
 
     return model
 
@@ -432,7 +440,7 @@ if __name__ == "__main__":
         # Set config
         config = dict(
             learning_rate=0.0001,
-            epochs=30,
+            epochs=10,
             batch_size=1024,
             loss_type=args.loss,
             loss_reduction_type="mean",
@@ -445,7 +453,7 @@ if __name__ == "__main__":
             n_sims=n_sims_train,
             hidden_sizes=[128, 256],
             activation_func=["ReLU", "ReLU"],
-            dropout=[0.2, 0.4],
+            dropout=[0.0, 0.0],
             batch_norm=[False, False, False],
             lam=0.01,
             data_dir_train=data_dir_train,
