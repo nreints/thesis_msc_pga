@@ -217,11 +217,11 @@ def generate_data(
     data = mujoco.MjData(model)
 
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
-    data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1] + 1e-20, size=3)
+    data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1], size=3)
     # data.qvel[0:3] = [0, 3, 0]
-    data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1] + 1e-20, size=3)
+    data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1], size=3)
     if pure_tennis:
-        data.qvel[3:6] = [0, random.uniform(15, 50), 0.01]
+        data.qvel[3:6] = [0, random.uniform(15, 40), 0.01]
 
     # Collect geom_id and body_id
     geom_id = model.geom("object_geom").id
@@ -516,18 +516,18 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
-    parser.add_argument("-n_frames", type=int, help="number of frames", default=2000)
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument(
         "-symmetry",
         type=str,
         choices=["full", "semi", "tennis", "none"],
         help="symmetry of the box.\nfull: symmetric box 1:1:1\n; semi: 2 sides of same length, other longer 1:1:10\n;tennis: tennis_racket effect 1:3:10\n;none: random lengths for each side",
-        default="full",
+        default="tennis",
     )
-    parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
-    parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
-    parser.add_argument("-a_min", type=int, help="angular qvel min", default=6)
-    parser.add_argument("-a_max", type=int, help="angular qvel max", default=8)
+    parser.add_argument("-l_min", type=int, help="linear qvel min", default=5)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=15)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=0)
+    parser.add_argument("-a_max", type=int, help="angular qvel max", default=0)
     parser.add_argument(
         "-integrator",
         type=str,
@@ -549,7 +549,13 @@ if __name__ == "__main__":
     )
 
     data_dir = get_dir(
-        vel_range_l, vel_range_a, args.symmetry, args.n_sims, args.plane, args.gravity, args.tennis_effect
+        vel_range_l,
+        vel_range_a,
+        args.symmetry,
+        args.n_sims,
+        args.plane,
+        args.gravity,
+        args.tennis_effect,
     )
 
     write_data_nsim(
