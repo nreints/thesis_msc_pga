@@ -213,12 +213,22 @@ def generate_data(
 
     # Generate model object.
     model = mujoco.MjModel.from_xml_string(string)
+    print("INERTIA", model.body_inertia[1])
+    print("MASS", model.stat.meanmass)
+
     # Generate MjData object
     data = mujoco.MjData(model)
+    print("number of DOF:", model.nv)
+    H = np.zeros((model.nv, model.nv))
+    print("qM", data.qM)
+    print("qLD", data.qLD)
+    L = mujoco.mj_fullM(model, H, data.qM)
+    print("L", L)
+    print("nM, nv", model.nM, model.nv)
 
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
     data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1], size=3)
-    # data.qvel[0:3] = [0, 3, 0]
+    # data.qvel[0:3] = [0, -3, 0]
     data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1], size=3)
     if pure_tennis:
         data.qvel[3:6] = [0, random.uniform(15, 40), 0.01]
@@ -251,6 +261,23 @@ def generate_data(
             # Collect position data after rotation and translation.
             dataset["pos"][i] = global_pos
 
+            print("--------")
+            H = np.zeros((model.nv, model.nv))
+            print("INERTIA", model.body_inertia[1])
+            print("qLD", data.qLD)  # number of non-zeros in sparse inertia matrix
+            print(
+                "diag(D)", 1 / data.qLDiagInv
+            )  # number of degrees of freedom = dim(qvel)
+            print(
+                "sqrt(diag(D))", 1 / data.qLDiagSqrtInv
+            )  # number of degrees of freedom = dim(qvel)
+
+            print("qM", data.qM)
+            L = mujoco.mj_fullM(model, H, data.qM)
+            print("L", L)
+            print("nM, nv", model.nM, model.nv)
+            print(data.qM == data.qLD)
+            exit()
             if i == 0:
                 start_xpos = copy.deepcopy(xpos)
 
@@ -281,6 +308,7 @@ def generate_data(
                 rel_trans = (
                     xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
                 )
+                # print(rel_trans)
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
 
                 dataset["eucl_motion"][i] = np.append(rel_rot.flatten(), rel_trans)
@@ -300,14 +328,15 @@ def generate_data(
 
                 quaternion = quaternion_pyquat.elements
                 dataset["quat"][i] = np.append(quaternion, rel_trans)
-
+                print("popao", model.body_ipos)
                 # Collect Log Quaternion data
                 dataset["log_quat"][i] = np.append(
                     calculate_log_quat(quaternion), rel_trans
                 )
+                # print(calculate_log_quat(quaternion))
 
                 dualQuaternion = get_dualQ(quaternion, rel_trans)
-
+                # print(dualQuaternion)
                 # Collect Dual-Quaternion data
                 dataset["dual_quat"][i] = dualQuaternion
 
@@ -359,6 +388,8 @@ def get_sizes(symmetry):
         0.5, 5
     )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
     sizes = ratio * random_size
+    print("sizes:", sizes)
+    # return "5 25 10", [5, 25, 10]
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
 
@@ -426,6 +457,13 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
         gravity_str = (
             f'<option integrator="{integrator}" gravity="0 0 0" iterations="10"/>'
         )
+    # size = size_obj.split(" ")
+    # product = 1000
+    # for el in size:
+    #     product *= float(el)
+    # I_zz = 1/12 * product * (float(size[1])**2 + float(size[2])**2)
+    # I_yy = 1/12 * product * (float(size[2])**2 + float(size[0])**2)
+    # I_xx = 1/12 * product * (float(size[1])**2 + float(size[0])**2)
     return f"""
     <mujoco>
     {gravity_str}
@@ -488,10 +526,12 @@ def write_data_nsim(
             print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
+        # euler = "0 0 0"
         # Define sizes
         sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
+        # pos = "0 0 0"
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
         dataset = generate_data(
@@ -518,14 +558,15 @@ if __name__ == "__main__":
     parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument(
-        "-symmetry",
+        "-s",
+        "--symmetry",
         type=str,
         choices=["full", "semi", "tennis", "none"],
         help="symmetry of the box.\nfull: symmetric box 1:1:1\n; semi: 2 sides of same length, other longer 1:1:10\n;tennis: tennis_racket effect 1:3:10\n;none: random lengths for each side",
         default="tennis",
     )
     parser.add_argument("-l_min", type=int, help="linear qvel min", default=5)
-    parser.add_argument("-l_max", type=int, help="linear qvel max", default=15)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=8)
     parser.add_argument("-a_min", type=int, help="angular qvel min", default=0)
     parser.add_argument("-a_max", type=int, help="angular qvel max", default=0)
     parser.add_argument(
