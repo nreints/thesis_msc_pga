@@ -17,10 +17,14 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 class fcnn(nn.Module):
     def __init__(self, n_data, config):
         super().__init__()
+        if config["inertia_input"]:
+            inertia = 3
+        else:
+            inertia = 0
 
         # Add first layers
         self.layers = [
-            nn.Linear(config["n_frames"] * n_data, config["hidden_sizes"][0])
+            nn.Linear(config["n_frames"] * n_data + inertia, config["hidden_sizes"][0])
         ]
 
         # Add consecuative layers with batch_norm / activation funct / dropout
@@ -54,19 +58,14 @@ class fcnn(nn.Module):
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, sims, n_frames, n_data, data_type, dir):
-        """
-        Inputs:
-            n_sims - Number of simulations.
-            size - Number of data points we want to generate
-            std - Standard deviation of the noise (see generate_continuous_xor function)
-        """
+    def __init__(self, sims, n_frames, n_data, data_type, dir, input_inertia):
         super().__init__()
         self.n_frames_perentry = n_frames
         self.n_datap_perframe = n_data
         self.sims = sims
         self.data_type = data_type
         self.dir = dir
+        self.input_inertia = input_inertia
         self.collect_data()
 
     def collect_data(self):
@@ -86,10 +85,17 @@ class MyDataset(data.Dataset):
                 # Add data and targets
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     # Always save the start position for converting
-                    self.start_pos.append(data_all["pos"][0].flatten())
+                    self.start_pos.append(pos_data[0].flatten())
                     train_end = frame + self.n_frames_perentry
-
-                    self.data.append(data[frame:train_end].flatten())
+                    if self.input_inertia:
+                        # TODO
+                        # inertia = data_all["inertia"]
+                        inertia = np.array([1, 2, 3])
+                        self.data.append(
+                            np.append(data[frame:train_end].flatten(), inertia)
+                        )
+                    else:
+                        self.data.append(data[frame:train_end].flatten())
                     self.target.append(data[train_end + 1].flatten())
 
                     self.target_pos.append(pos_data[train_end + 1].flatten())
@@ -98,6 +104,7 @@ class MyDataset(data.Dataset):
         self.target = torch.FloatTensor(np.asarray(self.target))
         self.target_pos = torch.FloatTensor(np.asarray(self.target_pos))
         self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+
         self.mean = torch.mean(self.data)
         self.std = torch.std(self.data)
         self.normalized_data = (self.data - self.mean) / self.std
@@ -156,11 +163,16 @@ def train_model(
 
             # Get predictions
             preds = model(data_inputs)  # Shape: [batch, n_data]
+            # print("perdict/ions:", preds[0])
+            # print("labels", data_labels[0])
             # preds = model(data_norm)
             # preds = preds * data_set_train.std + data_set_train.mean
 
             # Convert predictions to xyz-data
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+            # print("alt_preds:", alt_preds[0])
+            # print("pos_targ", pos_target[0])
+            # exit()
 
             # Determine norm penalty for quaternion data
             if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
@@ -262,9 +274,12 @@ def eval_model(
                 print(
                     f"\t Logging test loss {loss_module}: {config.data_dirs_test[i][5:]} => \t {wandb_total_convert_loss / len(data_loader)}"
                 )
+                name = config.data_dirs_test[i][5:-12]
+                if name[-1] == "_":
+                    name = config.data_dirs_test[i][-12:]
                 wandb.log(
                     {
-                        f"Test loss {config.data_dirs_test[i][5:-12]} {loss_module}": wandb_total_convert_loss
+                        f"Test loss {name} {loss_module}": wandb_total_convert_loss
                         / len(data_loader)
                     },
                     step=current_epoch,
@@ -334,6 +349,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
         dir=config.data_dir_train,
+        input_inertia=config.inertia_input,
     )
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
@@ -350,13 +366,14 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
             n_data=ndata_dict[config.data_type],
             data_type=config.data_type,
             dir="data/" + test_data_dir,
+            input_inertia=config.inertia_input,
         )
         test_data_loader = data.DataLoader(
             data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
         )
         test_data_loaders += [test_data_loader]
 
-    print("-- Finished Test Dataloaders --")
+    print("-- Finished Test Dataloader(s) --")
 
     # Make the model
     model = fcnn(ndata_dict[config.data_type], config).to(device)
@@ -381,12 +398,15 @@ if __name__ == "__main__":
     wandb.login(key="dc4407c06f6d57a37befe29cb0773deffd670c72")
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-mode_wandb",
+        "-m",
+        "--mode_wandb",
         type=str,
+        choices=["online", "offline", "disabled"],
         help="mode of wandb: online, offline, disabled",
         default="online",
     )
     parser.add_argument(
+        "-train_dir",
         "--data_dir_train",
         type=str,
         help="directory of the train data",
@@ -395,15 +415,25 @@ if __name__ == "__main__":
     )
     parser.add_argument("--loss", type=str, help="Loss type", default="L2")
     parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
-    parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
+    parser.add_argument(
+        "-i", "--iterations", type=int, help="Number of iterations", default=1
+    )
+    parser.add_argument("--inertia_input", action=argparse.BooleanOptionalAction)
+
     args = parser.parse_args()
 
     data_dir_train = "data/" + " ".join(args.data_dir_train)
-    # data_dirs_test = args.data_dir_test
-    data_dirs_test = os.listdir("data")
-    if ".DS_Store" in data_dirs_test:
-        data_dirs_test.remove(".DS_Store")
-    data_dirs_test = [" ".join(args.data_dir_train)]
+    # data_dirs_test = args.data_dir_test]
+
+    # data_dirs_test = os.listdir("data")
+    # if ".DS_Store" in data_dirs_test:
+    #     data_dirs_test.remove(".DS_Store")
+
+    data_dirs_test = [
+        " ".join(args.data_dir_train),
+        "data_t(0, 0)_tennisEffect",
+    ]
+    print(data_dirs_test)
 
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
@@ -417,7 +447,7 @@ if __name__ == "__main__":
     for i in range(args.iterations):
         # Divide the train en test dataset
         # n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 5000
+        n_sims_train = 3000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims
@@ -441,7 +471,7 @@ if __name__ == "__main__":
         config = dict(
             learning_rate=0.0001,
             epochs=10,
-            batch_size=1024,
+            batch_size=512,
             loss_type=args.loss,
             loss_reduction_type="mean",
             optimizer="Adam",
@@ -459,6 +489,7 @@ if __name__ == "__main__":
             data_dir_train=data_dir_train,
             data_dirs_test=data_dirs_test,
             iter=i,
+            inertia_input=args.inertia_input,
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
