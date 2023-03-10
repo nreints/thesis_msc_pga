@@ -69,45 +69,88 @@ class MyDataset(data.Dataset):
         self.collect_data()
 
     def collect_data(self):
+        start_time = time.time()
+        # self.data = []
+        # self.target = []
+        # self.target_pos = []
+        # self.start_pos = []
 
-        self.data = []
-        self.target = []
-        self.target_pos = []
-        self.start_pos = []
+        # # Loop through all simulations
+        # for i in self.sims:
+        #     with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+        #         data_all = pickle.load(f)["data"]
+        #         # Collect data from data_type
+        #         data = data_all[self.data_type]
+        #         pos_data = data_all["pos"]
+        #         # Add data and targets
+        #         for frame in range(len(data) - (self.n_frames_perentry + 1)):
+        #             # Always save the start position for converting
+        #             self.start_pos.append(pos_data[0].flatten())
+        #             train_end = frame + self.n_frames_perentry
+        #             if self.input_inertia:
+        #                 # TODO
+        #                 # inertia = data_all["inertia"]
+        #                 inertia = np.array([1, 2, 3])
+        #                 self.data.append(
+        #                     np.append(data[frame:train_end].flatten(), inertia)
+        #                 )
+        #             else:
+        #                 self.data.append(data[frame:train_end].flatten())
+        #             self.target.append(data[train_end + 1].flatten())
 
+        #             self.target_pos.append(pos_data[train_end + 1].flatten())
+
+        # self.data = torch.FloatTensor(np.asarray(self.data))
+        # self.target = torch.FloatTensor(np.asarray(self.target))
+        # self.target_pos = torch.FloatTensor(np.asarray(self.target_pos))
+        # self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+
+        # self.mean = torch.mean(self.data)
+        # self.std = torch.std(self.data)
+        # self.normalized_data = (self.data - self.mean) / self.std
+
+        # TODO
+
+        count = 0
         # Loop through all simulations
         for i in self.sims:
             with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
                 data_all = pickle.load(f)["data"]
                 # Collect data from data_type
-                data = data_all[self.data_type]
-                pos_data = data_all["pos"]
+                data = torch.FloatTensor(data_all[self.data_type])
+                pos_data = torch.FloatTensor(data_all["pos"])
                 # Add data and targets
-                for frame in range(len(data) - (self.n_frames_perentry + 1)):
+                if i == 0:
+                    data_per_sim = len(data) - (self.n_frames_perentry + 1)
+                    len_data = len(self.sims) * data_per_sim
+                    self.data = torch.zeros(
+                        len_data, self.n_frames_perentry * self.n_datap_perframe
+                    )
+                    self.target = torch.zeros((len_data, self.n_datap_perframe))
+                    self.target_pos = torch.zeros((len_data, 24))
+                    self.start_pos = torch.zeros_like(self.target_pos)
+                for frame in range(data_per_sim):
                     # Always save the start position for converting
-                    self.start_pos.append(pos_data[0].flatten())
+                    self.start_pos[count] = pos_data[0].flatten()
                     train_end = frame + self.n_frames_perentry
                     if self.input_inertia:
                         # TODO
                         # inertia = data_all["inertia"]
                         inertia = np.array([1, 2, 3])
-                        self.data.append(
-                            np.append(data[frame:train_end].flatten(), inertia)
+                        self.data[count] = torch.append(
+                            data[frame:train_end].flatten(), inertia
                         )
                     else:
-                        self.data.append(data[frame:train_end].flatten())
-                    self.target.append(data[train_end + 1].flatten())
+                        self.data[count] = data[frame:train_end].flatten()
+                    self.target[count] = data[train_end + 1].flatten()
 
-                    self.target_pos.append(pos_data[train_end + 1].flatten())
-
-        self.data = torch.FloatTensor(np.asarray(self.data))
-        self.target = torch.FloatTensor(np.asarray(self.target))
-        self.target_pos = torch.FloatTensor(np.asarray(self.target_pos))
-        self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+                    self.target_pos[count] = pos_data[train_end + 1].flatten()
+                    count += 1
 
         self.mean = torch.mean(self.data)
         self.std = torch.std(self.data)
         self.normalized_data = (self.data - self.mean) / self.std
+        print(time.time() - start_time)
 
     def __len__(self):
         # Number of data point we have
@@ -413,7 +456,7 @@ if __name__ == "__main__":
         nargs="+",
         default="data_t(0, 0)_r(2, 5)_none_pNone_gNone",
     )
-    parser.add_argument("--loss", type=str, help="Loss type", default="L2")
+    parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
     parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
     parser.add_argument(
         "-i", "--iterations", type=int, help="Number of iterations", default=1

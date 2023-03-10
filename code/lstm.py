@@ -47,7 +47,7 @@ class LSTM(nn.Module):
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, sims, n_frames, n_data, data_type, dir):
+    def __init__(self, sims, n_frames, n_data, data_type, dir, input_inertia):
         """
         Inputs:
             n_sims -
@@ -60,37 +60,97 @@ class MyDataset(data.Dataset):
         self.sims = sims
         self.data_type = data_type
         self.dir = dir
+        self.input_inertia = input_inertia
         self.collect_data()
 
     def collect_data(self):
-        self.data = []
-        self.target = []
-        self.target_pos = []
-        self.start_pos = []
+        # start_time = time.time()
+        # self.data = []
+        # self.target = []
+        # self.target_pos = []
+        # self.start_pos = []
+        # self.inertia = []
 
+        # for i in self.sims:
+        #     with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+        #         data_all = pickle.load(f)["data"]
+        #         data = data_all[self.data_type]
+
+        #         for frame in range(len(data) - (self.n_frames_perentry + 1)):
+        #             self.start_pos.append(data_all["pos"][0].flatten())
+        #             train_end = frame + self.n_frames_perentry
+        #             self.data.append(
+        #                 data[frame:train_end].reshape(-1, self.n_datap_perframe)
+        #             )
+        #             self.target.append(
+        #                 data[frame + 1 : train_end + 1].reshape(
+        #                     -1, self.n_datap_perframe
+        #                 )
+        #             )
+        #             if self.input_inertia:
+        #                 # TODO
+        #                 # inertia = data_all["inertia"]
+        #                 inertia = np.array([1, 2, 3])
+        #                 self.inertia.append(inertia)
+        #             self.target_pos.append(data_all["pos"][frame + 1 : train_end + 1])
+
+        # self.data = torch.FloatTensor(np.asarray(self.data))
+        # self.target = torch.FloatTensor(np.asarray(self.target))
+        # self.target_pos = torch.FloatTensor(np.asarray(self.target_pos)).flatten(
+        #     start_dim=2
+        # )
+        # self.inertia = torch.FloatTensor(np.asarray(self.inertia))
+        # self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+
+        ###################### option 2 FASTER
+        count = 0
         for i in self.sims:
             with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
                 data_all = pickle.load(f)["data"]
-                data = data_all[self.data_type]
+                data = torch.FloatTensor(data_all[self.data_type])
+                if i == 0:
+                    data_per_sim = len(data) - (self.n_frames_perentry + 1)
+                    len_data = len(self.sims) * data_per_sim
+                    self.target = torch.zeros(
+                        (len_data, self.n_frames_perentry, self.n_datap_perframe)
+                    )
+                    self.target_pos = torch.zeros(
+                        (len_data, self.n_frames_perentry, 24)
+                    )
+                    self.start_pos = torch.zeros((len_data, 24))
+                    self.data = torch.zeros(
+                        len_data, self.n_frames_perentry, self.n_datap_perframe
+                    )
+                    self.inertia = torch.zeros((len_data, 3))
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    self.start_pos.append(data_all["pos"][0].flatten())
+                    self.start_pos[count] = torch.FloatTensor(
+                        data_all["pos"][0].flatten()
+                    )
                     train_end = frame + self.n_frames_perentry
-                    self.data.append(
-                        data[frame:train_end].reshape(-1, self.n_datap_perframe)
+                    self.data[count] = data[frame:train_end].reshape(
+                        -1, self.n_datap_perframe
                     )
-                    self.target.append(
-                        data[frame + 1 : train_end + 1].reshape(
-                            -1, self.n_datap_perframe
-                        )
+                    self.target[count] = data[frame + 1 : train_end + 1].reshape(
+                        -1, self.n_datap_perframe
                     )
-                    self.target_pos.append(data_all["pos"][frame + 1 : train_end + 1])
 
-        self.data = torch.FloatTensor(np.asarray(self.data))
-        self.target = torch.FloatTensor(np.asarray(self.target))
-        self.target_pos = torch.FloatTensor(np.asarray(self.target_pos)).flatten(
-            start_dim=2
-        )
-        self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+                    if self.input_inertia:
+                        # TODO
+                        # inertia = data_all["inertia"]
+                        inertia = torch.tensor([1, 2, 3])
+                        self.inertia[count] = inertia
+                    self.target_pos[count] = torch.FloatTensor(
+                        data_all["pos"][frame + 1 : train_end + 1]
+                    ).flatten(start_dim=1)
+                    count += 1
+
+        # print(self.data.shape)
+        # print(self.inertia.shape)
+        # print(self.target.shape)
+        # print(self.target_pos.shape)
+        # print(self.start_pos.shape)
+        # print(time.time() - start_time)
+        # exit()
 
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
@@ -242,6 +302,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
         dir=config.data_dir_train,
+        input_inertia=config.inertia_input,
     )
     # data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
 
@@ -260,6 +321,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
             n_data=ndata_dict[config.data_type],
             data_type=config.data_type,
             dir="data/" + test_data_dir,
+            input_inertia=config.inertia_input,
         )
         test_data_loader = data.DataLoader(
             data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
@@ -283,21 +345,28 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-mode_wandb",
+        "-m",
+        "--mode_wandb",
         type=str,
+        choices=["online", "offline", "disabled"],
         help="mode of wandb: online, offline, disabled",
         default="online",
     )
     parser.add_argument(
-        "-data_dir_train",
+        "-train_dir",
+        "--data_dir_train",
         type=str,
         help="directory of the train data",
         nargs="+",
-        default="data_t(0, 0)_r(0, 0)_none",
+        default="data_t(0, 0)_r(2, 5)_none_pNone_gNone",
     )
-    parser.add_argument("-loss", type=str, help="Loss type", default="L2")
-    parser.add_argument("-data_type", type=str, help="Type of data", default="pos")
-    parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
+    parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
+    parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
+    parser.add_argument(
+        "-i", "--iterations", type=int, help="Number of iterations", default=1
+    )
+    parser.add_argument("--inertia_input", action=argparse.BooleanOptionalAction)
+
     args = parser.parse_args()
 
     data_dir_train = "data/" + " ".join(args.data_dir_train)
@@ -318,9 +387,11 @@ if __name__ == "__main__":
     for i in range(args.iterations):
         print(f"----- ITERATION {i}/{args.iterations} ------")
         # Divide the train en test dataset
-        n_sims_train = len(os.listdir(data_dir_train)) // 2
+        n_sims_train = len(os.listdir(data_dir_train))
+        n_sims_train = 3000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+        print("Number of train simulations: ", len(train_sims))
         test_sims = sims_train - train_sims
 
         # if data_dir_train == data_dir_test:
@@ -355,6 +426,7 @@ if __name__ == "__main__":
             data_dir_train=data_dir_train,
             data_dirs_test=data_dirs_test,
             iter=i,
+            inertia_input=args.inertia_input,
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
