@@ -120,7 +120,7 @@ class MyDataset(data.Dataset):
                 data = torch.FloatTensor(data_all[self.data_type])
                 pos_data = torch.FloatTensor(data_all["pos"])
                 # Add data and targets
-                if i == 0:
+                if count == 0:
                     data_per_sim = len(data) - (self.n_frames_perentry + 1)
                     len_data = len(self.sims) * data_per_sim
                     self.data = torch.zeros(

@@ -20,6 +20,12 @@ class LSTM(nn.Module):
         self.n_layers = config["n_layers"]
         self.hidden_size = config["hidden_size"]
         self.in_size = in_size
+        self.pre_hidden_lin_layer = nn.Sequential(
+            nn.Linear(
+                3,
+                self.n_layers * self.hidden_size,
+            )
+        )
         self.lstm = nn.LSTM(
             in_size,
             self.hidden_size,
@@ -27,23 +33,30 @@ class LSTM(nn.Module):
             dropout=config["dropout"],
             num_layers=config["n_layers"],
         )
-        self.layers = nn.Sequential(nn.Linear(self.hidden_size, in_size))
+        self.post_lin_layers = nn.Sequential(nn.Linear(self.hidden_size, in_size))
 
     def forward(self, x, hidden_cell=None):
         # Perform the calculation of the model to determine the prediction
 
         batch_size, _, _ = x.shape
-        if hidden_cell == None:
+        hidden, cell = hidden_cell
+        if hidden == None:
             hidden_state = torch.zeros(
                 self.n_layers, batch_size, self.hidden_size, device=device
             )
+        else:
+            # Map from inertia to hidden state
+            hidden_state = self.pre_hidden_lin_layer(hidden).reshape(
+                self.n_layers, batch_size, self.hidden_size
+            )
+        if cell == None:
             cell_state = torch.zeros(
                 self.n_layers, batch_size, self.hidden_size, device=device
             )
         else:
-            hidden_state, cell_state = hidden_cell
+            cell_state = cell
         out, h = self.lstm(x, (hidden_state, cell_state))
-        return self.layers(out), h
+        return self.post_lin_layers(out), h
 
 
 class MyDataset(data.Dataset):
@@ -107,8 +120,8 @@ class MyDataset(data.Dataset):
         for i in self.sims:
             with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
                 data_all = pickle.load(f)["data"]
-                data = torch.FloatTensor(data_all[self.data_type])
-                if i == 0:
+                data = torch.FloatTensor(data_all[self.data_type][:500])
+                if count == 0:
                     data_per_sim = len(data) - (self.n_frames_perentry + 1)
                     len_data = len(self.sims) * data_per_sim
                     self.target = torch.zeros(
@@ -162,7 +175,8 @@ class MyDataset(data.Dataset):
         data_target = self.target[idx]
         data_target_pos = self.target_pos[idx]
         data_start = self.start_pos[idx]
-        return data_point, data_target, data_target_pos, data_start
+        inertia_in = self.inertia[idx]
+        return data_point, data_target, data_target_pos, data_start, inertia_in
 
 
 def train_log(loss, epoch):
@@ -183,13 +197,24 @@ def train_model(
         loss_epoch = 0
         epoch_time = time.time()
 
-        for data_inputs, data_labels, pos_target, start_pos in data_loader:
+        for (
+            data_inputs,
+            data_labels,
+            pos_target,
+            start_pos,
+            inertia_input,
+        ) in data_loader:
             data_inputs = data_inputs.to(device)  # Shape: [batch, frames, n_data]
             data_labels = data_labels.to(device)  # Shape: [batch, frames, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
-
-            preds, _ = model(data_inputs)  # Shape: [batch, frames, n_data]
+            inertia_input = inertia_input.to(device)  # Shape: [batch, 3]
+            if config.inertia_input:
+                preds, _ = model(
+                    data_inputs, (inertia_input, None)
+                )  # Shape: [batch, frames, n_data]
+            else:
+                preds, _ = model(data_inputs)  # Shape: [batch, frames, n_data]
 
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
 
@@ -226,14 +251,26 @@ def eval_model(model, data_loaders, config, current_epoch, losses):
                 loss_module = loss_module(reduction=config.loss_reduction_type)
                 total_loss = 0
                 total_convert_loss = 0
-                for data_inputs, data_labels, data_labels_pos, start_pos in data_loader:
+                for (
+                    data_inputs,
+                    data_labels,
+                    data_labels_pos,
+                    start_pos,
+                    inertia_input,
+                ) in data_loader:
 
                     # Determine prediction of model on dev set
-                    data_inputs, data_labels = data_inputs.to(device), data_labels.to(
-                        device
-                    )
+                    data_inputs = data_inputs.to(device)
+                    data_labels = data_labels.to(device)
+                    inertia_input = inertia_input.to(device)
 
-                    preds, _ = model(data_inputs)
+                    if config.inertia_input:
+                        preds, _ = model(
+                            data_inputs, (inertia_input, None)
+                        )  # Shape: [batch, frames, n_data]
+                    else:
+                        preds, _ = model(data_inputs)  # Shape: [batch, frames, n_data]
+
                     preds = preds.squeeze(dim=1)
 
                     # if config['data_type'] == 'pos':
@@ -295,6 +332,7 @@ def model_pipeline(
 
 
 def make(config, ndata_dict, loss_dict, optimizer_dict):
+    print("-- Creating Dataloaders --")
     # Make the data
     data_set_train = MyDataset(
         sims=config.train_sims,
@@ -374,6 +412,11 @@ if __name__ == "__main__":
     data_dirs_test = os.listdir("data")
     if ".DS_Store" in data_dirs_test:
         data_dirs_test.remove(".DS_Store")
+
+    data_dirs_test = [
+        " ".join(args.data_dir_train),
+        "data_t(0, 0)_tennisEffect",
+    ]
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
     # else:
@@ -388,11 +431,12 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 3000
+        n_sims_train = 1500
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         print("Number of train simulations: ", len(train_sims))
         test_sims = sims_train - train_sims
+        print("Number of test simulations: ", len(test_sims))
 
         # if data_dir_train == data_dir_test:
         #     train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
@@ -408,10 +452,10 @@ if __name__ == "__main__":
         #         test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
 
         config = dict(
-            learning_rate=0.005,
-            epochs=30,
-            batch_size=1024,
-            dropout=0.2,
+            learning_rate=0.001,
+            epochs=10,
+            batch_size=128,
+            dropout=0.0,
             loss_type=args.loss,
             loss_reduction_type="mean",
             optimizer="Adam",
