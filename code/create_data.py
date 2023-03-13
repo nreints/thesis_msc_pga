@@ -165,7 +165,7 @@ def logDual(r):
     )
 
 
-def create_empty_dataset(n_steps, half_size, mass):
+def create_empty_dataset(n_steps, half_size, mass, body_inertia):
     """
     Returns empty data dictionary.
 
@@ -175,12 +175,9 @@ def create_empty_dataset(n_steps, half_size, mass):
     Output:
         - Dictionary to store the data in.
     """
-    # print(half_size)
+    print(body_inertia)
     size = half_size * 2
     size_squared = size**2
-    # print(size)
-    # print(size_squared)
-    # exit()
     return {
         "pos": np.empty((n_steps, 8, 3)),
         "eucl_motion": np.empty((n_steps, 1, 12)),
@@ -190,15 +187,15 @@ def create_empty_dataset(n_steps, half_size, mass):
         "pos_diff_start": np.empty((n_steps, 8, 3)),
         "log_dualQ": np.empty((n_steps, 6)),
         "rotation_axis_trans": np.empty((n_steps, 6)),
-        "inertia_body": np.empty((3, 1)),
+        "inertia_body": body_inertia,
         "size": size,
         "size_squared": size_squared,
         "size_mass": np.append(size, mass),
         "size_squared_mass": np.append(size_squared, mass),
         "size_centroid": np.empty((2, 3)),
         "size_squared_centroid": np.empty((2, 3)),
-        "size_massCentroid": np.empty((2, 3)),
-        "size_squared_massCentroid": np.empty((2, 3)),
+        "size_massCentroid": np.empty((n_steps, 2, 3)),
+        "size_squared_massCentroid": np.empty((n_steps, 2, 3)),
     }
 
 
@@ -257,7 +254,10 @@ def generate_data(
 
     # Initialize data dictionary
     dataset = create_empty_dataset(
-        n_steps, model.geom_size[geom_id], model.stat.meanmass
+        n_steps,
+        model.geom_size[geom_id],
+        model.stat.meanmass,
+        model.body_inertia[body_id],
     )
 
     if visualize:
