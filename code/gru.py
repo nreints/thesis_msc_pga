@@ -9,8 +9,9 @@ import wandb
 import time
 import os
 import argparse
-from quaternion import qmul
-import torch.nn.functional as F
+
+# from quaternion import qmul
+# import torch.nn.functional as F
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -34,30 +35,36 @@ class GRU(nn.Module):
         self.num_outputs = num_outputs
         self.num_controls = num_controls
         self.n_data = input_shape
+        self.n_layers = config["n_layers"]
 
-        if num_controls > 0:
-            fc1_size = 30
-            fc2_size = 30
-            self.fc1 = nn.Linear(num_controls, fc1_size)
-            self.fc2 = nn.Linear(fc1_size, fc2_size)
-            self.relu = nn.LeakyReLU(0.05, inplace=True)
-        else:
-            fc2_size = 0
+        # if num_controls > 0:
+        #     fc1_size = 30
+        #     fc2_size = 30
+        #     self.fc1 = nn.Linear(num_controls, fc1_size)
+        #     self.fc2 = nn.Linear(fc1_size, fc2_size)
+        #     self.relu = nn.LeakyReLU(0.05, inplace=True)
+        # else:
+        #     fc2_size = 0
 
-        h_size = config["hidden_size"]
+        self.h_size = config["hidden_size"]
         self.rnn = nn.GRU(
             input_size=input_shape,
-            hidden_size=h_size,
-            num_layers=config["n_layers"],
+            hidden_size=self.h_size,
+            num_layers=self.n_layers,
             batch_first=True,
         )
+        self.pre_hidden_lin_layer = nn.Sequential(
+            nn.Linear(
+                3,
+                self.n_layers * self.h_size,
+            )
+        )
         self.h0 = nn.Parameter(
-            torch.zeros(self.rnn.num_layers, 1, h_size).normal_(std=0.01),
+            torch.zeros(self.n_layers, 1, self.h_size).normal_(std=0.01),
             requires_grad=True,
         )
 
-        self.fc = nn.Linear(h_size, input_shape)
-        self.model_velocities = model_velocities
+        self.fc = nn.Linear(self.h_size, input_shape)
 
     def forward(self, x, h=None, return_prenorm=True, return_all=True):
         """
@@ -83,8 +90,13 @@ class GRU(nn.Module):
         #     controls = self.relu(self.fc2(controls))
         #     x = torch.cat((x[:, :, :self.num_joints*4+self.num_outputs], controls), dim=2)
         # print(x.shape)
+
         if h is None:
             h = self.h0.expand(-1, x.shape[0], -1).contiguous()
+        else:
+            h = self.pre_hidden_lin_layer(h).reshape(
+                self.n_layers, x.shape[0], self.h_size
+            )
         x, h = self.rnn(x, h)
         # print(x.shape, "H")
         if return_all:
@@ -113,7 +125,7 @@ class GRU(nn.Module):
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, sims, n_frames, n_data, data_type, dir):
+    def __init__(self, sims, n_frames, n_data, data_type, dir, input_inertia=True):
         """
         Inputs:
             n_sims -
@@ -125,42 +137,87 @@ class MyDataset(data.Dataset):
         self.n_datap_perframe = n_data
         self.sims = sims
         self.data_type = data_type
-        self.data_dir = dir
+        self.dir = dir
+        self.input_inertia = input_inertia
         self.collect_data()
 
     def collect_data(self):
-        self.data = []
-        self.target = []
-        self.target_pos = []
-        self.start_pos = []
+        # start_time = time.time()
+        # self.data = []
+        # self.target = []
+        # self.target_pos = []
+        # self.start_pos = []
 
+        # for i in self.sims:
+        #     with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+        #         data_all = pickle.load(f)["data"]
+        #         data = data_all[self.data_type]
+        #         for frame in range(len(data) - (self.n_frames_perentry + 1)):
+        #             self.start_pos.append(data_all["pos"][0].flatten())
+        #             train_end = frame + self.n_frames_perentry
+        #             # [frames, n_data]
+        #             self.data.append(
+        #                 data[frame:train_end].reshape(-1, self.n_datap_perframe)
+        #             )
+        #             # [frames, n_data]
+        #             self.target.append(
+        #                 data[frame + 1 : train_end + 1].reshape(
+        #                     -1, self.n_datap_perframe
+        #                 )
+        #             )
+        #             # [frames, 8, 3]
+        #             self.target_pos.append(data_all["pos"][frame + 1 : train_end + 1])
+
+        # # Shape [(n_simsx(total_nr_frames-n_frames_perentry-1)), n_frames_perentry, n_data]
+        # self.data = torch.FloatTensor(np.asarray(self.data))
+        # self.target = torch.FloatTensor(np.asarray(self.target))
+        # self.target_pos = torch.FloatTensor(np.asarray(self.target_pos)).flatten(
+        #     start_dim=2
+        # )
+        # self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+
+        count = 0
         for i in self.sims:
-            with open(f"{self.data_dir}/sim_{i}.pickle", "rb") as f:
+            with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
                 data_all = pickle.load(f)["data"]
-                data = data_all[self.data_type]
+                data = torch.FloatTensor(data_all[self.data_type][:500])
+                if count == 0:
+                    data_per_sim = len(data) - (self.n_frames_perentry + 1)
+                    len_data = len(self.sims) * data_per_sim
+                    self.target = torch.zeros(
+                        (len_data, self.n_frames_perentry, self.n_datap_perframe)
+                    )
+                    self.target_pos = torch.zeros(
+                        (len_data, self.n_frames_perentry, 24)
+                    )
+                    self.start_pos = torch.zeros((len_data, 24))
+                    self.data = torch.zeros(
+                        len_data, self.n_frames_perentry, self.n_datap_perframe
+                    )
+                    self.inertia = torch.zeros((len_data, 3))
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    self.start_pos.append(data_all["pos"][0].flatten())
+                    self.start_pos[count] = torch.FloatTensor(
+                        data_all["pos"][0].flatten()
+                    )
                     train_end = frame + self.n_frames_perentry
-                    # [frames, n_data]
-                    self.data.append(
-                        data[frame:train_end].reshape(-1, self.n_datap_perframe)
+                    self.data[count] = data[frame:train_end].reshape(
+                        -1, self.n_datap_perframe
                     )
-                    # [frames, n_data]
-                    self.target.append(
-                        data[frame + 1 : train_end + 1].reshape(
-                            -1, self.n_datap_perframe
-                        )
+                    self.target[count] = data[frame + 1 : train_end + 1].reshape(
+                        -1, self.n_datap_perframe
                     )
-                    # [frames, 8, 3]
-                    self.target_pos.append(data_all["pos"][frame + 1 : train_end + 1])
 
-        # Shape [(n_simsx(total_nr_frames-n_frames_perentry-1)), n_frames_perentry, n_data]
-        self.data = torch.FloatTensor(np.asarray(self.data))
-        self.target = torch.FloatTensor(np.asarray(self.target))
-        self.target_pos = torch.FloatTensor(np.asarray(self.target_pos)).flatten(
-            start_dim=2
-        )
-        self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+                    if self.input_inertia:
+                        # TODO
+                        # inertia = data_all["inertia"]
+                        inertia = torch.tensor([1, 2, 3])
+                        self.inertia[count] = inertia
+                    self.target_pos[count] = torch.FloatTensor(
+                        data_all["pos"][frame + 1 : train_end + 1]
+                    ).flatten(start_dim=1)
+                    count += 1
+        # print(time.time() - start_time)
+        # exit()
 
     def __len__(self):
         # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
@@ -172,7 +229,8 @@ class MyDataset(data.Dataset):
         data_target = self.target[idx]
         data_target_pos = self.target_pos[idx]
         data_start = self.start_pos[idx]
-        return data_point, data_target, data_target_pos, data_start
+        inertia = self.inertia[idx]
+        return data_point, data_target, data_target_pos, data_start, inertia
 
 
 def train_log(loss, epoch):
@@ -193,15 +251,27 @@ def train_model(
         loss_epoch = 0
         epoch_time = time.time()
 
-        for data_inputs, data_labels, pos_target, start_pos in data_loader:
+        for (
+            data_inputs,
+            data_labels,
+            pos_target,
+            start_pos,
+            inertia_input,
+        ) in data_loader:
             # start = time.time()
 
             data_inputs = data_inputs.to(device)  # Shape: [batch, frames, n_data]
             data_labels = data_labels.to(device)  # Shape: [batch, frames, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
+            inertia_input = inertia_input.to(device)  # Shape: [batch, 3]
 
-            _, _, preds = model(data_inputs)  # Shape: preds [batch, frames, n_data]
+            if config.inertia_input:
+                _, _, preds = model(
+                    data_inputs, inertia_input
+                )  # Shape: [batch, frames, n_data]
+            else:
+                _, _, preds = model(data_inputs)  # Shape: [batch, frames, n_data]
 
             alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
 
@@ -238,15 +308,28 @@ def eval_model(model, data_loaders, config, current_epoch, losses):
                 loss_module = loss_module(reduction=config.loss_reduction_type)
                 total_loss = 0
                 total_convert_loss = 0
-                for data_inputs, data_labels, data_labels_pos, start_pos in data_loader:
+                for (
+                    data_inputs,
+                    data_labels,
+                    data_labels_pos,
+                    start_pos,
+                    inertia_input,
+                ) in data_loader:
 
                     # Determine prediction of model on dev set
-                    data_inputs, data_labels = data_inputs.to(device), data_labels.to(
-                        device
-                    )
+                    data_inputs = data_inputs.to(device)
+                    data_labels = data_labels.to(device)
+                    inertia_input = inertia_input.to(device)
 
-                    _, _, preds = model(data_inputs)
-                    preds = preds.squeeze(dim=1)
+                    if config.inertia_input:
+                        _, _, preds = model(
+                            data_inputs, inertia_input
+                        )  # Shape: [batch, frames, n_data]
+                    else:
+                        _, _, preds = model(
+                            data_inputs
+                        )  # Shape: [batch, frames, n_data]
+                        preds = preds.squeeze(dim=1)
 
                     # if config['data_type'] == 'pos':
                     #     preds = preds.reshape((preds.shape[0], preds.shape[1], 8, 3))
@@ -332,7 +415,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
             n_frames=config.n_frames,
             n_data=ndata_dict[config.data_type],
             data_type=config.data_type,
-            dir=test_data_dir
+            dir="data/" + test_data_dir,
             # dir="data/"+test_data_dir #TODO Only for testing
         )
         test_data_loader = data.DataLoader(
@@ -357,23 +440,28 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-mode_wandb",
+        "-m",
+        "--mode_wandb",
         type=str,
+        choices=["online", "offline", "disabled"],
         help="mode of wandb: online, offline, disabled",
         default="online",
     )
     parser.add_argument(
-        "-data_dir_train",
+        "-train_dir",
+        "--data_dir_train",
         type=str,
         help="directory of the train data",
         nargs="+",
-        default="data_t(0, 0)_r(0, 0)_none_pNone_gNone",
+        default="data_t(0, 0)_r(2, 5)_none_pNone_gNone",
     )
-    parser.add_argument("-loss", type=str, help="Loss type", default="L2")
+    parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
+    parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
     parser.add_argument(
-        "-data_type", type=str, help="Type of data. Default: pos", default="pos"
+        "-i", "--iterations", type=int, help="Number of iterations", default=1
     )
-    parser.add_argument("-iterations", type=int, help="Number of iterations", default=1)
+    parser.add_argument("--inertia_input", action=argparse.BooleanOptionalAction)
+
     args = parser.parse_args()
 
     data_dir_train = "data/" + " ".join(args.data_dir_train)
@@ -382,24 +470,30 @@ if __name__ == "__main__":
     if ".DS_Store" in data_dirs_test:
         data_dirs_test.remove(".DS_Store")
     data_dirs_test = [data_dir_train]
+    data_dirs_test = [
+        " ".join(args.data_dir_train),
+        "data_t(0, 0)_tennisEffect",
+    ]
 
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
     # else:
     #     data_dirs_test = "data/" + args.data_dir_test
 
-    losses = [nn.MSELoss, nn.L1Loss]
+    losses = [nn.MSELoss]
     if not os.path.exists(data_dir_train):
         raise IndexError("No directory for the train data {args.data_dir_train}")
 
     for i in range(args.iterations):
-        print(f"----- ITERATION {i}/{args.iterations} ------")
+        print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
-        n_sims_train_total = len(os.listdir(data_dir_train)) // 4
+        n_sims_train_total = len(os.listdir(data_dir_train))
+        n_sims_train_total = 1000
         sims_train = {i for i in range(n_sims_train_total)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train_total)))
         test_sims = sims_train - train_sims
-
+        print(f"Number of train simulations: {len(train_sims)}")
+        print(f"Number of test simulations: {len(test_sims)}")
         # if data_dir_train == data_dir_test:
         #     train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         #     test_sims = sims_train - train_sims
@@ -416,7 +510,7 @@ if __name__ == "__main__":
         config = dict(
             learning_rate=0.005,
             epochs=30,
-            batch_size=512,
+            batch_size=128,
             dropout=0.2,
             loss_type=args.loss,
             loss_reduction_type="mean",
@@ -432,6 +526,7 @@ if __name__ == "__main__":
             data_dir_train=data_dir_train,
             data_dirs_test=data_dirs_test,
             iter=i,
+            inertia_input=args.inertia_input,
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
