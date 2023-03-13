@@ -165,7 +165,7 @@ def logDual(r):
     )
 
 
-def create_empty_dataset(n_steps):
+def create_empty_dataset(n_steps, half_size, mass):
     """
     Returns empty data dictionary.
 
@@ -175,6 +175,12 @@ def create_empty_dataset(n_steps):
     Output:
         - Dictionary to store the data in.
     """
+    # print(half_size)
+    size = half_size * 2
+    size_squared = size**2
+    # print(size)
+    # print(size_squared)
+    # exit()
     return {
         "pos": np.empty((n_steps, 8, 3)),
         "eucl_motion": np.empty((n_steps, 1, 12)),
@@ -184,6 +190,15 @@ def create_empty_dataset(n_steps):
         "pos_diff_start": np.empty((n_steps, 8, 3)),
         "log_dualQ": np.empty((n_steps, 6)),
         "rotation_axis_trans": np.empty((n_steps, 6)),
+        "inertia_body": np.empty((3, 1)),
+        "size": size,
+        "size_squared": size_squared,
+        "size_mass": np.append(size, mass),
+        "size_squared_mass": np.append(size_squared, mass),
+        "size_centroid": np.empty((2, 3)),
+        "size_squared_centroid": np.empty((2, 3)),
+        "size_massCentroid": np.empty((2, 3)),
+        "size_squared_massCentroid": np.empty((2, 3)),
     }
 
 
@@ -213,18 +228,18 @@ def generate_data(
 
     # Generate model object.
     model = mujoco.MjModel.from_xml_string(string)
-    print("INERTIA", model.body_inertia[1])
-    print("MASS", model.stat.meanmass)
 
     # Generate MjData object
     data = mujoco.MjData(model)
-    print("number of DOF:", model.nv)
-    H = np.zeros((model.nv, model.nv))
-    print("qM", data.qM)
-    print("qLD", data.qLD)
-    L = mujoco.mj_fullM(model, H, data.qM)
-    print("L", L)
-    print("nM, nv", model.nM, model.nv)
+
+    # print("body_inertia", model.body_inertia[1])
+    # print("meanmass", model.stat.meanmass)
+    # H = np.zeros((model.nv, model.nv))
+    # print("qM", data.qM)
+    # print("qLD", data.qLD)
+    # L = mujoco.mj_fullM(model, H, data.qM)
+    # # print("L", L)
+    # print("nM, nv", model.nM, model.nv)
 
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
     data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1], size=3)
@@ -241,7 +256,9 @@ def generate_data(
     xyz_local = get_vert_local(model, geom_id)
 
     # Initialize data dictionary
-    dataset = create_empty_dataset(n_steps)
+    dataset = create_empty_dataset(
+        n_steps, model.geom_size[geom_id], model.stat.meanmass
+    )
 
     if visualize:
         import mujoco_viewer
@@ -261,23 +278,25 @@ def generate_data(
             # Collect position data after rotation and translation.
             dataset["pos"][i] = global_pos
 
-            print("--------")
-            H = np.zeros((model.nv, model.nv))
-            print("INERTIA", model.body_inertia[1])
-            print("qLD", data.qLD)  # number of non-zeros in sparse inertia matrix
-            print(
-                "diag(D)", 1 / data.qLDiagInv
-            )  # number of degrees of freedom = dim(qvel)
-            print(
-                "sqrt(diag(D))", 1 / data.qLDiagSqrtInv
-            )  # number of degrees of freedom = dim(qvel)
+            # print("--------")
+            # H = np.zeros((model.nv, model.nv))
+            # print("body_inertia", model.body_inertia)
+            # print("qLD", data.qLD)  # number of non-zeros in sparse inertia matrix
+            # print(
+            #     "diag(D)", 1 / data.qLDiagInv
+            # )  # number of degrees of freedom = dim(qvel)
+            # print(
+            #     "sqrt(diag(D))", 1 / data.qLDiagSqrtInv
+            # )  # number of degrees of freedom = dim(qvel)
 
-            print("qM", data.qM)
-            L = mujoco.mj_fullM(model, H, data.qM)
-            print("L", L)
-            print("nM, nv", model.nM, model.nv)
-            print(data.qM == data.qLD)
-            exit()
+            # print("qM", data.qM)
+            # L = mujoco.mj_fullM(model, H, data.qM)
+            # # print("L", L)
+            # print("nM, nv", model.nM, model.nv)
+            # print(data.qM == data.qLD)
+            # # if i == 3:
+            # #     exit()
+
             if i == 0:
                 start_xpos = copy.deepcopy(xpos)
 
@@ -328,7 +347,6 @@ def generate_data(
 
                 quaternion = quaternion_pyquat.elements
                 dataset["quat"][i] = np.append(quaternion, rel_trans)
-                print("popao", model.body_ipos)
                 # Collect Log Quaternion data
                 dataset["log_quat"][i] = np.append(
                     calculate_log_quat(quaternion), rel_trans
@@ -388,7 +406,7 @@ def get_sizes(symmetry):
         0.5, 5
     )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
     sizes = ratio * random_size
-    print("sizes:", sizes)
+    # print("sizes:", sizes)
     # return "5 25 10", [5, 25, 10]
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
@@ -458,12 +476,14 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
             f'<option integrator="{integrator}" gravity="0 0 0" iterations="10"/>'
         )
     # size = size_obj.split(" ")
+    # print(f"sizes {size}")
     # product = 1000
     # for el in size:
-    #     product *= float(el)
-    # I_zz = 1/12 * product * (float(size[1])**2 + float(size[2])**2)
-    # I_yy = 1/12 * product * (float(size[2])**2 + float(size[0])**2)
-    # I_xx = 1/12 * product * (float(size[1])**2 + float(size[0])**2)
+    #     product *= float(el) * 2
+    # I_xx = 1 / 12 * product * ((float(size[1]) * 2) ** 2 + (2 * float(size[2])) ** 2)
+    # I_yy = 1 / 12 * product * ((float(size[2]) * 2) ** 2 + (2 * float(size[0])) ** 2)
+    # I_zz = 1 / 12 * product * ((float(size[1]) * 2) ** 2 + (2 * float(size[0])) ** 2)
+    # print("own Ixx, Iyy, Izz", I_xx, I_yy, I_zz)
     return f"""
     <mujoco>
     {gravity_str}
