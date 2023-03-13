@@ -462,6 +462,16 @@ if __name__ == "__main__":
         "-i", "--iterations", type=int, help="Number of iterations", default=1
     )
     parser.add_argument("--inertia_input", action=argparse.BooleanOptionalAction)
+    parser.add_argument(
+        "-extra_input",
+        type=str,
+        choices=[
+            "size",
+            "size_squared",
+            "size_mass",
+            "size_squared_mass",
+        ],
+    )
 
     args = parser.parse_args()
 
@@ -487,7 +497,20 @@ if __name__ == "__main__":
     if not os.path.exists(data_dir_train):
         raise IndexError(f"No directory for the train data {data_dir_train}")
 
+    ndata_dict = {
+        "pos": 24,
+        "eucl_motion": 12,
+        "quat": 7,
+        "log_quat": 7,
+        "dual_quat": 8,
+        "pos_diff": 24,
+        "pos_diff_start": 24,
+        "pos_norm": 24,
+        "log_dualQ": 6,
+    }
+
     for i in range(args.iterations):
+        print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         # n_sims_train = len(os.listdir(data_dir_train))
         n_sims_train = 3000
@@ -534,22 +557,15 @@ if __name__ == "__main__":
             iter=i,
             inertia_input=args.inertia_input,
         )
+        model_dict = {
+            "config": config,
+            "data_dict": ndata_dict,
+            "model": model.state_dict(),
+        }
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
 
         optimizer_dict = {"Adam": torch.optim.Adam}
-
-        ndata_dict = {
-            "pos": 24,
-            "eucl_motion": 12,
-            "quat": 7,
-            "log_quat": 7,
-            "dual_quat": 8,
-            "pos_diff": 24,
-            "pos_diff_start": 24,
-            "pos_norm": 24,
-            "log_dualQ": 6,
-        }
 
         start_time = time.time()
         model = model_pipeline(
@@ -558,14 +574,8 @@ if __name__ == "__main__":
         print(f"It took {time.time() - start_time} seconds to train & eval the model.")
 
         # Save model
-        model_dict = {
-            "config": config,
-            "data_dict": ndata_dict,
-            "model": model.state_dict(),
-        }
         if not os.path.exists("models"):
             os.mkdir("models")
-
         torch.save(
             model_dict,
             f"models/fcnn/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'.pickle",

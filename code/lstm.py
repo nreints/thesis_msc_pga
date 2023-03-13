@@ -112,8 +112,8 @@ class MyDataset(data.Dataset):
         # self.target_pos = torch.FloatTensor(np.asarray(self.target_pos)).flatten(
         #     start_dim=2
         # )
-        # self.inertia = torch.FloatTensor(np.asarray(self.inertia))
         # self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
+        # self.inertia = torch.FloatTensor(np.asarray(self.inertia))
 
         ###################### option 2 FASTER
         count = 0
@@ -273,8 +273,6 @@ def eval_model(model, data_loaders, config, current_epoch, losses):
 
                     preds = preds.squeeze(dim=1)
 
-                    # if config['data_type'] == 'pos':
-                    #     preds = preds.reshape((preds.shape[0], preds.shape[1], 8, 3))
                     alt_preds = convert(
                         preds.detach().cpu(), start_pos, data_loader.dataset.data_type
                     )
@@ -428,10 +426,10 @@ if __name__ == "__main__":
         raise IndexError("No directory for the train data {args.data_dir_train}")
 
     for i in range(args.iterations):
-        print(f"----- ITERATION {i}/{args.iterations} ------")
+        print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 1500
+        n_sims_train = 1000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         print("Number of train simulations: ", len(train_sims))
