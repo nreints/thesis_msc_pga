@@ -363,7 +363,7 @@ def model_pipeline(
     ):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}"
+        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.inertia_input}"
 
         # make the model, data, and optimization problem
         model, train_loader, test_loader, criterion, optimizer = make(

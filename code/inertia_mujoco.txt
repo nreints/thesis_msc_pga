@@ -1,0 +1,28 @@
+
+MjData:
+    mjtNum*   qM;               // total inertia (sparse)               (nM x 1)
+                -> zeros before first step in simulation
+                -> gevuld met nullen en ?? na first step
+
+    mjtNum*   qLD;              // L'*D*L factorization of M (sparse)   (nM x 1)
+                -> zeros before first step in simulation
+                -> gevuld met nullen en ?? na first step
+                -> Zelfde als qM
+
+    mjtNum*   qLDiagInv;        // 1/diag(D)                            (nv x 1)
+                -> diag[0:3] ??
+                -> diag(D)[-3:] is hetzelfde als body_inertia[1]
+
+    mjtNum*   qLDiagSqrtInv;    // 1/sqrt(diag(D))                      (nv x 1)
+
+    int       nM;               // number of non-zeros in sparse inertia matrix
+                -> 21
+    int       nv;               // number of degrees of freedom = dim(qvel)
+                -> 6 DOF
+
+MjModel:
+    mjtNum*   body_inertia;     // diagonal inertia in ipos/iquat frame (nbody x 3)
+                -> (2x3) -> ?Eerste rij voor worldbody, tweede rij voor box body
+                -> Ixx, Iyy, Izz
+
+
