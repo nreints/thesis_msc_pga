@@ -151,7 +151,7 @@ class MyDataset(data.Dataset):
                         extra_input_values = torch.FloatTensor(
                             data_all[self.extra_input[0]]
                         )
-                        self.extra_input_data[count] = extra_input_values
+                        self.data[count, -self.extra_input[1] :] = extra_input_values
                     else:
                         self.data[count] = data[frame:train_end].flatten()
                     self.target[count] = data[train_end + 1].flatten()
@@ -164,25 +164,10 @@ class MyDataset(data.Dataset):
         self.normalized_data = (self.data - self.mean) / self.std
 
         self.normalize_extra_input = torch.mean(
-            torch.norm(self.extra_input_data, dim=1)
+            torch.norm(self.data[:, -self.extra_input[1] :], dim=1)
         )
-        print("mean of norm extra_input", self.normalize_extra_input)
-        # exit()
-        # if (
-        #     self.norm_extra_input
-        #     and self.return_normalization
-        #     and self.extra_input[0] == "inertia_body"
-        # ):
-        #     norm_extra_input = torch.norm(
-        #         self.extra_input_data, dim=1
-        #     )  # len_data bij 1
-        #     # print(torch.mean(norm_extra_input))  # scalar
-        #     self.extra_input_data = self.extra_input_data / torch.mean(norm_extra_input)
-        #     # print(torch.norm(self.extra_input_data, dim=1))
-        #     # print(torch.mean(torch.norm(self.extra_input_data, dim=1)))
-        #     # self.extra_input_data /= 100000000
-        #     # exit()
-        self.data[:, -self.extra_input[1] :] = self.extra_input_data
+        print("mean of norm extra_input", self.normalize_extra_input.item())
+        # self.data[:, -self.extra_input[1] :] = self.extra_input_data
         print(time.time() - start_time)
 
         # count = 0
@@ -283,10 +268,11 @@ def train_model(
             data_labels = data_labels.to(device)  # Shape: [batch, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
-            data_inputs[:, -config["extra_input_n"] :] = (
-                data_inputs[:, -config["extra_input_n"] :]
-                / data_set_train.normalize_extra_input
-            )
+            if config["str_extra_input"] == "inertia_body":
+                data_inputs[:, -config["extra_input_n"] :] = (
+                    data_inputs[:, -config["extra_input_n"] :]
+                    / data_set_train.normalize_extra_input
+                )
             # Get predictions
             preds = model(data_inputs)  # Shape: [batch, n_data]
             # print("perdictions:", preds[0])
@@ -326,7 +312,7 @@ def train_model(
         # Log to W&B
         train_log(loss_epoch / len(data_loader), epoch, config)
         print(
-            f"\t Logging train Loss: {round(loss_epoch.item() / len(data_loader), 10)}"
+            f"\t Logging train Loss: {round(loss_epoch.item() / len(data_loader), 10)} ({loss_module}: {config.data_dir_train[5:]})"
         )
 
         # Evaluate model
@@ -336,7 +322,7 @@ def train_model(
 
         # Set model to train mode
         model.train()
-        print(f"\t Epoch_time; {time.time() - epoch_time}")
+        print(f" --> Epoch_time; {time.time() - epoch_time}")
 
 
 def eval_model(
@@ -353,10 +339,11 @@ def eval_model(
                 total_convert_loss = 0
                 wandb_total_convert_loss = 0
                 for data_inputs, data_labels, start_pos, pos_target, _ in data_loader:
-                    data_inputs[:, -config["extra_input_n"] :] = (
-                        data_inputs[:, -config["extra_input_n"] :]
-                        / data_set_train.normalize_extra_input
-                    )
+                    if config["str_extra_input"] == "inertia_body":
+                        data_inputs[:, -config["extra_input_n"] :] = (
+                            data_inputs[:, -config["extra_input_n"] :]
+                            / data_set_train.normalize_extra_input
+                        )
                     # Set data to current device
                     # data_inputs = data_inputs.to(device)
                     # data_norm = (data_inputs - data_set_train.mean) / data_set_train.std
@@ -537,7 +524,9 @@ if __name__ == "__main__":
         nargs="+",
         default="data_t(0, 0)_r(5, 15)_tennis_pNone_gNone",
     )
-    parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
+    parser.add_argument(
+        "-l", "--loss", type=str, choices=["L1", "L2"], help="Loss type", default="L2"
+    )
     parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
     parser.add_argument(
         "-i", "--iterations", type=int, help="Number of iterations", default=1
