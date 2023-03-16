@@ -17,14 +17,13 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 class fcnn(nn.Module):
     def __init__(self, n_data, config):
         super().__init__()
-        if config["inertia_input"]:
-            inertia = 3
-        else:
-            inertia = 0
+        extra_input = config["extra_input_n"]
 
         # Add first layers
         self.layers = [
-            nn.Linear(config["n_frames"] * n_data + inertia, config["hidden_sizes"][0])
+            nn.Linear(
+                config["n_frames"] * n_data + extra_input, config["hidden_sizes"][0]
+            )
         ]
 
         # Add consecuative layers with batch_norm / activation funct / dropout
@@ -58,14 +57,26 @@ class fcnn(nn.Module):
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, sims, n_frames, n_data, data_type, dir, input_inertia):
+    def __init__(
+        self,
+        sims,
+        n_frames,
+        n_data,
+        data_type,
+        dir,
+        extra_input,
+        normalize_extra_input=True,
+        return_normalization=True,
+    ):
         super().__init__()
         self.n_frames_perentry = n_frames
         self.n_datap_perframe = n_data
         self.sims = sims
         self.data_type = data_type
         self.dir = dir
-        self.input_inertia = input_inertia
+        self.extra_input = extra_input
+        # self.norm_extra_input = normalize_extra_input
+        # self.return_normalization = return_normalization
         self.collect_data()
 
     def collect_data(self):
@@ -109,7 +120,7 @@ class MyDataset(data.Dataset):
         # self.std = torch.std(self.data)
         # self.normalized_data = (self.data - self.mean) / self.std
 
-        # TODO
+        ######### NEW ##########
 
         count = 0
         # Loop through all simulations
@@ -124,8 +135,11 @@ class MyDataset(data.Dataset):
                     data_per_sim = len(data) - (self.n_frames_perentry + 1)
                     len_data = len(self.sims) * data_per_sim
                     self.data = torch.zeros(
-                        len_data, self.n_frames_perentry * self.n_datap_perframe
+                        len_data,
+                        self.n_frames_perentry * self.n_datap_perframe
+                        + self.extra_input[1],
                     )
+                    self.extra_input_data = torch.zeros(len_data, self.extra_input[1])
                     self.target = torch.zeros((len_data, self.n_datap_perframe))
                     self.target_pos = torch.zeros((len_data, 24))
                     self.start_pos = torch.zeros_like(self.target_pos)
@@ -133,13 +147,11 @@ class MyDataset(data.Dataset):
                     # Always save the start position for converting
                     self.start_pos[count] = pos_data[0].flatten()
                     train_end = frame + self.n_frames_perentry
-                    if self.input_inertia:
-                        # TODO
-                        # inertia = data_all["inertia"]
-                        inertia = np.array([1, 2, 3])
-                        self.data[count] = torch.append(
-                            data[frame:train_end].flatten(), inertia
+                    if self.extra_input[1] != 0:
+                        extra_input_values = torch.FloatTensor(
+                            data_all[self.extra_input[0]]
                         )
+                        self.extra_input_data[count] = extra_input_values
                     else:
                         self.data[count] = data[frame:train_end].flatten()
                     self.target[count] = data[train_end + 1].flatten()
@@ -150,7 +162,75 @@ class MyDataset(data.Dataset):
         self.mean = torch.mean(self.data)
         self.std = torch.std(self.data)
         self.normalized_data = (self.data - self.mean) / self.std
+
+        self.normalize_extra_input = torch.mean(
+            torch.norm(self.extra_input_data, dim=1)
+        )
+        print("mean of norm extra_input", self.normalize_extra_input)
+        # exit()
+        # if (
+        #     self.norm_extra_input
+        #     and self.return_normalization
+        #     and self.extra_input[0] == "inertia_body"
+        # ):
+        #     norm_extra_input = torch.norm(
+        #         self.extra_input_data, dim=1
+        #     )  # len_data bij 1
+        #     # print(torch.mean(norm_extra_input))  # scalar
+        #     self.extra_input_data = self.extra_input_data / torch.mean(norm_extra_input)
+        #     # print(torch.norm(self.extra_input_data, dim=1))
+        #     # print(torch.mean(torch.norm(self.extra_input_data, dim=1)))
+        #     # self.extra_input_data /= 100000000
+        #     # exit()
+        self.data[:, -self.extra_input[1] :] = self.extra_input_data
         print(time.time() - start_time)
+
+        # count = 0
+        # # Loop through all simulations
+        # for i in self.sims:
+        #     with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+        #         data_all = pickle.load(f)["data"]
+        #         # Collect data from data_type
+        #         data = torch.FloatTensor(data_all[self.data_type])
+        #         pos_data = torch.FloatTensor(data_all["pos"])
+        #         # Add data and targets
+        #         if count == 0:
+        #             data_per_sim = len(data) - (self.n_frames_perentry + 1)
+        #             len_data = len(self.sims) * data_per_sim
+        #             self.data = torch.zeros(
+        #                 len_data,
+        #                 self.n_frames_perentry * self.n_datap_perframe
+        #                 + self.extra_input[1],
+        #             )
+        #             self.target = torch.zeros((len_data, self.n_datap_perframe))
+        #             self.target_pos = torch.zeros((len_data, 24))
+        #             self.start_pos = torch.zeros_like(self.target_pos)
+        #         for frame in range(data_per_sim):
+        #             # Always save the start position for converting
+        #             self.start_pos[count] = pos_data[0].flatten()
+        #             train_end = frame + self.n_frames_perentry
+        #             if self.extra_input[1] != 0:
+        #                 # TODO
+        #                 inertia = (
+        #                     torch.FloatTensor(data_all[self.extra_input[0]]) / 10000000
+        #                 )
+        #                 print(inertia)
+        #                 # inertia = np.array([1, 2, 3])
+        #                 self.data[count] = torch.cat(
+        #                     (data[frame:train_end].flatten(), inertia)
+        #                 )
+        #             else:
+        #                 self.data[count] = data[frame:train_end].flatten()
+        #             self.target[count] = data[train_end + 1].flatten()
+
+        #             self.target_pos[count] = pos_data[train_end + 1].flatten()
+        #             count += 1
+
+        # self.mean = torch.mean(self.data)
+        # self.std = torch.std(self.data)
+        # self.normalized_data = (self.data - self.mean) / self.std
+        # # print(time.time() - start_time)
+        # exit()
 
     def __len__(self):
         # Number of data point we have
@@ -170,9 +250,7 @@ def train_log(loss, epoch, config):
     """
     Log the train loss to Weights and Biases
     """
-    wandb.log(
-        {"Epoch": epoch, f"Train loss {config.data_dir_train[5:-12]}": loss}, step=epoch
-    )
+    wandb.log({f"Train loss {config.data_dir_train[5:-12]}": loss}, step=epoch)
 
 
 def train_model(
@@ -198,15 +276,20 @@ def train_model(
         for data_inputs, data_labels, start_pos, pos_target, data_norm in data_loader:
 
             # Set data to current device
-            data_inputs = data_inputs.to(device)  # Shape: [batch, frames x n_data]
+            data_inputs = data_inputs.to(
+                device
+            )  # Shape: [batch, frames x n_data + config["extra_input_n"]]
             data_norm = data_norm.to(device)
             data_labels = data_labels.to(device)  # Shape: [batch, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
-
+            data_inputs[:, -config["extra_input_n"] :] = (
+                data_inputs[:, -config["extra_input_n"] :]
+                / data_set_train.normalize_extra_input
+            )
             # Get predictions
             preds = model(data_inputs)  # Shape: [batch, n_data]
-            # print("perdict/ions:", preds[0])
+            # print("perdictions:", preds[0])
             # print("labels", data_labels[0])
             # preds = model(data_norm)
             # preds = preds * data_set_train.std + data_set_train.mean
@@ -239,8 +322,12 @@ def train_model(
 
             optimizer.step()
 
+        print(f"Epoch {epoch}")
         # Log to W&B
         train_log(loss_epoch / len(data_loader), epoch, config)
+        print(
+            f"\t Logging train Loss: {round(loss_epoch.item() / len(data_loader), 10)}"
+        )
 
         # Evaluate model
         true_loss, convert_loss, total_convert_loss = eval_model(
@@ -249,17 +336,7 @@ def train_model(
 
         # Set model to train mode
         model.train()
-
-        print(
-            epoch,
-            round(loss_epoch.item() / len(data_loader), 10),
-            "\t",
-            round(convert_loss, 10),
-            "\t",
-            round(total_convert_loss, 10),
-        )
-
-        print("epoch_time; ", time.time() - epoch_time)
+        print(f"\t Epoch_time; {time.time() - epoch_time}")
 
 
 def eval_model(
@@ -276,7 +353,10 @@ def eval_model(
                 total_convert_loss = 0
                 wandb_total_convert_loss = 0
                 for data_inputs, data_labels, start_pos, pos_target, _ in data_loader:
-
+                    data_inputs[:, -config["extra_input_n"] :] = (
+                        data_inputs[:, -config["extra_input_n"] :]
+                        / data_set_train.normalize_extra_input
+                    )
                     # Set data to current device
                     # data_inputs = data_inputs.to(device)
                     # data_norm = (data_inputs - data_set_train.mean) / data_set_train.std
@@ -315,7 +395,7 @@ def eval_model(
 
                 # Log loss to W&B
                 print(
-                    f"\t Logging test loss {loss_module}: {config.data_dirs_test[i][5:]} => \t {wandb_total_convert_loss / len(data_loader)}"
+                    f"\t Logging test loss {wandb_total_convert_loss / len(data_loader)} ({loss_module}: {config.data_dirs_test[i][5:]})"
                 )
                 name = config.data_dirs_test[i][5:-12]
                 if name[-1] == "_":
@@ -342,11 +422,11 @@ def model_pipeline(
 ):
     # tell wandb to get started
     with wandb.init(
-        project="thesis", config=hyperparameters, mode=mode_wandb, tags=[device.type]
+        project="test", config=hyperparameters, mode=mode_wandb, tags=[device.type]
     ):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.inertia_input}"
+        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}/1000000000"
 
         # make the model, data, and optimization problem
         model, train_loader, test_loaders, criterion, optimizer, data_set_train = make(
@@ -392,7 +472,8 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
         dir=config.data_dir_train,
-        input_inertia=config.inertia_input,
+        extra_input=(config.str_extra_input, config.extra_input_n),
+        return_normalization=True,
     )
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
@@ -409,7 +490,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
             n_data=ndata_dict[config.data_type],
             data_type=config.data_type,
             dir="data/" + test_data_dir,
-            input_inertia=config.inertia_input,
+            extra_input=(config.str_extra_input, config.extra_input_n),
         )
         test_data_loader = data.DataLoader(
             data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
@@ -454,18 +535,18 @@ if __name__ == "__main__":
         type=str,
         help="directory of the train data",
         nargs="+",
-        default="data_t(0, 0)_r(2, 5)_none_pNone_gNone",
+        default="data_t(0, 0)_r(5, 15)_tennis_pNone_gNone",
     )
     parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
     parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
     parser.add_argument(
         "-i", "--iterations", type=int, help="Number of iterations", default=1
     )
-    parser.add_argument("--inertia_input", action=argparse.BooleanOptionalAction)
     parser.add_argument(
         "-extra_input",
         type=str,
         choices=[
+            "inertia_body",
             "size",
             "size_squared",
             "size_mass",
@@ -484,9 +565,9 @@ if __name__ == "__main__":
 
     data_dirs_test = [
         " ".join(args.data_dir_train),
-        "data_t(0, 0)_tennisEffect",
+        # "data_t(0, 0)_tennisEffect",
     ]
-    print(data_dirs_test)
+    print(f"Testing on datasets: {data_dirs_test}")
 
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
@@ -508,11 +589,22 @@ if __name__ == "__main__":
         "pos_norm": 24,
         "log_dualQ": 6,
     }
+    n_extra_input = {
+        "inertia_body": 3,
+        "size": 3,
+        "size_squared": 3,
+        "size_mass": 4,
+        "size_squared_mass": 4,
+    }
+    if args.extra_input:
+        extra_input_n = n_extra_input[args.extra_input]
+    else:
+        extra_input_n = 0
 
     for i in range(args.iterations):
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
-        # n_sims_train = len(os.listdir(data_dir_train))
+        n_sims_train = len(os.listdir(data_dir_train))
         n_sims_train = 3000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
@@ -536,7 +628,7 @@ if __name__ == "__main__":
         # Set config
         config = dict(
             learning_rate=0.0001,
-            epochs=10,
+            epochs=20,
             batch_size=512,
             loss_type=args.loss,
             loss_reduction_type="mean",
@@ -545,7 +637,7 @@ if __name__ == "__main__":
             architecture="fcnn",
             train_sims=list(train_sims),
             test_sims=list(test_sims),
-            n_frames=10,
+            n_frames=20,
             n_sims=n_sims_train,
             hidden_sizes=[128, 256],
             activation_func=["ReLU", "ReLU"],
@@ -555,13 +647,10 @@ if __name__ == "__main__":
             data_dir_train=data_dir_train,
             data_dirs_test=data_dirs_test,
             iter=i,
-            inertia_input=args.inertia_input,
+            # inertia_input=args.inertia_input,
+            str_extra_input=args.extra_input,
+            extra_input_n=extra_input_n,
         )
-        model_dict = {
-            "config": config,
-            "data_dict": ndata_dict,
-            "model": model.state_dict(),
-        }
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
 
@@ -572,7 +661,11 @@ if __name__ == "__main__":
             config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses
         )
         print(f"It took {time.time() - start_time} seconds to train & eval the model.")
-
+        model_dict = {
+            "config": config,
+            "data_dict": ndata_dict,
+            "model": model.state_dict(),
+        }
         # Save model
         if not os.path.exists("models"):
             os.mkdir("models")

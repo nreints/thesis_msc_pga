@@ -175,7 +175,7 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
     Output:
         - Dictionary to store the data in.
     """
-    print(body_inertia)
+    # print(body_inertia)
     size = half_size * 2
     size_squared = size**2
     return {
@@ -184,8 +184,13 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
         "quat": np.empty((n_steps, 1, 7)),
         "log_quat": np.empty((n_steps, 1, 7)),
         "dual_quat": np.empty((n_steps, 1, 8)),
-        "pos_diff_start": np.empty((n_steps, 8, 3)),
         "log_dualQ": np.empty((n_steps, 6)),
+        "pos_diff_start": np.empty((n_steps, 8, 3)),
+        "eucl_motion_ori": np.empty((n_steps, 1, 12)),
+        "quat_ori": np.empty((n_steps, 1, 7)),
+        "log_quat_ori": np.empty((n_steps, 1, 7)),
+        "dual_quat_ori": np.empty((n_steps, 1, 8)),
+        "log_dualQ_ori": np.empty((n_steps, 6)),
         "rotation_axis_trans": np.empty((n_steps, 6)),
         "inertia_body": body_inertia,
         "size": size,
@@ -196,6 +201,7 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
         "size_squared_centroid": np.empty((2, 3)),
         "size_massCentroid": np.empty((n_steps, 2, 3)),
         "size_squared_massCentroid": np.empty((n_steps, 2, 3)),
+        "start": np.empty((8, 3)),
     }
 
 
@@ -229,15 +235,14 @@ def generate_data(
     # Generate MjData object
     data = mujoco.MjData(model)
 
-    # print("body_inertia", model.body_inertia[1])
-    # print("meanmass", model.stat.meanmass)
-    # H = np.zeros((model.nv, model.nv))
-    # print("qM", data.qM)
-    # print("qLD", data.qLD)
-    # L = mujoco.mj_fullM(model, H, data.qM)
-    # # print("L", L)
-    # print("nM, nv", model.nM, model.nv)
-
+    print("body_inertia", model.body_inertia)
+    print("meanmass", model.stat.meanmass)
+    H = np.zeros((model.nv, model.nv))
+    print("qM", data.qM)
+    print("qLD", data.qLD)
+    L = mujoco.mj_fullM(model, H, data.qM)
+    print("L = mujoco.mj_fullM(model, H, data.qM)", L)
+    print(f"nM {model.nM} & nv {model.nv}")
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
     data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1], size=3)
     # data.qvel[0:3] = [0, -3, 0]
@@ -259,6 +264,7 @@ def generate_data(
         model.stat.meanmass,
         model.body_inertia[body_id],
     )
+    dataset["start"] = xyz_local
 
     if visualize:
         import mujoco_viewer
@@ -278,13 +284,21 @@ def generate_data(
             # Collect position data after rotation and translation.
             dataset["pos"][i] = global_pos
 
-            # print("--------")
+            print("--------")
+            print("body_inertia", model.body_inertia)
+            print("meanmass", model.stat.meanmass)
+            H = np.zeros((model.nv, model.nv))
+            print("qM", data.qM)
+            print("qLD", data.qLD)
+            L = mujoco.mj_fullM(model, H, data.qM)
+            print("L = mujoco.mj_fullM(model, H, data.qM)", L)
+            print(f"nM {model.nM} & nv {model.nv}")
             # H = np.zeros((model.nv, model.nv))
             # print("body_inertia", model.body_inertia)
             # print("qLD", data.qLD)  # number of non-zeros in sparse inertia matrix
-            # print(
-            #     "diag(D)", 1 / data.qLDiagInv
-            # )  # number of degrees of freedom = dim(qvel)
+            print(
+                "diag(D)", 1 / data.qLDiagInv
+            )  # number of degrees of freedom = dim(qvel)
             # print(
             #     "sqrt(diag(D))", 1 / data.qLDiagSqrtInv
             # )  # number of degrees of freedom = dim(qvel)
@@ -296,11 +310,13 @@ def generate_data(
             # print(data.qM == data.qLD)
             # # if i == 3:
             # #     exit()
+            exit()
 
             if i == 0:
                 start_xpos = copy.deepcopy(xpos)
 
                 start_xyz = global_pos
+                # print(start_xpos, start_xyz)
 
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
@@ -323,16 +339,19 @@ def generate_data(
             else:
                 # Collect rotation matrix
                 current_rotMat = get_mat(data, geom_id)
-
+                # print(xpos, start_xpos)
+                # print(current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos)
                 rel_trans = (
                     xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
                 )
-                # print(rel_trans)
+                # print("AAH", rel_trans)
+
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
+                # print(dataset["eucl_motion"][i][:, :9].shape)
+                dataset["eucl_motion"][i][:, :9] = rel_rot.flatten()
+                dataset["eucl_motion"][i][:, 9:] = rel_trans
 
-                dataset["eucl_motion"][i] = np.append(rel_rot.flatten(), rel_trans)
-
-                quaternion_pyquat = (
+                rel_quaternion_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse
                 )
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
@@ -341,29 +360,46 @@ def generate_data(
                 #     quaternion_pyquat *= -1
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
                 # print("----")
-                rotation_axis = quaternion_pyquat.axis
+                rotation_axis = rel_quaternion_pyquat.axis
+                dataset["rotation_axis_trans"][i][:3] = rotation_axis
+                dataset["rotation_axis_trans"][i][3:] = xpos
+                # dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
+                quaternion = rel_quaternion_pyquat.elements
 
-                dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
+                dataset["quat"][i][:, :4] = quaternion
+                dataset["quat"][i][:, 4:] = rel_trans
+                # dataset["quat"][i] = np.append(quaternion, rel_trans)
 
-                quaternion = quaternion_pyquat.elements
-                dataset["quat"][i] = np.append(quaternion, rel_trans)
                 # Collect Log Quaternion data
-                dataset["log_quat"][i] = np.append(
-                    calculate_log_quat(quaternion), rel_trans
-                )
-                # print(calculate_log_quat(quaternion))
-
+                dataset["log_quat"][i][:, :4] = calculate_log_quat(quaternion)
+                dataset["log_quat"][i][:, 4:] = rel_trans
+                # dataset["log_quat"][i] = np.append(
+                #     calculate_log_quat(quaternion), rel_trans
+                # )
                 dualQuaternion = get_dualQ(quaternion, rel_trans)
-                # print(dualQuaternion)
                 # Collect Dual-Quaternion data
                 dataset["dual_quat"][i] = dualQuaternion
-
                 # Collect log_dualQ data (= bivector = rotation axis)
                 dataset["log_dualQ"][i] = logDual(dualQuaternion)
-
                 dataset["pos_diff_start"][i] = (
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
+
+                # # Relative to origin centered cube.
+                dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
+                dataset["eucl_motion_ori"][i][:, 9:] = xpos
+                # dataset["eucl_motion_ori"][i] = np.append(current_rotMat, xpos)
+                quat = get_quat(data, body_id)
+                dataset["quat_ori"][i][:, :4] = quat
+                dataset["quat_ori"][i][:, 4:] = xpos
+                # dataset["quat_ori"][i] = np.append(quat, xpos)
+                dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
+                dataset["log_quat_ori"][i][:, 4:] = xpos
+                # dataset["log_quat_ori"][i] = np.append(calculate_log_quat(quat), xpos)
+                dual_quat = get_dualQ(quat, xpos)
+                dataset["dual_quat_ori"][i] = dual_quat
+                dataset["log_dualQ_ori"][i] = logDual(dual_quat)
+
             # if i>100:
             #     exit()
         else:
@@ -406,8 +442,8 @@ def get_sizes(symmetry):
         0.5, 5
     )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
     sizes = ratio * random_size
-    # print("sizes:", sizes)
-    # return "5 25 10", [5, 25, 10]
+    print("sizes of cube:", "12 24 72")
+    return "12 24 72", [12, 24, 72]
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
 
@@ -546,12 +582,14 @@ def write_data_nsim(
             print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-        # euler = "0 0 0"
+        euler = "0 0 0"
+        print(f"initial orientation: {euler}")
         # Define sizes
         sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
-        # pos = "0 0 0"
+        pos = "0 0 0"
+        print(f"initial position: {pos}")
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
         dataset = generate_data(
@@ -585,10 +623,10 @@ if __name__ == "__main__":
         help="symmetry of the box.\nfull: symmetric box 1:1:1\n; semi: 2 sides of same length, other longer 1:1:10\n;tennis: tennis_racket effect 1:3:10\n;none: random lengths for each side",
         default="tennis",
     )
-    parser.add_argument("-l_min", type=int, help="linear qvel min", default=5)
-    parser.add_argument("-l_max", type=int, help="linear qvel max", default=8)
-    parser.add_argument("-a_min", type=int, help="angular qvel min", default=0)
-    parser.add_argument("-a_max", type=int, help="angular qvel max", default=0)
+    parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=5)
+    parser.add_argument("-a_max", type=int, help="angular qvel max", default=15)
     parser.add_argument(
         "-integrator",
         type=str,

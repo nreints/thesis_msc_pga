@@ -73,7 +73,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         file = pickle.load(f)
         nr_frames = file["vars"]["n_steps"]
         # Load the correct start position repeat for converting
-        if data_type[-3:] == "old":
+        if data_type[-3:] == "ori":
             start_pos = torch.tensor(
                 file["data"]["start"], dtype=torch.float32
             ).flatten()
@@ -94,7 +94,8 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         original_data = torch.tensor(
             file["data"][data_type], dtype=torch.float32
         ).flatten(start_dim=1)
-
+        if data_type[-3:] == "ori":
+            data_type = data_type[:-4]
         # Convert to xyz position data for plotting
         plot_data = convert(original_data, start_pos, data_type).reshape(
             nr_frames, 8, 3
@@ -255,21 +256,6 @@ def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     Output:
         - plots the cubes
     """
-    # # Scatter the corners
-    # ax.scatter(conv_cube[:, 0], conv_cube[:, 1], conv_cube[:, 2], linewidth=0.5, color='b', label="converted pos")
-    # ax.scatter(pred_cube[:, 0], pred_cube[:, 1], pred_cube[:, 2], color='r', label="prediction")
-    # ax.scatter(check_cube[:, 0], check_cube[:, 1],  check_cube[:, 2], color="black", label="real pos")
-
-    # # Calculate the edges
-    # converted_cube_edges = calculate_edges(conv_cube)
-    # predicted_cube_edges = calculate_edges(pred_cube)
-    # check_cube_edges = calculate_edges(check_cube)
-
-    # # Plot the edges
-    # ax.plot(converted_cube_edges[:, 0], converted_cube_edges[:, 1], converted_cube_edges[:, 2], c="b")
-    # ax.plot(predicted_cube_edges[:, 0], predicted_cube_edges[:, 1], predicted_cube_edges[:, 2], c="r")
-    # ax.plot(check_cube_edges[:, 0], check_cube_edges[:, 1], check_cube_edges[:, 2], c="black")
-
     plot_cube(conv_cube, ax, "converted", "b")
     plot_cube(pred_cube, ax, "predicted", "r")
     plot_cube(check_cube, ax, "real pos", "black")
@@ -483,7 +469,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(0, 0)_r(6, 8)_tennis_pNone_gNone",
+        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -560,7 +546,7 @@ if __name__ == "__main__":
         print("simulation", i)
         # Test all data types:
 
-        data_types = ["pos"]
+        data_types = ["eucl_motion_ori"]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 
         for data_thing in data_types:
