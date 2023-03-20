@@ -463,10 +463,10 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav, tennis_ef
         - Directory with corresponding name.
     """
     dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}"
-    if tennis_effect:
-        dir = f"data/data_{symmetry}_p{plane}_g{grav}_tennisEffect"
     if not os.path.exists("data"):
         os.mkdir("data")
+    if tennis_effect:
+        dir = f"data/data_{symmetry}_p{plane}_g{grav}_tennisEffect"
     if not os.path.exists(dir):
         print("Creating directory")
         os.mkdir(dir)
