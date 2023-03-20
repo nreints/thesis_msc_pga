@@ -335,7 +335,7 @@ def plot_3D_animation(
 
 
 def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
-    colors = ["b", "g", "r", "m", "k", "c", "b"]
+    colors = ["b", "g", "r", "m", "k", "c", "b", "b", "g", "r", "m", "k", "c", "b"]
     for i in range(len(data_types)):
 
         # Get cube vertice data
@@ -470,7 +470,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(0, 0)_r(5, 15)_tennis_pNone_gNone",
+        default="data_tennis_pNone_gNone_tennisEffect",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -547,7 +547,20 @@ if __name__ == "__main__":
         print("simulation", i)
         # Test all data types:
 
-        data_types = ["pos", "eucl_motion", "eucl_motion_ori"]
+        data_types = [
+            "pos",
+            # "eucl_motion",
+            # "eucl_motion_ori",
+            # "quat",
+            # "quat_ori",
+            # "log_quat",
+            "log_quat_ori",
+            "dual_quat",
+            "dual_quat_ori",
+            "log_dualQ",
+            "log_dualQ_ori",
+            "pos_diff_start",
+        ]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 
         for data_thing in data_types:

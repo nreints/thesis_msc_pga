@@ -248,7 +248,7 @@ def generate_data(
     # data.qvel[0:3] = [0, -3, 0]
     data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1], size=3)
     if pure_tennis:
-        data.qvel[3:6] = [0, random.uniform(15, 40), 0.01]
+        data.qvel[3:6] = [0, random.uniform(40, 70), 0.1]
 
     # Collect geom_id and body_id
     geom_id = model.geom("object_geom").id
@@ -264,14 +264,14 @@ def generate_data(
         model.stat.meanmass,
         model.body_inertia[body_id],
     )
-    dataset["start"] = xyz_local
+    dataset["start"] = xyz_local.T
 
     if visualize:
         import mujoco_viewer
 
         viewer = mujoco_viewer.MujocoViewer(model, data)
 
-    for i in range(0, n_steps):
+    for i in range(0, n_steps, 1):
         if not visualize or viewer.is_alive:
             mujoco.mj_step(model, data)
 
@@ -385,20 +385,20 @@ def generate_data(
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
 
-                # # # Relative to origin centered cube.
-                # dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
-                # dataset["eucl_motion_ori"][i][:, 9:] = xpos
-                # # dataset["eucl_motion_ori"][i] = np.append(current_rotMat, xpos)
-                # quat = get_quat(data, body_id)
-                # dataset["quat_ori"][i][:, :4] = quat
-                # dataset["quat_ori"][i][:, 4:] = xpos
-                # # dataset["quat_ori"][i] = np.append(quat, xpos)
-                # dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
-                # dataset["log_quat_ori"][i][:, 4:] = xpos
-                # # dataset["log_quat_ori"][i] = np.append(calculate_log_quat(quat), xpos)
-                # dual_quat = get_dualQ(quat, xpos)
-                # dataset["dual_quat_ori"][i] = dual_quat
-                # dataset["log_dualQ_ori"][i] = logDual(dual_quat)
+                # # Relative to origin centered cube.
+                dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
+                dataset["eucl_motion_ori"][i][:, 9:] = xpos
+                # dataset["eucl_motion_ori"][i] = np.append(current_rotMat, xpos)
+                quat = get_quat(data, body_id)
+                dataset["quat_ori"][i][:, :4] = quat
+                dataset["quat_ori"][i][:, 4:] = xpos
+                # dataset["quat_ori"][i] = np.append(quat, xpos)
+                dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
+                dataset["log_quat_ori"][i][:, 4:] = xpos
+                # dataset["log_quat_ori"][i] = np.append(calculate_log_quat(quat), xpos)
+                dual_quat = get_dualQ(quat, xpos)
+                dataset["dual_quat_ori"][i] = dual_quat
+                dataset["log_dualQ_ori"][i] = logDual(dual_quat)
 
             # if i>100:
             #     exit()
@@ -625,8 +625,8 @@ if __name__ == "__main__":
     )
     parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
     parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
-    parser.add_argument("-a_min", type=int, help="angular qvel min", default=5)
-    parser.add_argument("-a_max", type=int, help="angular qvel max", default=15)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=3)
+    parser.add_argument("-a_max", type=int, help="angular qvel max", default=4)
     parser.add_argument(
         "-integrator",
         type=str,
