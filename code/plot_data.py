@@ -74,6 +74,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         nr_frames = file["vars"]["n_steps"]
         # Load the correct start position repeat for converting
         if data_type[-3:] == "ori":
+            print("using old way")
             start_pos = torch.tensor(
                 file["data"]["start"], dtype=torch.float32
             ).flatten()
@@ -469,7 +470,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
+        default="data_t(0, 0)_r(5, 15)_tennis_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -546,7 +547,7 @@ if __name__ == "__main__":
         print("simulation", i)
         # Test all data types:
 
-        data_types = ["eucl_motion_ori"]
+        data_types = ["pos", "eucl_motion", "eucl_motion_ori"]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 
         for data_thing in data_types:

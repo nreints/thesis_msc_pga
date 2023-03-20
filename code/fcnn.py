@@ -81,47 +81,6 @@ class MyDataset(data.Dataset):
 
     def collect_data(self):
         start_time = time.time()
-        # self.data = []
-        # self.target = []
-        # self.target_pos = []
-        # self.start_pos = []
-
-        # # Loop through all simulations
-        # for i in self.sims:
-        #     with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
-        #         data_all = pickle.load(f)["data"]
-        #         # Collect data from data_type
-        #         data = data_all[self.data_type]
-        #         pos_data = data_all["pos"]
-        #         # Add data and targets
-        #         for frame in range(len(data) - (self.n_frames_perentry + 1)):
-        #             # Always save the start position for converting
-        #             self.start_pos.append(pos_data[0].flatten())
-        #             train_end = frame + self.n_frames_perentry
-        #             if self.input_inertia:
-        #                 # TODO
-        #                 # inertia = data_all["inertia"]
-        #                 inertia = np.array([1, 2, 3])
-        #                 self.data.append(
-        #                     np.append(data[frame:train_end].flatten(), inertia)
-        #                 )
-        #             else:
-        #                 self.data.append(data[frame:train_end].flatten())
-        #             self.target.append(data[train_end + 1].flatten())
-
-        #             self.target_pos.append(pos_data[train_end + 1].flatten())
-
-        # self.data = torch.FloatTensor(np.asarray(self.data))
-        # self.target = torch.FloatTensor(np.asarray(self.target))
-        # self.target_pos = torch.FloatTensor(np.asarray(self.target_pos))
-        # self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
-
-        # self.mean = torch.mean(self.data)
-        # self.std = torch.std(self.data)
-        # self.normalized_data = (self.data - self.mean) / self.std
-
-        ######### NEW ##########
-
         count = 0
         # Loop through all simulations
         for i in self.sims:
@@ -152,6 +111,9 @@ class MyDataset(data.Dataset):
                             data_all[self.extra_input[0]]
                         )
                         self.data[count, -self.extra_input[1] :] = extra_input_values
+                        self.data[count, : -self.extra_input[1]] = data[
+                            frame:train_end
+                        ].flatten()
                     else:
                         self.data[count] = data[frame:train_end].flatten()
                     self.target[count] = data[train_end + 1].flatten()
@@ -166,56 +128,9 @@ class MyDataset(data.Dataset):
         self.normalize_extra_input = torch.mean(
             torch.norm(self.data[:, -self.extra_input[1] :], dim=1)
         )
-        print("mean of norm extra_input", self.normalize_extra_input.item())
+        # print("mean of norm extra_input", self.normalize_extra_input.item())
         # self.data[:, -self.extra_input[1] :] = self.extra_input_data
-        print(time.time() - start_time)
-
-        # count = 0
-        # # Loop through all simulations
-        # for i in self.sims:
-        #     with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
-        #         data_all = pickle.load(f)["data"]
-        #         # Collect data from data_type
-        #         data = torch.FloatTensor(data_all[self.data_type])
-        #         pos_data = torch.FloatTensor(data_all["pos"])
-        #         # Add data and targets
-        #         if count == 0:
-        #             data_per_sim = len(data) - (self.n_frames_perentry + 1)
-        #             len_data = len(self.sims) * data_per_sim
-        #             self.data = torch.zeros(
-        #                 len_data,
-        #                 self.n_frames_perentry * self.n_datap_perframe
-        #                 + self.extra_input[1],
-        #             )
-        #             self.target = torch.zeros((len_data, self.n_datap_perframe))
-        #             self.target_pos = torch.zeros((len_data, 24))
-        #             self.start_pos = torch.zeros_like(self.target_pos)
-        #         for frame in range(data_per_sim):
-        #             # Always save the start position for converting
-        #             self.start_pos[count] = pos_data[0].flatten()
-        #             train_end = frame + self.n_frames_perentry
-        #             if self.extra_input[1] != 0:
-        #                 # TODO
-        #                 inertia = (
-        #                     torch.FloatTensor(data_all[self.extra_input[0]]) / 10000000
-        #                 )
-        #                 print(inertia)
-        #                 # inertia = np.array([1, 2, 3])
-        #                 self.data[count] = torch.cat(
-        #                     (data[frame:train_end].flatten(), inertia)
-        #                 )
-        #             else:
-        #                 self.data[count] = data[frame:train_end].flatten()
-        #             self.target[count] = data[train_end + 1].flatten()
-
-        #             self.target_pos[count] = pos_data[train_end + 1].flatten()
-        #             count += 1
-
-        # self.mean = torch.mean(self.data)
-        # self.std = torch.std(self.data)
-        # self.normalized_data = (self.data - self.mean) / self.std
-        # # print(time.time() - start_time)
-        # exit()
+        print(f"The dataloader took {time.time() - start_time} seconds.")
 
     def __len__(self):
         # Number of data point we have
@@ -322,7 +237,7 @@ def train_model(
 
         # Set model to train mode
         model.train()
-        print(f" --> Epoch_time; {time.time() - epoch_time}")
+        print(f"     --> Epoch_time; {time.time() - epoch_time}")
 
 
 def eval_model(
@@ -413,7 +328,7 @@ def model_pipeline(
     ):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}/1000000000"
+        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}/"
 
         # make the model, data, and optimization problem
         model, train_loader, test_loaders, criterion, optimizer, data_set_train = make(
@@ -554,7 +469,7 @@ if __name__ == "__main__":
 
     data_dirs_test = [
         " ".join(args.data_dir_train),
-        # "data_t(0, 0)_tennisEffect",
+        "data_tennis_pNone_gNone_tennisEffect",
     ]
     print(f"Testing on datasets: {data_dirs_test}")
 
@@ -594,7 +509,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 3000
+        n_sims_train = 4000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims
@@ -616,7 +531,7 @@ if __name__ == "__main__":
         print(f"Number of test simulations: {len(test_sims)}")
         # Set config
         config = dict(
-            learning_rate=0.0001,
+            learning_rate=0.001,
             epochs=20,
             batch_size=512,
             loss_type=args.loss,

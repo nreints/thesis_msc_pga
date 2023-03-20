@@ -235,14 +235,14 @@ def generate_data(
     # Generate MjData object
     data = mujoco.MjData(model)
 
-    print("body_inertia", model.body_inertia)
-    print("meanmass", model.stat.meanmass)
-    H = np.zeros((model.nv, model.nv))
-    print("qM", data.qM)
-    print("qLD", data.qLD)
-    L = mujoco.mj_fullM(model, H, data.qM)
-    print("L = mujoco.mj_fullM(model, H, data.qM)", L)
-    print(f"nM {model.nM} & nv {model.nv}")
+    # print("body_inertia", model.body_inertia)
+    # print("meanmass", model.stat.meanmass)
+    # H = np.zeros((model.nv, model.nv))
+    # print("qM", data.qM)
+    # print("qLD", data.qLD)
+    # L = mujoco.mj_fullM(model, H, data.qM)
+    # print("L = mujoco.mj_fullM(model, H, data.qM)", L)
+    # print(f"nM {model.nM} & nv {model.nv}")
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
     data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1], size=3)
     # data.qvel[0:3] = [0, -3, 0]
@@ -284,21 +284,21 @@ def generate_data(
             # Collect position data after rotation and translation.
             dataset["pos"][i] = global_pos
 
-            print("--------")
-            print("body_inertia", model.body_inertia)
-            print("meanmass", model.stat.meanmass)
-            H = np.zeros((model.nv, model.nv))
-            print("qM", data.qM)
-            print("qLD", data.qLD)
-            L = mujoco.mj_fullM(model, H, data.qM)
-            print("L = mujoco.mj_fullM(model, H, data.qM)", L)
-            print(f"nM {model.nM} & nv {model.nv}")
-            # H = np.zeros((model.nv, model.nv))
+            # print("--------")
             # print("body_inertia", model.body_inertia)
-            # print("qLD", data.qLD)  # number of non-zeros in sparse inertia matrix
-            print(
-                "diag(D)", 1 / data.qLDiagInv
-            )  # number of degrees of freedom = dim(qvel)
+            # print("meanmass", model.stat.meanmass)
+            # H = np.zeros((model.nv, model.nv))
+            # print("qM", data.qM)
+            # print("qLD", data.qLD)
+            # L = mujoco.mj_fullM(model, H, data.qM)
+            # print("L = mujoco.mj_fullM(model, H, data.qM)", L)
+            # print(f"nM {model.nM} & nv {model.nv}")
+            # # H = np.zeros((model.nv, model.nv))
+            # # print("body_inertia", model.body_inertia)
+            # # print("qLD", data.qLD)  # number of non-zeros in sparse inertia matrix
+            # print(
+            #     "diag(D)", 1 / data.qLDiagInv
+            # )  # number of degrees of freedom = dim(qvel)
             # print(
             #     "sqrt(diag(D))", 1 / data.qLDiagSqrtInv
             # )  # number of degrees of freedom = dim(qvel)
@@ -310,7 +310,7 @@ def generate_data(
             # print(data.qM == data.qLD)
             # # if i == 3:
             # #     exit()
-            exit()
+            # exit()
 
             if i == 0:
                 start_xpos = copy.deepcopy(xpos)
@@ -385,20 +385,20 @@ def generate_data(
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
 
-                # # Relative to origin centered cube.
-                dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
-                dataset["eucl_motion_ori"][i][:, 9:] = xpos
-                # dataset["eucl_motion_ori"][i] = np.append(current_rotMat, xpos)
-                quat = get_quat(data, body_id)
-                dataset["quat_ori"][i][:, :4] = quat
-                dataset["quat_ori"][i][:, 4:] = xpos
-                # dataset["quat_ori"][i] = np.append(quat, xpos)
-                dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
-                dataset["log_quat_ori"][i][:, 4:] = xpos
-                # dataset["log_quat_ori"][i] = np.append(calculate_log_quat(quat), xpos)
-                dual_quat = get_dualQ(quat, xpos)
-                dataset["dual_quat_ori"][i] = dual_quat
-                dataset["log_dualQ_ori"][i] = logDual(dual_quat)
+                # # # Relative to origin centered cube.
+                # dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
+                # dataset["eucl_motion_ori"][i][:, 9:] = xpos
+                # # dataset["eucl_motion_ori"][i] = np.append(current_rotMat, xpos)
+                # quat = get_quat(data, body_id)
+                # dataset["quat_ori"][i][:, :4] = quat
+                # dataset["quat_ori"][i][:, 4:] = xpos
+                # # dataset["quat_ori"][i] = np.append(quat, xpos)
+                # dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
+                # dataset["log_quat_ori"][i][:, 4:] = xpos
+                # # dataset["log_quat_ori"][i] = np.append(calculate_log_quat(quat), xpos)
+                # dual_quat = get_dualQ(quat, xpos)
+                # dataset["dual_quat_ori"][i] = dual_quat
+                # dataset["log_dualQ_ori"][i] = logDual(dual_quat)
 
             # if i>100:
             #     exit()
@@ -442,8 +442,8 @@ def get_sizes(symmetry):
         0.5, 5
     )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
     sizes = ratio * random_size
-    print("sizes of cube:", "12 24 72")
-    return "12 24 72", [12, 24, 72]
+    # print("sizes of cube:", "12 24 72")
+    # return "12 24 72", [12, 24, 72]
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
 
@@ -464,7 +464,7 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav, tennis_ef
     """
     dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}"
     if tennis_effect:
-        dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}_tennisEffect"
+        dir = f"data/data_{symmetry}_p{plane}_g{grav}_tennisEffect"
     if not os.path.exists("data"):
         os.mkdir("data")
     if not os.path.exists(dir):
@@ -582,14 +582,14 @@ def write_data_nsim(
             print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-        euler = "0 0 0"
-        print(f"initial orientation: {euler}")
+        # euler = "0 0 0"
+        # print(f"initial orientation: {euler}")
         # Define sizes
         sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
-        pos = "0 0 0"
-        print(f"initial position: {pos}")
+        # pos = "0 0 0"
+        # print(f"initial position: {pos}")
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
         dataset = generate_data(
