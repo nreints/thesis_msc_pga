@@ -457,6 +457,10 @@ if __name__ == "__main__":
             "size_squared_mass",
         ],
     )
+    parser.add_argument("--batch_size", type=int, default=1024, help="Batch size")
+    parser.add_argument(
+        "--learning_rate", "-lr", type=float, default=0.0001, help="Batch size"
+    )
 
     args = parser.parse_args()
 
@@ -533,7 +537,7 @@ if __name__ == "__main__":
         config = dict(
             learning_rate=0.0001,
             epochs=20,
-            batch_size=512,
+            batch_size=1024,
             loss_type=args.loss,
             loss_reduction_type="mean",
             optimizer="Adam",
