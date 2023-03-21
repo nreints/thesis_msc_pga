@@ -464,7 +464,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    print(args.data_dir_train)
     data_dir_train = "data/" + " ".join(args.data_dir_train)
+    data_dir_train = args.data_dir_train
+    print(data_dir_train)
     # data_dirs_test = args.data_dir_test]
 
     # data_dirs_test = os.listdir("data")
