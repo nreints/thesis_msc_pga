@@ -475,7 +475,7 @@ if __name__ == "__main__":
     #     data_dirs_test.remove(".DS_Store")
 
     data_dirs_test = [
-        " ".join(args.data_dir_train),
+        data_dir_train,
         "data_tennis_pNone_gNone_tennisEffect",
     ]
     print(f"Testing on datasets: {data_dirs_test}")
