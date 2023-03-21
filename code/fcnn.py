@@ -466,7 +466,7 @@ if __name__ == "__main__":
 
     print(args.data_dir_train)
     data_dir_train = "data/" + " ".join(args.data_dir_train)
-    data_dir_train = "data/" + args.data_dir_train
+    # data_dir_train = "data/" + args.data_dir_train
     print(data_dir_train)
     # data_dirs_test = args.data_dir_test]
 
