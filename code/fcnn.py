@@ -535,9 +535,9 @@ if __name__ == "__main__":
         print(f"Number of test simulations: {len(test_sims)}")
         # Set config
         config = dict(
-            learning_rate=0.0001,
+            learning_rate=args.learning_rate,
             epochs=20,
-            batch_size=1024,
+            batch_size=args.batch_size,
             loss_type=args.loss,
             loss_reduction_type="mean",
             optimizer="Adam",
