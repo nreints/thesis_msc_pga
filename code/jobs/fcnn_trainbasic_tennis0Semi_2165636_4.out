@@ -1,0 +1,2199 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: Appending key for api.wandb.ai to your netrc file: /home/nreints/.netrc
+/gpfs/home2/nreints/MScThesis/code/fcnn.py:368: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230201_225814-kwrwyktz
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run glittering-laughter-1824
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/kwrwyktz
+Number of train simulations: 8000
+Number of test simulations: 2000
+log_quat
+fcnn(
+  (linears): Sequential(
+    (0): Linear(in_features=70, out_features=128, bias=True)
+    (1): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): ReLU()
+    (3): Dropout(p=0.2, inplace=False)
+    (4): Linear(in_features=128, out_features=256, bias=True)
+    (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (6): ReLU()
+    (7): Dropout(p=0.4, inplace=False)
+    (8): Linear(in_features=256, out_features=7, bias=True)
+  )
+)
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 1.3758082389831543
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.7398465871810913
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 5.416679382324219
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.1894164085388184
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 3.966599702835083
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.1603879928588867
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 1.3197158575057983
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7981680035591125
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 1.488431692123413
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.807095468044281
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.7975239753723145
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.5751341581344604
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 1.4441965818405151
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7910537719726562
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 5.021984100341797
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.3134416341781616
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.9518299698829651
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.6903620958328247
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 1.3323489427566528
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.7056775093078613
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 2.9060964584350586
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.0730345249176025
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 4.961082458496094
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.2615185976028442
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 3.2198026180267334
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9863653779029846
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 1.5480504035949707
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.8415850400924683
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 1.0173853635787964
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.6994851231575012
+0 3.3923415486 	 0.6994851322 	 0.6994851322
+epoch_time;  152.0042917728424
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 1.026609182357788
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.7338003516197205
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 3.9667346477508545
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2787268161773682
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 3.18476939201355
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.206649899482727
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 1.2608938217163086
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.8409693837165833
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 1.269428014755249
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.8184770345687866
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.615402340888977
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.5614728927612305
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 1.3840863704681396
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8377072215080261
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 4.916733741760254
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.50688636302948
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.9034266471862793
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.7114883065223694
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.9994068741798401
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.6964230537414551
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 3.000398874282837
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.1951338052749634
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 4.160994529724121
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.37665593624115
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 2.4988842010498047
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0526337623596191
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 1.3204015493392944
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.8497589230537415
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.8252339959144592
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.6838880777359009
+1 2.3932247325 	 0.6838880636 	 0.6838880636
+epoch_time;  148.4159278869629
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.6490727663040161
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.570257306098938
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 2.0376946926116943
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8600354194641113
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.8662707805633545
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8766651749610901
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.782035768032074
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6559014916419983
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.8336315751075745
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6439804434776306
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4120980501174927
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4459468126296997
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8828660249710083
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6613357067108154
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.355867624282837
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.033713936805725
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.6007342338562012
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.569779098033905
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.6306641101837158
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.546149492263794
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4419596195220947
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8564309477806091
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.3126583099365234
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9558546543121338
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.2995498180389404
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7201793193817139
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.8767135143280029
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6724456548690796
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5595687031745911
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5479686260223389
+2 2.2489681407 	 0.5479686543 	 0.5479686543
+epoch_time;  149.21286702156067
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.6536509394645691
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.577275276184082
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 2.0319840908050537
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.9062748551368713
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.8038564920425415
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8879522681236267
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7384485006332397
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6338740587234497
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.8021763563156128
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6390310525894165
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3960091769695282
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4466746151447296
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8211241364479065
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6336939334869385
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.364595651626587
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.00690758228302
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5456074476242065
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5426232814788818
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.6577821373939514
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5601030588150024
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4662702083587646
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8396874666213989
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.229750394821167
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9661097526550293
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.4510656595230103
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.775026798248291
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.8276627659797668
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6630651950836182
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5210714936256409
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5383638739585876
+3 2.1815893711 	 0.5383638608 	 0.5383638608
+epoch_time;  148.56095838546753
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5281502604484558
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5121588110923767
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.575500726699829
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.756484866142273
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.4582085609436035
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7772976756095886
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6944824457168579
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6100660562515259
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6532620787620544
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5682089924812317
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3200434744358063
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.38533875346183777
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7709757089614868
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6066538691520691
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.5347225666046143
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.047890543937683
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5122387409210205
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5182695984840393
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5156024098396301
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4871182143688202
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.5544055700302124
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8647318482398987
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7418887615203857
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8323659300804138
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0905225276947021
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6533806324005127
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.695709764957428
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5975046157836914
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4294452667236328
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.47469496726989746
+4 2.1451476007 	 0.4746949794 	 0.4746949794
+epoch_time;  148.69488263130188
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.6121270656585693
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5701169371604919
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 2.006986379623413
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.9127271771430969
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.7579898834228516
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.9059929847717285
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.8848602771759033
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7136620879173279
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.8015584945678711
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6615430116653442
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.38006794452667236
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4459182620048523
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.9756165146827698
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.716974675655365
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.847722053527832
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.135303258895874
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.6733824014663696
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.6228194236755371
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.603121817111969
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5446839332580566
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.8379567861557007
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.9593855738639832
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.25882887840271
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.0100337266921997
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.3457810878753662
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7646624445915222
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.8472335934638977
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6868112087249756
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5635620355606079
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5759953856468201
+5 2.1140105419 	 0.5759953644 	 0.5759953644
+epoch_time;  148.5782492160797
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.8014096617698669
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.6591986417770386
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 2.687465190887451
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.056398630142212
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 2.314176082611084
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.0343234539031982
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 1.134648084640503
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7943825721740723
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 1.0424625873565674
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7475219964981079
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4507320523262024
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.49054962396621704
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 1.208130121231079
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7910737991333008
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 4.049647808074951
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.3536280393600464
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.7815642952919006
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.6671777963638306
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.7677956223487854
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.6180838346481323
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 2.6233861446380615
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.1204092502593994
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 3.0303308963775635
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.1667044162750244
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.8389700651168823
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8963460326194763
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 1.08675217628479
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7751776576042175
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.6489096879959106
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.6175724864006042
+6 2.0992486416 	 0.6175724611 	 0.6175724611
+epoch_time;  150.40325021743774
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5465291142463684
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5444391965866089
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.413417935371399
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7763009071350098
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.3866089582443237
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7969715595245361
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7041642069816589
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6327889561653137
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7258302569389343
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6238328218460083
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.337750107049942
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.42146456241607666
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7719106078147888
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6311454772949219
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.9312512874603271
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9484298825263977
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5448705554008484
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5537169575691223
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.536644458770752
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5217920541763306
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2035506963729858
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7978705763816833
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.6813673973083496
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.866918683052063
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0311541557312012
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6754896640777588
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7521279454231262
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6426893472671509
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5016114711761475
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5341929197311401
+7 2.080203847 	 0.5341929096 	 0.5341929096
+epoch_time;  149.10363626480103
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4856606125831604
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5104527473449707
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.3125364780426025
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7404066920280457
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.245231032371521
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7616783380508423
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6558985114097595
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6151396632194519
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6533033847808838
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5945023894309998
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3051549196243286
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.398743599653244
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7101204991340637
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6131384968757629
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.8136439323425293
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9144267439842224
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.512708306312561
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5431922674179077
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.482470840215683
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4908798038959503
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.1506755352020264
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.783277153968811
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.520949125289917
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.82883620262146
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9295231699943542
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6357747316360474
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.687168300151825
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.617806077003479
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.47065216302871704
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5215927958488464
+8 2.0706873185 	 0.5215927706 	 0.5215927706
+epoch_time;  149.06102418899536
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5556746125221252
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5580983757972717
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.600486159324646
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8240336179733276
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.370798110961914
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8037045001983643
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.776985228061676
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6699151396751404
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7152234315872192
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6304366588592529
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3593078851699829
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4482428729534149
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8486008048057556
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6706576347351074
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.283493757247925
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0215562582015991
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5945335030555725
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5876297354698181
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5498918294906616
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5357698202133179
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4605330228805542
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8635482788085938
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.8344895839691162
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8999570608139038
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0706193447113037
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6985284090042114
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7504129409790039
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6542675495147705
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5150678157806396
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5541901588439941
+9 2.0590286907 	 0.5541901669 	 0.5541901669
+epoch_time;  149.44043898582458
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4933871626853943
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5217801928520203
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.5983165502548218
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8389176726341248
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.3670967817306519
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8015644550323486
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6964783668518066
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6298220157623291
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.621178150177002
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5784226059913635
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.31084302067756653
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.40756845474243164
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.768714189529419
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6322985291481018
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.4328291416168213
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0613900423049927
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5161256194114685
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5361022353172302
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4839613437652588
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.49387046694755554
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4940022230148315
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8675817847251892
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.863128423690796
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9220848679542542
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0709573030471802
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6971948742866516
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.662997305393219
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6049580574035645
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.443082332611084
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5018148422241211
+10 2.0465854743 	 0.5018148261 	 0.5018148261
+epoch_time;  149.71684169769287
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5609642267227173
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.558758020401001
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.7057108879089355
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.881080150604248
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.5842702388763428
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8744621872901917
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7793527245521545
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6701496839523315
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7754715085029602
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6517437696456909
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3423978388309479
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4374994933605194
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8450271487236023
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6696745157241821
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.4066309928894043
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0568736791610718
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5836092233657837
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5818027853965759
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5568451881408691
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.533148467540741
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4972105026245117
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.880530059337616
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.112776756286621
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.0004210472106934
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1529353857040405
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.732448160648346
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.8072372674942017
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6745920777320862
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.544010579586029
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5659940838813782
+11 2.0426029303 	 0.5659940687 	 0.5659940687
+epoch_time;  149.32660579681396
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4977450668811798
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5225092768669128
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.4409269094467163
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7822766900062561
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2232831716537476
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.752885639667511
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6807767152786255
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6249707937240601
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6066639423370361
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5709642767906189
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.30127882957458496
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4017855226993561
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7402930855751038
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6210459470748901
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.513484001159668
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0813300609588623
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.505033016204834
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5333669781684875
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4880385994911194
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4952619969844818
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.5504227876663208
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8900254368782043
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.6184978485107422
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8471632599830627
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9762387275695801
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6580456495285034
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6518219709396362
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6016016006469727
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.40709182620048523
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4844130277633667
+12 2.0378595336 	 0.4844130177 	 0.4844130177
+epoch_time;  148.83722925186157
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4327119290828705
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.47582975029945374
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2083587646484375
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.698621928691864
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.0329796075820923
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.6799734234809875
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5876011252403259
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5749486684799194
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.54196697473526
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5347350239753723
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2588855028152466
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3648886978626251
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.643235445022583
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5715331435203552
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.807437539100647
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9022461175918579
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4418443441390991
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.49451306462287903
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4170060157775879
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4469299912452698
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.1709864139556885
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7670765519142151
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.3278733491897583
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7587152123451233
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8208600282669067
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.5857513546943665
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5769025087356567
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5580015182495117
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.3808695673942566
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4632176458835602
+13 2.031921778 	 0.4632176545 	 0.4632176545
+epoch_time;  148.9315550327301
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.46329522132873535
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5006846785545349
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2457798719406128
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7257782816886902
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.1906161308288574
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7478529214859009
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6850721836090088
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6265053153038025
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6317245364189148
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.588817834854126
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2822600305080414
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3865187168121338
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7282371520996094
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6212416291236877
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.011347770690918
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9565281271934509
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.512569010257721
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.545745313167572
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4486255347728729
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4740291237831116
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2638026475906372
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8096648454666138
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.490702748298645
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.825955867767334
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8969574570655823
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6243657469749451
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6573573350906372
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6069638729095459
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.44277575612068176
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.511664628982544
+14 2.021009918 	 0.5116646007 	 0.5116646007
+epoch_time;  148.1536900997162
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.3910008668899536
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4542064070701599
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.1183775663375854
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.6751013398170471
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.9924373030662537
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.6677748560905457
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5612984299659729
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5641775727272034
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.48879900574684143
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5137463212013245
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.25745585560798645
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3673712909221649
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6208513379096985
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5610432624816895
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.8039886951446533
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8802470564842224
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.43344345688819885
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.49242109060287476
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.38849955797195435
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4361623227596283
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.0572235584259033
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7332308292388916
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.270194411277771
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7452127933502197
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7528495192527771
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.5668017864227295
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5309131145477295
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5383571982383728
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.36099937558174133
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.45760127902030945
+15 2.0198156895 	 0.4576012886 	 0.4576012886
+epoch_time;  149.45741319656372
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.47321897745132446
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5005942583084106
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2752975225448608
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7302823662757874
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.33692467212677
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7876340746879578
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6433302760124207
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5958465933799744
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6322608590126038
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5775533318519592
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.28052613139152527
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.38295778632164
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6970727443695068
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5952348113059998
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.8205891847610474
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9055168628692627
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4564425051212311
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5067107677459717
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4705232083797455
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4804706573486328
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.156683325767517
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7739336490631104
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.5554331541061401
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8398309350013733
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.948880136013031
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6415261030197144
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6579328179359436
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5981383323669434
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4269478917121887
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4913756251335144
+16 2.0213701297 	 0.491375616 	 0.491375616
+epoch_time;  149.75077295303345
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5120529532432556
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.528253436088562
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.3051148653030396
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7557456493377686
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.1243544816970825
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7300436496734619
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6570759415626526
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6130072474479675
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6061705350875854
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5749621987342834
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3149246275424957
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4174310266971588
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7060931324958801
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6074349880218506
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.9135661125183105
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.927351713180542
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4771336317062378
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5251255631446838
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5113281011581421
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5085728168487549
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.1903064250946045
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7856844663619995
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.4544312953948975
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8156147599220276
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9221386909484863
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6491721272468567
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6406843066215515
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5988795757293701
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4143863320350647
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4951830208301544
+17 2.0131259494 	 0.4951830072 	 0.4951830072
+epoch_time;  148.93892526626587
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.453121542930603
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5006973743438721
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.0955750942230225
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.6808726191520691
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.1128655672073364
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7325059175491333
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6525752544403076
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6126107573509216
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6132920980453491
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5886513590812683
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2846447825431824
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.39789170026779175
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6921683549880981
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6093351244926453
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.9256161451339722
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9263214468955994
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4983532428741455
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5402804613113403
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4499359726905823
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4822838604450226
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.1939483880996704
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.792315661907196
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.3683849573135376
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7884581685066223
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7869503498077393
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.5954304337501526
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6529949903488159
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6111070513725281
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4530145227909088
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5224373936653137
+18 2.0093653752 	 0.5224373704 	 0.5224373704
+epoch_time;  149.49489641189575
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.42608094215393066
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.47299492359161377
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2182245254516602
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7171658277511597
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.0654382705688477
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.6971278786659241
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5916159152984619
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5754915475845337
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5293203592300415
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5282090902328491
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2641904056072235
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.37135183811187744
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6611162424087524
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5764551162719727
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.7444639205932617
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8721343874931335
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.43236157298088074
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4885671138763428
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.41555172204971313
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.44989314675331116
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.0822185277938843
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7384703755378723
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.2910856008529663
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7585906982421875
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8498955368995667
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6060734391212463
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.565601110458374
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.550004780292511
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.36558815836906433
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.45623984932899475
+19 2.0106090317 	 0.456239862 	 0.456239862
+epoch_time;  149.99125409126282
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5478212237358093
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5453355312347412
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.6700832843780518
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8611682057380676
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2567170858383179
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7787496447563171
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6551567912101746
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.611190676689148
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6176171898841858
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5814532041549683
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3191710412502289
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4185885190963745
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7075574994087219
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6050706505775452
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.060511827468872
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9537582993507385
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4607369303703308
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5125698447227478
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5540736317634583
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5255633592605591
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2802945375442505
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7988398671150208
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.6128461360931396
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8719233870506287
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1535022258758545
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7302835583686829
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6563730835914612
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6081070899963379
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.40775468945503235
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4915841519832611
+20 2.0080699432 	 0.4915841636 	 0.4915841636
+epoch_time;  149.12854051589966
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4392507076263428
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.48898252844810486
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.174845814704895
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7174128293991089
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.0763726234436035
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7168808579444885
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.548497200012207
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5586262345314026
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5580669045448303
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5531999468803406
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2676279842853546
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3796303868293762
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5978274941444397
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5589181184768677
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.6566044092178345
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8584269285202026
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4192979633808136
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.49047982692718506
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.43869295716285706
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.46944424510002136
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.9963664412498474
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7187723517417908
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.2700543403625488
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7702988982200623
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8690360188484192
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6227838397026062
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5842211246490479
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5725724101066589
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.3919113874435425
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.48013123869895935
+21 2.0034357055 	 0.4801312463 	 0.4801312463
+epoch_time;  148.38303208351135
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.46213069558143616
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5059674978256226
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2828967571258545
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7453518509864807
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2447912693023682
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7754201292991638
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6606055498123169
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6202929615974426
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6129289269447327
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.584934651851654
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.29482999444007874
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4044266641139984
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6983464360237122
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6139886975288391
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.9795122146606445
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9435995817184448
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4804898500442505
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5313941240310669
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4580133855342865
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.48573410511016846
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2243701219558716
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8019769191741943
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.5011149644851685
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8431503176689148
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9086323976516724
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6439366340637207
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6482154130935669
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6076436042785645
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4350282847881317
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5102431178092957
+22 1.9998005924 	 0.510243141 	 0.510243141
+epoch_time;  148.99925637245178
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5432195067405701
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5557939410209656
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.5987147092819214
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8631195425987244
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.4862879514694214
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8590936064720154
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7581417560577393
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6657887101173401
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7065317630767822
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6289404630661011
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3293698728084564
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.42827481031417847
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8045321106910706
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.664879322052002
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.582338809967041
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.1235064268112183
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5422695279121399
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5668678283691406
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5387057065963745
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5302631855010986
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.602549433708191
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.9202237725257874
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.9276200532913208
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9650464653968811
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1316838264465332
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7342265248298645
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7356430888175964
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6514071226119995
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.47590890526771545
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5337026119232178
+23 2.0015786978 	 0.533702624 	 0.533702624
+epoch_time;  149.89198875427246
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5348118543624878
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5392938852310181
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.3953571319580078
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7791886329650879
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2816126346588135
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7838175892829895
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7123586535453796
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6352461576461792
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6785662174224854
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.606452465057373
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.30051079392433167
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4034368097782135
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7690467834472656
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6332793235778809
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.3396506309509277
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0246119499206543
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5370177626609802
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5468137860298157
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5296801328659058
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5135298371315002
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4942998886108398
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8590298295021057
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.645154356956482
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8717198371887207
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0576785802841187
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6860283613204956
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7203686237335205
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6337305307388306
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4465235471725464
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5084158182144165
+24 2.0028622619 	 0.5084158364 	 0.5084158364
+epoch_time;  149.76026487350464
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4677217900753021
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4988519251346588
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2013120651245117
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7135273814201355
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.0445342063903809
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7073746919631958
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6475379467010498
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6133852005004883
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5553652048110962
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.553191065788269
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.295314759016037
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3993864953517914
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7077347636222839
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6126061677932739
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.9497228860855103
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9485997557640076
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4897262752056122
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.531438410282135
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.46331506967544556
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.47968974709510803
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2605289220809937
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8080763816833496
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.2662814855575562
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7654194831848145
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8730742931365967
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6221327185630798
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6018612384796143
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5801915526390076
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4018946588039398
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4882858097553253
+25 1.9993674775 	 0.4882858082 	 0.4882858082
+epoch_time;  148.73360681533813
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5389485359191895
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5442874431610107
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.6937237977981567
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8630514144897461
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.5540711879730225
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8516286611557007
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6897649168968201
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6209946870803833
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6872395277023315
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6047607064247131
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3119641840457916
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4146437644958496
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7301432490348816
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6120529174804688
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.2433643341064453
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0010536909103394
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4766475558280945
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5178610682487488
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5395380854606628
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5192864537239075
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.371838927268982
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8268815279006958
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.9519866704940796
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.954609215259552
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1436976194381714
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7224547266960144
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.714371383190155
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6287125945091248
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4577842354774475
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5096189379692078
+26 1.9997944628 	 0.5096189531 	 0.5096189531
+epoch_time;  150.09038734436035
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5047680735588074
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5263528227806091
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2843464612960815
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7542709112167358
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2451130151748657
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7792181968688965
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6732274293899536
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6225503087043762
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6420868039131165
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5954028367996216
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2989625334739685
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4047011733055115
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7116607427597046
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.620568037033081
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.091219902038574
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9830464124679565
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.49350669980049133
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5359605550765991
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5048171877861023
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5052264928817749
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.301709532737732
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8243159651756287
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.4923428297042847
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8385798335075378
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9693610668182373
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.664444625377655
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6758499145507812
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6165680885314941
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.43178698420524597
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.505082368850708
+27 1.9951388367 	 0.5050823729 	 0.5050823729
+epoch_time;  149.25856018066406
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4970649182796478
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.522645890712738
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.500429391860962
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8270334601402283
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2535958290100098
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7799317836761475
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.615938663482666
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5945040583610535
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5978607535362244
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5676150918006897
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3064820468425751
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4110928475856781
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6716812252998352
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5935671329498291
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.8792728185653687
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9307481050491333
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.45244115591049194
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5064621567726135
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4968929886817932
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5009287595748901
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.1846548318862915
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.782112181186676
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.6607133150100708
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8879683613777161
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0036554336547852
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6856428384780884
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6354613900184631
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.594319760799408
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.41827118396759033
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4932139813899994
+28 1.9967265333 	 0.4932139768 	 0.4932139768
+epoch_time;  150.04591417312622
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5414330363273621
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5523535013198853
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.6708333492279053
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8781027793884277
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.3248963356018066
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8092076182365417
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6544620990753174
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6146048307418823
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6418355703353882
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5944840908050537
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3120497167110443
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4161156117916107
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.705429196357727
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6093189716339111
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: 
+wandb: Run history:
+wandb:                                        Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb:      Test loss t(0, 0)_r(2, 5)_full L1Loss() ██▄▄▂▄▆▃▂▄▂▄▃▁▂▁▂▃▂▁▃▂▂▃▃▂▃▃▃▃▃
+wandb:     Test loss t(0, 0)_r(2, 5)_full MSELoss() █▆▃▃▂▃▄▂▂▂▂▂▂▁▁▁▂▂▁▁▂▁▂▂▂▂▂▂▂▂▂
+wandb:      Test loss t(0, 0)_r(2, 5)_none L1Loss() ██▄▄▂▄▆▃▂▄▃▄▃▂▂▁▂▃▂▁▃▂▂▃▃▂▃▃▃▃▃
+wandb:     Test loss t(0, 0)_r(2, 5)_none MSELoss() █▆▃▃▂▃▄▂▂▂▂▂▂▁▂▁▂▂▁▁▂▁▂▂▂▂▂▂▂▂▂
+wandb:      Test loss t(0, 0)_r(2, 5)_semi L1Loss() ▇█▃▄▂▄▆▃▂▃▃▃▂▁▂▁▂▂▁▂▃▂▂▃▃▂▃▂▃▄▄
+wandb:     Test loss t(0, 0)_r(2, 5)_semi MSELoss() █▆▃▃▂▃▄▂▂▂▂▂▂▁▁▁▂▁▁▁▂▁▁▂▂▁▂▂▂▂▂
+wandb:   Test loss t(0, 0)_r(2, 5)_tennis0 L1Loss() ▇█▃▄▂▄▅▂▂▃▃▃▂▁▂▁▂▂▁▁▃▁▂▃▂▁▃▂▃▃▃
+wandb:  Test loss t(0, 0)_r(2, 5)_tennis0 MSELoss() █▆▃▃▂▂▄▂▁▂▂▂▂▁▁▁▁▁▁▁▂▁▁▂▁▁▂▁▂▂▂
+wandb:   Test loss t(0, 0)_r(2, 5)_tennis1 L1Loss() ██▄▄▂▄▅▃▂▄▂▃▂▁▂▁▂▃▂▁▃▁▂▃▂▂▃▂▃▃▃
+wandb:  Test loss t(0, 0)_r(2, 5)_tennis1 MSELoss() █▆▃▃▂▃▄▂▂▂▂▂▂▁▁▁▁▂▁▁▂▁▁▂▂▁▂▂▂▂▂
+wandb:     Test loss t(4, 10)_r(0, 0)_full L1Loss() ▇█▄▃▂▅▇▃▂▄▃▄▃▁▃▁▂▂▂▁▂▁▂▄▃▂▂▃▂▂▂
+wandb:    Test loss t(4, 10)_r(0, 0)_full MSELoss() ██▃▃▂▄▆▂▂▃▂▃▂▁▂▁▂▂▂▂▂▁▂▃▂▂▂▂▂▂▂
+wandb:     Test loss t(4, 10)_r(0, 0)_none L1Loss() ▇█▃▃▂▅▇▃▂▄▃▄▃▁▃▁▂▂▂▁▂▁▃▄▃▂▃▃▂▂▂
+wandb:    Test loss t(4, 10)_r(0, 0)_none MSELoss() █▇▃▃▂▄▆▂▂▃▂▃▂▁▂▁▂▂▂▁▂▁▂▃▂▂▂▂▂▂▂
+wandb:     Test loss t(4, 10)_r(0, 0)_semi L1Loss() ▆█▃▃▃▅▇▂▂▃▃▃▄▂▂▁▂▂▂▁▂▁▂▄▃▂▃▃▂▂▂
+wandb:    Test loss t(4, 10)_r(0, 0)_semi MSELoss() ██▃▃▃▄▇▂▂▃▃▃▃▂▂▁▂▂▂▁▂▁▂▃▃▂▂▂▂▂▂
+wandb:  Test loss t(4, 10)_r(0, 0)_tennis0 L1Loss() ▆█▃▃▃▄▆▂▂▃▃▃▃▁▂▁▂▂▂▁▂▁▂▄▃▂▃▂▂▂▂
+wandb: Test loss t(4, 10)_r(0, 0)_tennis0 MSELoss() ██▂▂▃▃▆▂▁▂▃▃▃▁▂▁▁▂▂▁▂▁▂▃▂▂▂▂▁▂▂
+wandb:  Test loss t(4, 10)_r(0, 0)_tennis1 L1Loss() ▇█▄▃▂▅▇▃▃▄▂▄▂▁▃▁▂▂▃▁▂▁▂▃▃▂▂▂▂▂▂
+wandb: Test loss t(4, 10)_r(0, 0)_tennis1 MSELoss() █▇▃▃▂▄▆▃▂▃▂▃▂▁▂▁▁▂▂▁▂▁▂▃▃▂▂▂▁▂▂
+wandb:     Test loss t(4, 10)_r(2, 5)_full L1Loss() ██▄▄▂▄▆▄▃▄▂▄▂▁▃▁▂▂▃▁▃▂▃▄▃▂▃▃▂▃▃
+wandb:    Test loss t(4, 10)_r(2, 5)_full MSELoss() █▆▃▃▂▃▅▃▂▃▂▃▂▁▂▁▂▂▂▁▂▁▂▃▂▁▂▂▂▂▂
+wandb:     Test loss t(4, 10)_r(2, 5)_none L1Loss() ██▄▄▂▄▆▃▃▄▂▄▂▁▃▁▂▂▃▁▃▂▃▄▃▂▃▃▂▃▃
+wandb:    Test loss t(4, 10)_r(2, 5)_none MSELoss() █▆▃▃▂▃▅▃▂▃▂▃▂▁▂▁▂▂▂▁▂▁▂▂▂▁▂▂▂▂▂
+wandb:     Test loss t(4, 10)_r(2, 5)_semi L1Loss() ▇█▄▄▂▄▆▃▂▃▃▄▂▁▂▁▃▂▂▁▂▂▂▃▃▂▃▂▂▃▃
+wandb:    Test loss t(4, 10)_r(2, 5)_semi MSELoss() █▆▃▃▂▃▄▂▂▂▂▂▂▁▁▁▂▁▁▁▂▁▂▂▂▁▂▂▂▂▂
+wandb:  Test loss t(4, 10)_r(2, 5)_tennis0 L1Loss() ▇█▃▃▂▄▆▂▂▃▃▄▂▁▂▁▂▂▁▁▂▁▂▃▂▁▃▂▃▃▃
+wandb: Test loss t(4, 10)_r(2, 5)_tennis0 MSELoss() █▆▃▃▂▃▄▂▁▂▂▃▂▁▁▁▂▁▁▁▂▁▁▂▂▁▂▁▂▂▂
+wandb:  Test loss t(4, 10)_r(2, 5)_tennis1 L1Loss() ██▄▃▂▄▆▃▃▄▂▄▂▁▃▁▂▂▃▁▂▂▃▃▃▂▃▂▂▂▂
+wandb: Test loss t(4, 10)_r(2, 5)_tennis1 MSELoss() █▆▃▃▂▃▄▂▂▃▂▃▁▁▂▁▂▂▂▁▁▁▂▂▂▁▂▂▂▂▂
+wandb:      Train loss data_t(0, 0)_r(2, 5)_tennis0 █▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                        Epoch 29
+wandb:      Test loss t(0, 0)_r(2, 5)_full L1Loss() 0.5273
+wandb:     Test loss t(0, 0)_r(2, 5)_full MSELoss() 0.53992
+wandb:      Test loss t(0, 0)_r(2, 5)_none L1Loss() 0.55236
+wandb:     Test loss t(0, 0)_r(2, 5)_none MSELoss() 0.54127
+wandb:      Test loss t(0, 0)_r(2, 5)_semi L1Loss() 0.74539
+wandb:     Test loss t(0, 0)_r(2, 5)_semi MSELoss() 1.17336
+wandb:   Test loss t(0, 0)_r(2, 5)_tennis0 L1Loss() 0.87823
+wandb:  Test loss t(0, 0)_r(2, 5)_tennis0 MSELoss() 1.67079
+wandb:   Test loss t(0, 0)_r(2, 5)_tennis1 L1Loss() 0.4162
+wandb:  Test loss t(0, 0)_r(2, 5)_tennis1 MSELoss() 0.3118
+wandb:     Test loss t(4, 10)_r(0, 0)_full L1Loss() 0.60929
+wandb:    Test loss t(4, 10)_r(0, 0)_full MSELoss() 0.70534
+wandb:     Test loss t(4, 10)_r(0, 0)_none L1Loss() 0.61463
+wandb:    Test loss t(4, 10)_r(0, 0)_none MSELoss() 0.65499
+wandb:     Test loss t(4, 10)_r(0, 0)_semi L1Loss() 0.81963
+wandb:    Test loss t(4, 10)_r(0, 0)_semi MSELoss() 1.295
+wandb:  Test loss t(4, 10)_r(0, 0)_tennis0 L1Loss() 0.98033
+wandb: Test loss t(4, 10)_r(0, 0)_tennis0 MSELoss() 2.0781
+wandb:  Test loss t(4, 10)_r(0, 0)_tennis1 L1Loss() 0.51923
+wandb: Test loss t(4, 10)_r(0, 0)_tennis1 MSELoss() 0.47104
+wandb:     Test loss t(4, 10)_r(2, 5)_full L1Loss() 0.59454
+wandb:    Test loss t(4, 10)_r(2, 5)_full MSELoss() 0.64174
+wandb:     Test loss t(4, 10)_r(2, 5)_none L1Loss() 0.62296
+wandb:    Test loss t(4, 10)_r(2, 5)_none MSELoss() 0.68235
+wandb:     Test loss t(4, 10)_r(2, 5)_semi L1Loss() 0.80908
+wandb:    Test loss t(4, 10)_r(2, 5)_semi MSELoss() 1.32398
+wandb:  Test loss t(4, 10)_r(2, 5)_tennis0 L1Loss() 0.91281
+wandb: Test loss t(4, 10)_r(2, 5)_tennis0 MSELoss() 1.73954
+wandb:  Test loss t(4, 10)_r(2, 5)_tennis1 L1Loss() 0.50042
+wandb: Test loss t(4, 10)_r(2, 5)_tennis1 MSELoss() 0.42471
+wandb:      Train loss data_t(0, 0)_r(2, 5)_tennis0 1.99753
+wandb: 
+wandb: 🚀 View run glittering-laughter-1824 at: https://wandb.ai/nreints/thesis/runs/kwrwyktz
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230201_225814-kwrwyktz/logs
+/gpfs/home2/nreints/MScThesis/code/fcnn.py:368: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230202_001809-9o567nxm
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run resplendent-fireworks-1828
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/9o567nxm
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.080578327178955
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9805670380592346
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4710335433483124
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5192956924438477
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5405434966087341
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5273550748825073
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.294555902481079
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8196898102760315
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7395888566970825
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9127549529075623
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1747552156448364
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7453043460845947
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6821699738502502
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6229051947593689
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.42472562193870544
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5003548264503479
+29 1.9975285978 	 0.5003548315 	 0.5003548315
+epoch_time;  149.04128074645996
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5412706136703491
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5523618459701538
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.6707947254180908
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8782284259796143
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.3239763975143433
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8090750575065613
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6549885272979736
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.614626407623291
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6417431831359863
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5945404767990112
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.311795711517334
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.41619789600372314
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7053449749946594
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.609289824962616
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.0781021118164062
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9803330302238464
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.471037358045578
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5192312002182007
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5399247407913208
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5273008942604065
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2949970960617065
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8196284770965576
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7395384311676025
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9128056764602661
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1733622550964355
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7453860640525818
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.682353138923645
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6229649186134338
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.42471036314964294
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5004249811172485
+It took 4795.483373403549 seconds to train & eval the model.
+Number of train simulations: 8000
+Number of test simulations: 2000
+log_quat
+fcnn(
+  (linears): Sequential(
+    (0): Linear(in_features=70, out_features=128, bias=True)
+    (1): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): ReLU()
+    (3): Dropout(p=0.2, inplace=False)
+    (4): Linear(in_features=128, out_features=256, bias=True)
+    (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (6): ReLU()
+    (7): Dropout(p=0.4, inplace=False)
+    (8): Linear(in_features=256, out_features=7, bias=True)
+  )
+)
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 1.4884976148605347
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.8533685803413391
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 6.572637557983398
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.601202130317688
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 5.402597904205322
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.539320707321167
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 1.7299468517303467
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.9537475109100342
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 2.0784051418304443
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 1.0043041706085205
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.8463565111160278
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.6609356999397278
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 1.8447421789169312
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.9392708539962769
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 7.06591272354126
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.7972497940063477
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 1.145577073097229
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.793471097946167
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 1.4130010604858398
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.8086134791374207
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 4.59135627746582
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.418614149093628
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 7.9901204109191895
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.8560733795166016
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 4.479588985443115
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.3321642875671387
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 1.9770230054855347
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 1.0089342594146729
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 1.2509135007858276
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.8169525861740112
+0 3.3916800735 	 0.8169525922 	 0.8169525922
+epoch_time;  150.3476448059082
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.7209833264350891
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5896634459495544
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 2.5974020957946777
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.9029932618141174
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 2.1606156826019287
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.9281672239303589
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 1.0250980854034424
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7296844124794006
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 1.0948320627212524
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7320466041564941
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.45408546924591064
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4851335883140564
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 1.122799038887024
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7283483743667603
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 3.1336095333099365
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.1256333589553833
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.730815589427948
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.6471895575523376
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.680347204208374
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5601750612258911
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 2.232631206512451
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.9614235758781433
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 3.104611873626709
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.0585938692092896
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.8796136379241943
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7885079979896545
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 1.0788213014602661
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.736338198184967
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.768134355545044
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.6368727087974548
+1 2.3961458125 	 0.6368726957 	 0.6368726957
+epoch_time;  149.8514723777771
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.7374316453933716
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.6306153535842896
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 2.8978428840637207
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.101371169090271
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 2.661923408508301
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.1024020910263062
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 1.0812848806381226
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7721107006072998
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 1.174320936203003
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7803376913070679
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4572095572948456
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.5051729083061218
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 1.185673475265503
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7705390453338623
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 3.8898754119873047
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.3511886596679688
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.7394653558731079
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.6508470177650452
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.7249583005905151
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.6055047512054443
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 2.594381332397461
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.097037672996521
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 4.025573253631592
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.3238260746002197
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 2.0403242111206055
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9161211252212524
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 1.140181064605713
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7828304767608643
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.7733574509620667
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.6491799354553223
+2 2.2536994086 	 0.6491799435 	 0.6491799435
+epoch_time;  150.03239011764526
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5094329118728638
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.514602780342102
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.6389528512954712
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7582588195800781
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.3519346714019775
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7498335838317871
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7192397117614746
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6283419728279114
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.723565936088562
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6072356104850769
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.32153281569480896
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4206341803073883
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8111434578895569
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6289108991622925
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.270920991897583
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0032581090927124
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.49597081542015076
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5452370047569275
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.49225324392318726
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4916270673274994
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.5861830711364746
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8445649743080139
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.0197391510009766
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.859807014465332
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.2374515533447266
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6638613343238831
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7195501923561096
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.615696132183075
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5144185423851013
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5277544856071472
+3 2.1843878591 	 0.5277544765 	 0.5277544765
+epoch_time;  150.18173551559448
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.45803144574165344
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.48647865653038025
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.558162808418274
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7656140327453613
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.3875148296356201
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7817513346672058
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7007734179496765
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6181226372718811
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7056370377540588
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6064878106117249
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2761884927749634
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3892947733402252
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7839646935462952
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6199607253074646
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.2493340969085693
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0080218315124512
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5019827485084534
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5423188805580139
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.44073906540870667
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4611862003803253
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.5124597549438477
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.831266462802887
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.0562360286712646
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.906062662601471
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1612811088562012
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6618872284889221
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.706362783908844
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6137912273406982
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.513390839099884
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5285118818283081
+4 2.1439434606 	 0.5285118879 	 0.5285118879
+epoch_time;  151.28531169891357
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5892203450202942
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5713450312614441
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.8486270904541016
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8852171301841736
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.6395810842514038
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8809031248092651
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7911033630371094
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6637243032455444
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.848396360874176
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6743063926696777
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3527994751930237
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.45030108094215393
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.884734034538269
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6708439588546753
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.253911256790161
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0260258913040161
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5582717061042786
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5756056308746338
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5760325193405151
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5439714789390564
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.6248540878295898
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.870848536491394
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.453122615814209
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.0284011363983154
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.383446216583252
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.768182635307312
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.8322653770446777
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6777669787406921
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5790767073631287
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5697695016860962
+5 2.1187934549 	 0.5697695199 	 0.5697695199
+epoch_time;  149.52554845809937
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5906257629394531
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5771421790122986
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.8445911407470703
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8924705982208252
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.6504968404769897
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.893488883972168
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7978213429450989
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6744272112846375
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.8351539373397827
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6741689443588257
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3476432263851166
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.45114666223526
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.893175482749939
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6791560053825378
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.5193545818328857
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.1059130430221558
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5512144565582275
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5734007358551025
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5808393359184265
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5510819554328918
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.7452234029769897
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.9245158433914185
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.3590829372406006
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.017555594444275
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.3906863927841187
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7857805490493774
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.8325455784797668
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6818661689758301
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5597142577171326
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5633540153503418
+6 2.0977408906 	 0.5633540396 	 0.5633540396
+epoch_time;  150.82699012756348
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5234348773956299
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5408002138137817
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.4738073348999023
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7889108657836914
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.4153128862380981
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8206121325492859
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7223379015922546
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6370993256568909
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7936913967132568
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6563672423362732
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3150261640548706
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4275290071964264
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.813551127910614
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6426786184310913
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.9301263093948364
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9450893998146057
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.521884560585022
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.553733766078949
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5210488438606262
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5205059051513672
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.37331223487854
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8113823533058167
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.9465845823287964
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9124755263328552
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1460474729537964
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7017317414283752
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.77519291639328
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6585203409194946
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5374360680580139
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5505428910255432
+7 2.0797839042 	 0.5505428637 	 0.5505428637
+epoch_time;  151.1658878326416
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5480935573577881
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5523589849472046
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.5880675315856934
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8290610313415527
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.4832745790481567
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8397047519683838
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7659696936607361
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6593533754348755
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7727271914482117
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6459000706672668
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3162335455417633
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4284021854400635
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8602521419525146
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6655548214912415
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.2392020225524902
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0219959020614624
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.520092248916626
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5548784136772156
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5351800918579102
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5247925519943237
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.5799856185913086
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8675537109375
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.1043848991394043
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.955249011516571
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.2074871063232422
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7264618873596191
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.765277624130249
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6538118720054626
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5148057341575623
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5410681962966919
+8 2.0717680841 	 0.5410682226 	 0.5410682226
+epoch_time;  150.8722803592682
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4915148615837097
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5223435163497925
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.5312204360961914
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7955880761146545
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.328082799911499
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7830784916877747
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6515424251556396
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5965615510940552
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6852477192878723
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5977168679237366
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2944630980491638
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4086878299713135
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7481081485748291
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6044365167617798
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.8872041702270508
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9382193684577942
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4458055794239044
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5066081285476685
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4810522496700287
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4988858699798584
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.3149808645248413
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7882664799690247
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.9385045766830444
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9046357870101929
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1250499486923218
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6903101801872253
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6849600672721863
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6089528799057007
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.47047853469848633
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5030388236045837
+9 2.0573367909 	 0.5030388266 	 0.5030388266
+epoch_time;  149.948139667511
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.49865293502807617
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5240990519523621
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.574432611465454
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8214560151100159
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.3912662267684937
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8111631870269775
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7394425272941589
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6453204154968262
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.732115626335144
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6267486810684204
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.28930923342704773
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4039580225944519
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8174660205841064
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6434176564216614
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.246328592300415
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0341535806655884
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4902724623680115
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5361363887786865
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4897403120994568
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4999716877937317
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.6039612293243408
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.866041362285614
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.9587215185165405
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9307881593704224
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1488275527954102
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6997770667076111
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7205221652984619
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.631462812423706
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4809456169605255
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5191001296043396
+10 2.0476629795 	 0.5191001569 	 0.5191001569
+epoch_time;  150.63738107681274
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5575957894325256
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5625758171081543
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.8144999742507935
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8969115018844604
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.5814577341079712
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8687167763710022
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7918773293495178
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6640469431877136
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7715098261833191
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6433894038200378
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3192013204097748
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4287557005882263
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8568159341812134
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6588494181632996
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.638486385345459
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.1182830333709717
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5071322321891785
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5433462858200073
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5422316789627075
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5338190197944641
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.7969096899032593
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.9254988431930542
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.3707115650177
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.030631184577942
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.298087239265442
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.760502278804779
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7593122124671936
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6533424258232117
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4984516203403473
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5283239483833313
+11 2.0405535576 	 0.5283239656 	 0.5283239656
+epoch_time;  149.88172817230225
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.43979188799858093
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.49020206928253174
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2681652307510376
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7254396677017212
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.1986972093582153
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7571788430213928
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6723054051399231
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6070579290390015
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6577677726745605
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5942524671554565
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2566753625869751
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.38162168860435486
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7428506016731262
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6116902232170105
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.8723421096801758
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.92448490858078
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.45775067806243896
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.517614483833313
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4367887079715729
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.47072499990463257
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.349428415298462
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7904780507087708
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7260066270828247
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8558410406112671
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9764705300331116
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.643158495426178
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.649034857749939
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5995546579360962
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4544737637042999
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5024120807647705
+12 2.0384984465 	 0.5024120848 	 0.5024120848
+epoch_time;  150.09251999855042
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5201879739761353
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.540852963924408
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2739198207855225
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7442286610603333
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2700170278549194
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.789056122303009
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7372657656669617
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6527350544929504
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7509459257125854
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6463228464126587
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2840113043785095
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4074740409851074
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7953993678092957
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6493619084358215
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.0979907512664795
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.994657039642334
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.49417805671691895
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5482340455055237
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5088632702827454
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5152736306190491
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4964580535888672
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8485328555107117
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7324674129486084
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8792897462844849
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0262556076049805
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.672492265701294
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7339656352996826
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6473227739334106
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.48252928256988525
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5316436886787415
+13 2.029241839 	 0.5316436897 	 0.5316436897
+epoch_time;  150.25409054756165
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4190762937068939
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4791908860206604
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.0518587827682495
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.6638461351394653
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.972489058971405
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.6739678978919983
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5660470128059387
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.561683177947998
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5673903226852417
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5470135807991028
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.25251448154449463
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3769620656967163
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6571861505508423
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.564876139163971
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.6689401865005493
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8652134537696838
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.3944435715675354
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.478983074426651
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.41382813453674316
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4607986807823181
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.1556388139724731
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7319902777671814
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.3973523378372192
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7574265003204346
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8765377998352051
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.5997233390808105
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5630636811256409
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5548858046531677
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.3904806673526764
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.46053844690322876
+14 2.0243303348 	 0.4605384439 	 0.4605384439
+epoch_time;  150.94903302192688
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.421976238489151
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4830799102783203
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.1683101654052734
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7160006165504456
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.208349347114563
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7604097723960876
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6635239720344543
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6123185157775879
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6843597292900085
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6041756868362427
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.25124597549438477
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.37845900654792786
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7384054064750671
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6106699705123901
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.0183749198913574
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9518124461174011
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4624977111816406
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5199191570281982
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4249809980392456
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.46504074335098267
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4209280014038086
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8163708448410034
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7391897439956665
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8774706721305847
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9087348580360413
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6225820779800415
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6763005256652832
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6116132140159607
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4599112868309021
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5067384243011475
+15 2.015448285 	 0.5067384041 	 0.5067384041
+epoch_time;  150.0948338508606
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5060664415359497
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5377101898193359
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.5952062606811523
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8533579111099243
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.4592806100845337
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.844918966293335
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6692621111869812
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.609687328338623
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7308149337768555
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6260696053504944
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2995545566082001
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4208028316497803
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7424228191375732
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6099571585655212
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.903759479522705
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9374647736549377
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4507512152194977
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5106533765792847
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5072783827781677
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5171033143997192
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.313698172569275
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7825637459754944
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.187509059906006
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9967852830886841
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.1759638786315918
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7283281087875366
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7087588906288147
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6315104365348816
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4865146577358246
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5220199227333069
+16 2.017160921 	 0.5220199197 	 0.5220199197
+epoch_time;  150.12844729423523
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.480419784784317
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5212022662162781
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.3830069303512573
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7806521654129028
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2801578044891357
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7900727987289429
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.7170898914337158
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6329813599586487
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6897814869880676
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6140630841255188
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.28134286403656006
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4045153856277466
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7871710658073425
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6344418525695801
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.995390772819519
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9933721423149109
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4733395576477051
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5297660827636719
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.46630167961120605
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.49520742893218994
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.415122389793396
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8329070210456848
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.856731653213501
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.9119746088981628
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.015117883682251
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6721909046173096
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6935806274414062
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6262762546539307
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.47266823053359985
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5184681415557861
+17 2.0112356854 	 0.5184681456 	 0.5184681456
+epoch_time;  148.83521032333374
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.457626610994339
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5067665576934814
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.3513845205307007
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7701748609542847
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2400989532470703
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7683976292610168
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6638227105140686
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6025442481040955
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.677709698677063
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6000345945358276
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2593376338481903
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3877432644367218
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7044389843940735
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5970643162727356
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.8789690732955933
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9252261519432068
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.44266197085380554
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5039094686508179
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.45108580589294434
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4837479591369629
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.3241426944732666
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7797932028770447
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.805499792098999
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8937965035438538
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.026448130607605
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6709237098693848
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6690039038658142
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6078138947486877
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4584098756313324
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5009729266166687
+18 2.013900496 	 0.5009729094 	 0.5009729094
+epoch_time;  149.34921503067017
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4252902567386627
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4862375855445862
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.0709154605865479
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.6683501601219177
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.9321876168251038
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.6697183847427368
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6278700232505798
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5905504822731018
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5772489905357361
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5591028332710266
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2609262466430664
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3903800845146179
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.686907947063446
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5909793376922607
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.6908392906188965
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8856378197669983
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4295237958431244
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5029091238975525
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.41094937920570374
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4658496677875519
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2050343751907349
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7553253769874573
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.2879575490951538
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7376570701599121
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8515442609786987
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.60597163438797
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5749750137329102
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5656382441520691
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.40980467200279236
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.47976022958755493
+19 2.0037833972 	 0.4797602185 	 0.4797602185
+epoch_time;  150.92415070533752
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4457132816314697
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5015549659729004
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.2418477535247803
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.740929365158081
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2240631580352783
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7824934124946594
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6546688675880432
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5960119962692261
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6818842887878418
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6043708920478821
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.25507205724716187
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3869846761226654
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7115838527679443
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5947144627571106
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.6971417665481567
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8880308866500854
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.449836790561676
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.509148895740509
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.43788453936576843
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.47939178347587585
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.205784797668457
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7546259164810181
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7350026369094849
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8872041702270508
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9720948934555054
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.662143886089325
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6692031025886536
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6091787815093994
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.47236543893814087
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5117629766464233
+20 2.0019393008 	 0.5117629746 	 0.5117629746
+epoch_time;  149.30010962486267
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4287661910057068
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4887848496437073
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.1687579154968262
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7090383172035217
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.124690055847168
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7311754822731018
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6836258769035339
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6157171726226807
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6481795310974121
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5854761004447937
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2516534924507141
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3848865330219269
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7371101975440979
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6113356351852417
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.8515499830245972
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.9243329167366028
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.47024664282798767
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5182154774665833
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4142518639564514
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4647074341773987
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2856152057647705
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7831149101257324
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.5946558713912964
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8334125876426697
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8903645873069763
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6218468546867371
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6400114893913269
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5922404527664185
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.44916465878486633
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4986448585987091
+21 2.002597385 	 0.498644845 	 0.498644845
+epoch_time;  148.6377236843109
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5092625021934509
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.53544020652771
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.647550106048584
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.8494795560836792
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.5875235795974731
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8631162047386169
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.8241236805915833
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6769068241119385
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.7753519415855408
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6456791758537292
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3026181757450104
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.41861817240715027
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.8799982666969299
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6705854535102844
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.8019537925720215
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.1314523220062256
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5581832528114319
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5644392967224121
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5016055703163147
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5113154053688049
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.8890793323516846
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.9264191389083862
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 2.302072525024414
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.0051370859146118
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.186952829360962
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.71943598985672
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.7561061382293701
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6481501460075378
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5208427906036377
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5388721823692322
+22 1.9989514473 	 0.5388721531 	 0.5388721531
+epoch_time;  149.96227502822876
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.3987507224082947
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4659833610057831
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.9942201375961304
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.6391989588737488
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.931382417678833
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.65669184923172
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5604104995727539
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5469819903373718
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5764844417572021
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5460960268974304
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.22875119745731354
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3616381287574768
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6173273324966431
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5475029945373535
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.468389630317688
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.804614782333374
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.3822120726108551
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4647575914859772
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.40270745754241943
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.45153695344924927
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.0031163692474365
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.6862881183624268
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.2792832851409912
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7350098490715027
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7896516919136047
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.5771514773368835
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5653359293937683
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5507757067680359
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.3916969299316406
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4578683376312256
+23 1.997148954 	 0.4578683498 	 0.4578683498
+epoch_time;  149.47330284118652
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4185279905796051
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.48369985818862915
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.1799590587615967
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7091801762580872
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.0031462907791138
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.6955519318580627
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6941564083099365
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6192314624786377
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.577600359916687
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5567930936813354
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2545992136001587
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.38750675320625305
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7425097823143005
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6178566813468933
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.06130313873291
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.990391194820404
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4587003290653229
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5171452164649963
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.3987703025341034
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.45922112464904785
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4298796653747559
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8282657265663147
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.4963968992233276
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8085669875144958
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.8553709387779236
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6153168082237244
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5857535600662231
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5698928236961365
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.41739675402641296
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.48466378450393677
+24 1.9940448989 	 0.4846637855 	 0.4846637855
+epoch_time;  150.11951565742493
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.43137285113334656
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.49220651388168335
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.1505154371261597
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7051330208778381
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.1180776357650757
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7364365458488464
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6353550553321838
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5943435430526733
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6318714618682861
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5839321613311768
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.24668000638484955
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.38114243745803833
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6815031170845032
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5887053608894348
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.767503261566162
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8880754709243774
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.43330004811286926
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5009521842002869
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.43415871262550354
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.47447875142097473
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.2500231266021729
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.755131721496582
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.5114902257919312
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8228491544723511
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.867831289768219
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6201375126838684
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6204663515090942
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5870892405509949
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.43111181259155273
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4911682903766632
+25 1.9944785354 	 0.4911682969 	 0.4911682969
+epoch_time;  151.16111254692078
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.42922207713127136
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.4892163574695587
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.221598744392395
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7296648025512695
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2421252727508545
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7726950645446777
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.618782639503479
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5844326615333557
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6735905408859253
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5994704961776733
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.23932722210884094
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.37161698937416077
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6650246381759644
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5806875228881836
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.505366325378418
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8404163718223572
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4162737727165222
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4922963082790375
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4335867166519165
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4699108898639679
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.0846211910247803
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7274237871170044
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7357606887817383
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8831027150154114
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.9472967386245728
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.643891453742981
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6532312631607056
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6021302938461304
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4494713842868805
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.49962157011032104
+26 1.9896904057 	 0.4996215691 	 0.4996215691
+epoch_time;  150.7517547607422
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.38545674085617065
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.46173548698425293
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.9187707901000977
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.6253587603569031
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.8828510642051697
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.65265953540802
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6033181548118591
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.5754455327987671
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5661863684654236
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.5530158281326294
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.22773541510105133
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.3638235926628113
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6428719758987427
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.5752473473548889
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.4810558557510376
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 0.8202531933784485
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.40786823630332947
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4873015880584717
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.3755549192428589
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.4405119717121124
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.0565495491027832
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.7050493359565735
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.1934219598770142
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.7216031551361084
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7275750041007996
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.5597430467605591
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5673762559890747
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.5607103705406189
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4020748436450958
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4725218415260315
+27 1.9897784372 	 0.4725218304 	 0.4725218304
+epoch_time;  150.4194610118866
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5178396701812744
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5311985611915588
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.4316647052764893
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7823464274406433
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.319142460823059
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7964310646057129
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.76038658618927
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6502458453178406
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6999196410179138
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.611136794090271
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.2634204626083374
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.38796722888946533
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.82541424036026
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.647040843963623
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.1725399494171143
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.011920690536499
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.47920194268226624
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5278922319412231
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.48379528522491455
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.493575781583786
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.466171383857727
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8441914916038513
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.8240265846252441
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8947791457176208
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.128615140914917
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.7028117775917053
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6988860964775085
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6230179667472839
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.453529417514801
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.5034055709838867
+28 1.9872243506 	 0.5034055548 	 0.5034055548
+epoch_time;  150.6985228061676
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.49418771266937256
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.5310509204864502
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.3647150993347168
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7855059504508972
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.21503746509552
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7738503813743591
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6675091981887817
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6177991032600403
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6589398980140686
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6013795137405396
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.27494698762893677
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.4031014144420624
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.7412881255149841
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6229662895202637
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.1161022186279297
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0152286291122437
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4545595347881317
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5164274573326111
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.47746339440345764
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5038231611251831
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4324427843093872
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8402629494667053
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7372432947158813
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8916138410568237
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0117156505584717
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6833192706108093
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6591033935546875
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6109166741371155
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.43009915947914124
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4938972294330597
+29 1.985766419 	 0.4938972279 	 0.4938972279
+epoch_time;  149.3813304901123
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.49434560537338257
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_none_pNone_gNone => 	 0.531086266040802
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 1.3635199069976807
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis0_pNone_gNone => 	 0.7850415110588074
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 1.2151285409927368
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_semi_pNone_gNone => 	 0.7739656567573547
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6674159169197083
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_none_pNone_gNone => 	 0.6178560853004456
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6590192914009094
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_full_pNone_gNone => 	 0.6013547778129578
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.27492207288742065
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_tennis1_pNone_gNone => 	 0.40316709876060486
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.740776538848877
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_full_pNone_gNone => 	 0.6229180097579956
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 2.115325689315796
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis0_pNone_gNone => 	 1.0153015851974487
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.4544283449649811
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_tennis1_pNone_gNone => 	 0.5164042711257935
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.47746723890304565
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_full_pNone_gNone => 	 0.5037966370582581
+	 Logging test loss MSELoss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 1.4339416027069092
+	 Logging test loss L1Loss(): t(4, 10)_r(0, 0)_semi_pNone_gNone => 	 0.8405335545539856
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 1.7381949424743652
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis0_pNone_gNone => 	 0.8917093276977539
+	 Logging test loss MSELoss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 1.0118943452835083
+wandb: Waiting for W&B process to finish... (success).
+wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: 
+wandb: Run history:
+wandb:                                        Epoch ▁▁▁▂▂▂▂▃▃▃▃▄▄▄▄▅▅▅▅▆▆▆▆▇▇▇▇███
+wandb:      Test loss t(0, 0)_r(2, 5)_full L1Loss() █▃▄▂▁▃▃▃▃▂▂▃▂▂▁▁▂▂▂▁▂▁▂▁▁▂▂▁▂▂▂
+wandb:     Test loss t(0, 0)_r(2, 5)_full MSELoss() █▃▃▂▁▂▂▂▂▂▂▂▁▂▁▁▂▂▂▁▁▁▂▁▁▁▁▁▂▂▂
+wandb:      Test loss t(0, 0)_r(2, 5)_none L1Loss() █▃▄▂▁▃▃▂▃▂▂▃▂▂▁▁▂▂▂▁▂▁▂▁▁▂▁▁▂▂▂
+wandb:     Test loss t(0, 0)_r(2, 5)_none MSELoss() █▃▃▂▁▂▂▂▂▂▂▂▁▂▁▁▂▂▁▁▁▁▂▁▁▁▁▁▂▂▂
+wandb:      Test loss t(0, 0)_r(2, 5)_semi L1Loss() █▃▄▂▂▃▃▂▃▂▂▃▂▂▁▂▃▂▂▁▂▂▂▁▂▂▂▁▂▂▂
+wandb:     Test loss t(0, 0)_r(2, 5)_semi MSELoss() █▃▃▂▂▂▂▂▂▂▂▂▁▂▁▁▂▂▂▁▁▁▂▁▁▁▁▁▂▂▂
+wandb:   Test loss t(0, 0)_r(2, 5)_tennis0 L1Loss() █▃▄▂▂▃▃▂▂▂▂▃▂▂▁▂▃▂▂▁▂▂▃▁▂▂▂▁▂▂▂
+wandb:  Test loss t(0, 0)_r(2, 5)_tennis0 MSELoss() █▃▃▂▂▂▂▂▂▂▂▂▁▁▁▁▂▂▂▁▁▁▂▁▁▁▁▁▂▂▂
+wandb:   Test loss t(0, 0)_r(2, 5)_tennis1 L1Loss() █▄▄▂▂▃▃▃▃▂▂▃▁▂▁▁▂▂▂▂▂▂▂▁▂▁▁▁▂▂▂
+wandb:  Test loss t(0, 0)_r(2, 5)_tennis1 MSELoss() █▄▄▂▂▂▂▂▂▂▂▂▁▂▁▁▂▂▁▁▁▁▂▁▁▁▁▁▁▂▂
+wandb:     Test loss t(4, 10)_r(0, 0)_full L1Loss() █▄▅▂▂▃▃▃▃▂▃▃▂▃▁▂▂▃▂▂▂▂▃▁▂▂▂▁▃▂▂
+wandb:    Test loss t(4, 10)_r(0, 0)_full MSELoss() █▄▄▂▂▃▃▂▂▂▂▂▂▂▁▂▂▂▁▁▂▂▂▁▂▁▁▁▂▂▂
+wandb:     Test loss t(4, 10)_r(0, 0)_none L1Loss() █▄▅▂▂▃▃▃▃▂▃▃▂▃▁▂▂▂▂▂▂▂▃▁▂▂▂▁▃▂▂
+wandb:    Test loss t(4, 10)_r(0, 0)_none MSELoss() █▄▄▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▂▂▃▁▂▁▁▁▂▂▂
+wandb:     Test loss t(4, 10)_r(0, 0)_semi L1Loss() █▄▅▃▂▃▃▂▃▂▃▃▂▃▁▂▂▂▂▂▂▂▃▁▂▂▁▁▃▂▂
+wandb:    Test loss t(4, 10)_r(0, 0)_semi MSELoss() █▃▄▂▂▂▂▂▂▂▂▃▂▂▁▂▂▂▂▁▁▂▃▁▂▁▁▁▂▂▂
+wandb:  Test loss t(4, 10)_r(0, 0)_tennis0 L1Loss() █▃▅▂▂▃▃▂▃▂▃▃▂▂▁▂▂▂▂▂▂▂▃▁▂▂▁▁▂▂▂
+wandb: Test loss t(4, 10)_r(0, 0)_tennis0 MSELoss() █▃▄▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▁▁▃▁▂▁▁▁▂▂▂
+wandb:  Test loss t(4, 10)_r(0, 0)_tennis1 L1Loss() █▅▅▃▃▃▃▃▃▂▃▃▂▃▁▂▂▂▂▂▂▂▃▁▂▂▂▁▂▂▂
+wandb: Test loss t(4, 10)_r(0, 0)_tennis1 MSELoss() █▄▄▂▂▃▃▂▂▂▂▂▂▂▁▂▂▂▂▁▂▂▃▁▂▁▁▁▂▂▂
+wandb:     Test loss t(4, 10)_r(2, 5)_full L1Loss() █▄▅▂▂▃▃▃▃▂▂▂▂▃▁▂▂▂▂▁▂▂▃▁▁▂▂▁▂▂▂
+wandb:    Test loss t(4, 10)_r(2, 5)_full MSELoss() █▃▄▂▂▂▂▂▂▂▂▂▁▂▁▂▂▂▂▁▂▁▂▁▁▁▁▁▂▁▁
+wandb:     Test loss t(4, 10)_r(2, 5)_none L1Loss() █▄▅▂▂▃▃▃▃▂▂▃▂▂▁▂▂▂▂▁▂▂▂▁▁▂▂▁▂▂▂
+wandb:    Test loss t(4, 10)_r(2, 5)_none MSELoss() █▄▄▂▂▂▂▂▂▂▂▂▁▂▁▂▂▂▂▁▂▁▂▁▁▁▁▁▂▁▁
+wandb:     Test loss t(4, 10)_r(2, 5)_semi L1Loss() █▃▅▂▂▃▃▂▂▂▂▃▂▂▁▂▃▂▂▁▂▂▃▁▁▂▂▁▂▂▂
+wandb:    Test loss t(4, 10)_r(2, 5)_semi MSELoss() █▃▄▂▂▂▂▂▂▂▂▂▁▂▁▂▂▂▂▁▂▁▂▁▁▁▂▁▂▂▂
+wandb:  Test loss t(4, 10)_r(2, 5)_tennis0 L1Loss() █▃▅▂▂▃▃▂▂▂▂▃▂▂▁▂▃▂▂▁▂▂▃▁▂▂▂▁▂▂▂
+wandb: Test loss t(4, 10)_r(2, 5)_tennis0 MSELoss() █▃▄▂▂▂▂▂▂▂▂▂▂▂▁▂▂▂▂▁▂▁▂▁▁▁▂▁▂▂▂
+wandb:  Test loss t(4, 10)_r(2, 5)_tennis1 L1Loss() █▄▅▂▂▃▃▃▃▂▂▂▂▂▁▂▂▂▂▁▂▂▃▁▂▂▂▁▂▂▂
+wandb: Test loss t(4, 10)_r(2, 5)_tennis1 MSELoss() █▄▄▂▂▃▂▂▂▂▂▂▂▂▁▂▂▂▂▁▂▁▂▁▁▁▁▁▂▁▁
+wandb:      Train loss data_t(0, 0)_r(2, 5)_tennis0 █▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                        Epoch 29
+wandb:      Test loss t(0, 0)_r(2, 5)_full L1Loss() 0.5038
+wandb:     Test loss t(0, 0)_r(2, 5)_full MSELoss() 0.47747
+wandb:      Test loss t(0, 0)_r(2, 5)_none L1Loss() 0.53109
+wandb:     Test loss t(0, 0)_r(2, 5)_none MSELoss() 0.49435
+wandb:      Test loss t(0, 0)_r(2, 5)_semi L1Loss() 0.68356
+wandb:     Test loss t(0, 0)_r(2, 5)_semi MSELoss() 1.01189
+wandb:   Test loss t(0, 0)_r(2, 5)_tennis0 L1Loss() 0.78504
+wandb:  Test loss t(0, 0)_r(2, 5)_tennis0 MSELoss() 1.36352
+wandb:   Test loss t(0, 0)_r(2, 5)_tennis1 L1Loss() 0.40317
+wandb:  Test loss t(0, 0)_r(2, 5)_tennis1 MSELoss() 0.27492
+wandb:     Test loss t(4, 10)_r(0, 0)_full L1Loss() 0.62292
+wandb:    Test loss t(4, 10)_r(0, 0)_full MSELoss() 0.74078
+wandb:     Test loss t(4, 10)_r(0, 0)_none L1Loss() 0.61786
+wandb:    Test loss t(4, 10)_r(0, 0)_none MSELoss() 0.66742
+wandb:     Test loss t(4, 10)_r(0, 0)_semi L1Loss() 0.84053
+wandb:    Test loss t(4, 10)_r(0, 0)_semi MSELoss() 1.43394
+wandb:  Test loss t(4, 10)_r(0, 0)_tennis0 L1Loss() 1.0153
+wandb: Test loss t(4, 10)_r(0, 0)_tennis0 MSELoss() 2.11533
+wandb:  Test loss t(4, 10)_r(0, 0)_tennis1 L1Loss() 0.5164
+wandb: Test loss t(4, 10)_r(0, 0)_tennis1 MSELoss() 0.45443
+wandb:     Test loss t(4, 10)_r(2, 5)_full L1Loss() 0.60135
+wandb:    Test loss t(4, 10)_r(2, 5)_full MSELoss() 0.65902
+wandb:     Test loss t(4, 10)_r(2, 5)_none L1Loss() 0.61084
+wandb:    Test loss t(4, 10)_r(2, 5)_none MSELoss() 0.65879
+wandb:     Test loss t(4, 10)_r(2, 5)_semi L1Loss() 0.77397
+wandb:    Test loss t(4, 10)_r(2, 5)_semi MSELoss() 1.21513
+wandb:  Test loss t(4, 10)_r(2, 5)_tennis0 L1Loss() 0.89171
+wandb: Test loss t(4, 10)_r(2, 5)_tennis0 MSELoss() 1.73819
+wandb:  Test loss t(4, 10)_r(2, 5)_tennis1 L1Loss() 0.49382
+wandb: Test loss t(4, 10)_r(2, 5)_tennis1 MSELoss() 0.43013
+wandb:      Train loss data_t(0, 0)_r(2, 5)_tennis0 1.98577
+wandb: 
+wandb: 🚀 View run resplendent-fireworks-1828 at: https://wandb.ai/nreints/thesis/runs/9o567nxm
+wandb: Synced 6 W&B file(s), 0 media file(s), 2 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230202_001809-9o567nxm/logs
+	 Logging test loss L1Loss(): t(0, 0)_r(2, 5)_semi_pNone_gNone => 	 0.6835607886314392
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6587938070297241
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_none_pNone_gNone => 	 0.6108401417732239
+	 Logging test loss MSELoss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.43012747168540955
+	 Logging test loss L1Loss(): t(4, 10)_r(2, 5)_tennis1_pNone_gNone => 	 0.4938192665576935
+It took 4788.380045413971 seconds to train & eval the model.
+
+JOB STATISTICS
+==============
+Job ID: 2166300
+Array Job ID: 2165636_4
+Cluster: snellius
+User/Group: nreints/nreints
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 05:38:26
+CPU Efficiency: 11.75% of 2-00:01:12 core-walltime
+Job Wall-clock time: 02:40:04
+Memory Utilized: 7.48 GB
+Memory Efficiency: 23.94% of 31.25 GB

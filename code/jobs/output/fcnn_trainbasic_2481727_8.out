@@ -1,0 +1,55 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: Appending key for api.wandb.ai to your netrc file: /home/nreints/.netrc
+/gpfs/home2/nreints/MScThesis/code/fcnn.py:521: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: wandb version 0.14.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230321_154036-84juwppp
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run dry-mountain-129
+wandb: ⭐️ View project at https://wandb.ai/nreints/test
+wandb: 🚀 View run at https://wandb.ai/nreints/test/runs/84juwppp
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: 🚀 View run dry-mountain-129 at: https://wandb.ai/nreints/test/runs/84juwppp
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230321_154036-84juwppp/logs
+['data_t(5,', '20)_r(0,', '0)_full_pNone_gNone']
+data/data_t(5, 20)_r(0, 0)_full_pNone_gNone
+Testing on datasets: ['data/data_t(5, 20)_r(0, 0)_full_pNone_gNone', 'data_tennis_pNone_gNone_tennisEffect']
+----- ITERATION 1/2 ------
+Number of train simulations: 3200
+Number of test simulations: 800
+The dataloader took 86.82323217391968 seconds.
+-- Finished Train Dataloader --
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 571, in <module>
+    model = model_pipeline(
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 334, in model_pipeline
+    model, train_loader, test_loaders, criterion, optimizer, data_set_train = make(
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 389, in make
+    data_set_test = MyDataset(
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 80, in __init__
+    self.collect_data()
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 87, in collect_data
+    with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'data/data/data_t(5, 20)_r(0, 0)_full_pNone_gNone/sim_2048.pickle'
+srun: error: gcn60: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=2481735.0
+
+JOB STATISTICS
+==============
+Job ID: 2481735
+Array Job ID: 2481727_8
+Cluster: snellius
+User/Group: nreints/nreints
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:33:36 core-walltime
+Job Wall-clock time: 00:01:52
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 29.30 GB (29.30 GB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.

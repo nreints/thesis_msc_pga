@@ -1,0 +1,48 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: Appending key for api.wandb.ai to your netrc file: /home/nreints/.netrc
+/gpfs/home2/nreints/MScThesis/code/fcnn.py:368: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230206_143524-icu44wn2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run confused-silence-1882
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/icu44wn2
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: / 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: - 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: \ 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: | 0.024 MB of 0.024 MB uploaded (0.000 MB deduped)wandb: 🚀 View run confused-silence-1882 at: https://wandb.ai/nreints/thesis/runs/icu44wn2
+wandb: Synced 5 W&B file(s), 0 media file(s), 2 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230206_143524-icu44wn2/logs
+Number of train simulations: 8000
+Number of test simulations: 2000
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 427, in <module>
+    model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses)
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 272, in model_pipeline
+    model, train_loader, test_loaders, criterion, optimizer = make(
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 312, in make
+    data_set_test = MyDataset(
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 71, in __init__
+    self.collect_data()
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 82, in collect_data
+    with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'data/data_show_tennis0_effect/sim_9261.pickle'
+srun: error: gcn71: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=2178582.0
+
+JOB STATISTICS
+==============
+Job ID: 2178582
+Array Job ID: 2178577_3
+Cluster: snellius
+User/Group: nreints/nreints
+State: FAILED (exit code 1)
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:01:20
+CPU Efficiency: 3.22% of 00:41:24 core-walltime
+Job Wall-clock time: 00:02:18
+Memory Utilized: 7.81 GB
+Memory Efficiency: 24.98% of 31.25 GB

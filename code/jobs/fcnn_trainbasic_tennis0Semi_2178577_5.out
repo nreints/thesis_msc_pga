@@ -1,0 +1,49 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: Appending key for api.wandb.ai to your netrc file: /home/nreints/.netrc
+/gpfs/home2/nreints/MScThesis/code/fcnn.py:368: DeprecationWarning: Sampling from a set deprecated
+since Python 3.9 and will be removed in a subsequent version.
+  train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
+wandb: wandb version 0.13.9 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.13.8
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230206_143523-ubirxw6b
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run feasible-dragon-1880
+wandb: ⭐️ View project at https://wandb.ai/nreints/thesis
+wandb: 🚀 View run at https://wandb.ai/nreints/thesis/runs/ubirxw6b
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: 🚀 View run feasible-dragon-1880 at: https://wandb.ai/nreints/thesis/runs/ubirxw6b
+wandb: Synced 5 W&B file(s), 0 media file(s), 2 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230206_143523-ubirxw6b/logs
+Number of train simulations: 8000
+Number of test simulations: 2000
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 427, in <module>
+    model = model_pipeline(config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses)
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 272, in model_pipeline
+    model, train_loader, test_loaders, criterion, optimizer = make(
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 312, in make
+    data_set_test = MyDataset(
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 71, in __init__
+    self.collect_data()
+  File "/gpfs/home2/nreints/MScThesis/code/fcnn.py", line 82, in collect_data
+    with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'data/data_show_tennis0_effect/sim_9257.pickle'
+srun: error: gcn28: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=2178584.0
+
+JOB STATISTICS
+==============
+Job ID: 2178584
+Array Job ID: 2178577_5
+Cluster: snellius
+User/Group: nreints/nreints
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:39:54 core-walltime
+Job Wall-clock time: 00:02:13
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 31.25 GB (31.25 GB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
