@@ -340,17 +340,32 @@ def generate_data(
                 # Collect rotation matrix
                 current_rotMat = get_mat(data, geom_id)
                 # print(xpos, start_xpos)
+                print("--------")
+                # print(np.linalg.inv(start_rotMat) @ start_xpos)
                 # print(current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos)
-                rel_trans = (
-                    xpos - current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos
-                )
-                # print("AAH", rel_trans)
-
+                rel_trans = xpos - start_xpos
+                print("rel trans\n", rel_trans)
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
+                print(
+                    "Same\n",
+                    current_rotMat @ np.linalg.inv(start_rotMat),
+                    "\n",
+                    np.linalg.inv(start_rotMat) @ current_rotMat,
+                )
                 # print(dataset["eucl_motion"][i][:, :9].shape)
                 dataset["eucl_motion"][i][:, :9] = rel_rot.flatten()
                 dataset["eucl_motion"][i][:, 9:] = rel_trans
-
+                print(f"rel rot\n {rel_rot}")
+                print(dataset["pos"][0].shape, start_xpos.shape)
+                print("rotated local\n", rel_rot @ xyz_local)
+                current_pos_recalculated = (
+                    (rel_rot @ (dataset["pos"][0].T - start_xpos[:, None])).T
+                    + rel_trans[None, :]
+                    + start_xpos[None, :]
+                )
+                print("current pos\n", current_pos_recalculated)
+                print("global pos\n", global_pos)
+                print(current_pos_recalculated - global_pos)
                 rel_quaternion_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse
                 )
@@ -443,7 +458,7 @@ def get_sizes(symmetry):
     )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
     sizes = ratio * random_size
     # print("sizes of cube:", "12 24 72")
-    # return "12 24 72", [12, 24, 72]
+    return "3 3 3", [3, 3, 3]
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
 
@@ -582,7 +597,7 @@ def write_data_nsim(
             print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-        # euler = "0 0 0"
+        euler = "0 0 0"
         # print(f"initial orientation: {euler}")
         # Define sizes
         sizes_str, sizes_list = get_sizes(symmetry)
@@ -623,10 +638,10 @@ if __name__ == "__main__":
         help="symmetry of the box.\nfull: symmetric box 1:1:1\n; semi: 2 sides of same length, other longer 1:1:10\n;tennis: tennis_racket effect 1:3:10\n;none: random lengths for each side",
         default="tennis",
     )
-    parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
-    parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
-    parser.add_argument("-a_min", type=int, help="angular qvel min", default=3)
-    parser.add_argument("-a_max", type=int, help="angular qvel max", default=4)
+    parser.add_argument("-l_min", type=int, help="linear qvel min", default=10)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=20)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=4)
+    parser.add_argument("-a_max", type=int, help="angular qvel max", default=10)
     parser.add_argument(
         "-integrator",
         type=str,

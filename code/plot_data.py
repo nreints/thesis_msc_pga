@@ -470,7 +470,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_tennis_pNone_gNone_tennisEffect",
+        default="data_t(10, 20)_r(0, 0)_tennis_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -549,17 +549,17 @@ if __name__ == "__main__":
 
         data_types = [
             "pos",
-            # "eucl_motion",
+            "eucl_motion",
             # "eucl_motion_ori",
             # "quat",
             # "quat_ori",
             # "log_quat",
-            "log_quat_ori",
-            "dual_quat",
-            "dual_quat_ori",
-            "log_dualQ",
-            "log_dualQ_ori",
-            "pos_diff_start",
+            # "log_quat_ori",
+            # "dual_quat",
+            # "dual_quat_ori",
+            # "log_dualQ",
+            # "log_dualQ_ori",
+            # "pos_diff_start",
         ]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 

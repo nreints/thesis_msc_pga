@@ -23,11 +23,17 @@ def eucl2pos(eucl_motion, start_pos):
     """
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
-        rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
-        mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
+        # rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
+        # mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
 
-        out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
-        return out
+        # out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
+        # return out
+
+        # rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
+        # mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
+        print(start_pos.reshape(-1, 8, 3).shape)
+        print(eucl_motion[:, 9:].shape)
+        return (start_pos.reshape(-1, 8, 3) + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
 
     # In case of LSTM/GRU
     else:
