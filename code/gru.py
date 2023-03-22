@@ -55,7 +55,7 @@ class GRU(nn.Module):
         )
         self.pre_hidden_lin_layer = nn.Sequential(
             nn.Linear(
-                3,
+                config["extra_input_n"],
                 self.n_layers * self.h_size,
             )
         )
@@ -125,7 +125,7 @@ class GRU(nn.Module):
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, sims, n_frames, n_data, data_type, dir, input_inertia=True):
+    def __init__(self, sims, n_frames, n_data, data_type, dir, extra_input):
         """
         Inputs:
             n_sims -
@@ -138,7 +138,7 @@ class MyDataset(data.Dataset):
         self.sims = sims
         self.data_type = data_type
         self.dir = dir
-        self.input_inertia = input_inertia
+        self.extra_input = extra_input
         self.collect_data()
 
     def collect_data(self):
@@ -194,7 +194,7 @@ class MyDataset(data.Dataset):
                     self.data = torch.zeros(
                         len_data, self.n_frames_perentry, self.n_datap_perframe
                     )
-                    self.inertia = torch.zeros((len_data, 3))
+                    self.extra_input_data = torch.zeros((len_data, self.extra_input[1]))
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     self.start_pos[count] = torch.FloatTensor(
                         data_all["pos"][0].flatten()
@@ -207,16 +207,22 @@ class MyDataset(data.Dataset):
                         -1, self.n_datap_perframe
                     )
 
-                    if self.input_inertia:
+                    if self.extra_input[1] != 0:
                         # TODO
-                        # inertia = data_all["inertia"]
-                        inertia = torch.tensor([1, 2, 3])
-                        self.inertia[count] = inertia
+                        extra_input_values = torch.FloatTensor(
+                            data_all[self.extra_input[0]]
+                        )
+                        self.extra_input_data[count] = extra_input_values
                     self.target_pos[count] = torch.FloatTensor(
                         data_all["pos"][frame + 1 : train_end + 1]
                     ).flatten(start_dim=1)
                     count += 1
         # print(time.time() - start_time)
+        # exit()
+        self.normalize_extra_input = torch.mean(
+            torch.norm(self.extra_input_data, dim=1)
+        )
+        # print(self.normalize_extra_input)
         # exit()
 
     def __len__(self):
@@ -229,8 +235,8 @@ class MyDataset(data.Dataset):
         data_target = self.target[idx]
         data_target_pos = self.target_pos[idx]
         data_start = self.start_pos[idx]
-        inertia = self.inertia[idx]
-        return data_point, data_target, data_target_pos, data_start, inertia
+        extra_input_data = self.extra_input_data[idx]
+        return data_point, data_target, data_target_pos, data_start, extra_input_data
 
 
 def train_log(loss, epoch):
@@ -239,7 +245,15 @@ def train_log(loss, epoch):
 
 
 def train_model(
-    model, optimizer, data_loader, test_loaders, loss_module, num_epochs, config, losses
+    model,
+    optimizer,
+    data_loader,
+    test_loaders,
+    loss_module,
+    num_epochs,
+    config,
+    losses,
+    data_set_train,
 ):
     print("-- Started Training --")
     # Set model to train mode
@@ -248,6 +262,7 @@ def train_model(
 
     # Training loop
     for epoch in range(num_epochs):
+
         loss_epoch = 0
         epoch_time = time.time()
 
@@ -256,7 +271,7 @@ def train_model(
             data_labels,
             pos_target,
             start_pos,
-            inertia_input,
+            extra_input_data,
         ) in data_loader:
             # start = time.time()
 
@@ -264,11 +279,17 @@ def train_model(
             data_labels = data_labels.to(device)  # Shape: [batch, frames, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
-            inertia_input = inertia_input.to(device)  # Shape: [batch, 3]
+            extra_input_data = extra_input_data.to(device)  # Shape: [batch, 3]
 
-            if config.inertia_input:
+            if config["str_extra_input"] == "inertia_body":
+                # print("normalizing")
+                extra_input_data = (
+                    extra_input_data / data_set_train.normalize_extra_input
+                )
+            if config.extra_input_n != 0:
+                # print("adding extra")
                 _, _, preds = model(
-                    data_inputs, inertia_input
+                    data_inputs, extra_input_data
                 )  # Shape: [batch, frames, n_data]
             else:
                 _, _, preds = model(data_inputs)  # Shape: [batch, frames, n_data]
@@ -286,20 +307,20 @@ def train_model(
 
             loss_epoch += loss
 
+        print(f"Epoch {epoch}")
         train_log(loss_epoch / len(data_loader), epoch)
-
-        convert_loss = eval_model(model, test_loaders, config, epoch, losses)
-        model.train()
         print(
-            epoch,
-            round(loss_epoch.item() / len(data_loader), 10),
-            "\t",
-            round(convert_loss, 10),
+            f"\t Logging train Loss: {round(loss_epoch.item() / len(data_loader), 10)} ({loss_module}: {config.data_dir_train[5:]})"
         )
-        print("epoch_time; ", time.time() - epoch_time)
+
+        convert_loss = eval_model(
+            model, test_loaders, config, epoch, losses, data_set_train
+        )
+        model.train()
+        print(f"     --> Epoch time; {time.time() - epoch_time}")
 
 
-def eval_model(model, data_loaders, config, current_epoch, losses):
+def eval_model(model, data_loaders, config, current_epoch, losses, data_set_train):
     model.eval()  # Set model to eval mode
 
     with torch.no_grad():  # Deactivate gradients for the following code
@@ -313,17 +334,20 @@ def eval_model(model, data_loaders, config, current_epoch, losses):
                     data_labels,
                     data_labels_pos,
                     start_pos,
-                    inertia_input,
+                    extra_input_data,
                 ) in data_loader:
 
                     # Determine prediction of model on dev set
                     data_inputs = data_inputs.to(device)
                     data_labels = data_labels.to(device)
-                    inertia_input = inertia_input.to(device)
-
-                    if config.inertia_input:
+                    extra_input_data = extra_input_data.to(device)
+                    if config["str_extra_input"] == "inertia_body":
+                        extra_input_data = (
+                            extra_input_data / data_set_train.normalize_extra_input
+                        )
+                    if config.extra_input_n != 0:
                         _, _, preds = model(
-                            data_inputs, inertia_input
+                            data_inputs, extra_input_data
                         )  # Shape: [batch, frames, n_data]
                     else:
                         _, _, preds = model(
@@ -341,7 +365,7 @@ def eval_model(model, data_loaders, config, current_epoch, losses):
                     total_convert_loss += loss_module(alt_preds, data_labels_pos)
 
                 print(
-                    f"\t Logging test loss: {config.data_dirs_test[i][5:]}, {str(loss_module)} => {round((total_convert_loss / len(data_loader)).item(), 10)}"
+                    f"\t Logging test loss: {total_convert_loss / len(data_loader)} ({loss_module}: {config.data_dirs_test[i][5:]})"
                 )
                 wandb.log(
                     {
@@ -363,10 +387,10 @@ def model_pipeline(
     ):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.inertia_input}"
+        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}"
 
         # make the model, data, and optimization problem
-        model, train_loader, test_loader, criterion, optimizer = make(
+        model, train_loader, test_loader, criterion, optimizer, data_set_train = make(
             config, ndata_dict, loss_dict, optimizer_dict
         )
         print(model)
@@ -381,10 +405,11 @@ def model_pipeline(
             config.epochs,
             config,
             losses,
+            data_set_train,
         )
 
         # and test its final performance
-        eval_model(model, test_loader, config, config.epochs, losses)
+        eval_model(model, test_loader, config, config.epochs, losses, data_set_train)
 
     return model
 
@@ -397,6 +422,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         n_data=ndata_dict[config.data_type],
         data_type=config.data_type,
         dir=config.data_dir_train,
+        extra_input=(config.str_extra_input, config.extra_input_n),
     )
     # data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
 
@@ -417,6 +443,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
             data_type=config.data_type,
             dir="data/" + test_data_dir,
             # dir="data/"+test_data_dir #TODO Only for testing
+            extra_input=(config.str_extra_input, config.extra_input_n),
         )
         test_data_loader = data.DataLoader(
             data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
@@ -434,7 +461,14 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         model.parameters(), lr=config.learning_rate
     )
 
-    return model, train_data_loader, test_data_loaders, criterion, optimizer
+    return (
+        model,
+        train_data_loader,
+        test_data_loaders,
+        criterion,
+        optimizer,
+        data_set_train,
+    )
 
 
 if __name__ == "__main__":
@@ -453,16 +487,52 @@ if __name__ == "__main__":
         type=str,
         help="directory of the train data",
         nargs="+",
-        default="data_t(0, 0)_r(2, 5)_none_pNone_gNone",
+        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
     )
     parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
     parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
     parser.add_argument(
         "-i", "--iterations", type=int, help="Number of iterations", default=1
     )
-    parser.add_argument("--inertia_input", action=argparse.BooleanOptionalAction)
-
+    parser.add_argument(
+        "-extra_input",
+        type=str,
+        choices=[
+            "inertia_body",
+            "size",
+            "size_squared",
+            "size_mass",
+            "size_squared_mass",
+        ],
+    )
+    parser.add_argument("--batch_size", type=int, default=1024, help="Batch size")
+    parser.add_argument(
+        "--learning_rate", "-lr", type=float, default=0.0001, help="Batch size"
+    )
     args = parser.parse_args()
+
+    n_extra_input = {
+        "inertia_body": 3,
+        "size": 3,
+        "size_squared": 3,
+        "size_mass": 4,
+        "size_squared_mass": 4,
+    }
+    if args.extra_input:
+        extra_input_n = n_extra_input[args.extra_input]
+    else:
+        extra_input_n = 0
+    ndata_dict = {
+        "pos": 24,
+        "eucl_motion": 12,
+        "quat": 7,
+        "log_quat": 7,
+        "dual_quat": 8,
+        "pos_diff": 24,
+        "pos_diff_start": 24,
+        "log_dualQ": 6,
+    }
+    print(f"Running for data type: {args.data_type}")
 
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
@@ -472,14 +542,13 @@ if __name__ == "__main__":
     data_dirs_test = [data_dir_train]
     data_dirs_test = [
         " ".join(args.data_dir_train),
-        "data_t(0, 0)_tennisEffect",
+        # "data_tennis_pNone_gNone_tennisEffect",
     ]
 
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
     # else:
     #     data_dirs_test = "data/" + args.data_dir_test
-
     losses = [nn.MSELoss]
     if not os.path.exists(data_dir_train):
         raise IndexError("No directory for the train data {args.data_dir_train}")
@@ -488,7 +557,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total = len(os.listdir(data_dir_train))
-        n_sims_train_total = 1000
+        n_sims_train_total = 2000
         sims_train = {i for i in range(n_sims_train_total)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train_total)))
         test_sims = sims_train - train_sims
@@ -508,9 +577,9 @@ if __name__ == "__main__":
         #         test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
 
         config = dict(
-            learning_rate=0.005,
-            epochs=30,
-            batch_size=128,
+            learning_rate=args.learning_rate,
+            epochs=20,
+            batch_size=args.batch_size,
             dropout=0.2,
             loss_type=args.loss,
             loss_reduction_type="mean",
@@ -519,30 +588,20 @@ if __name__ == "__main__":
             architecture="gru",
             train_sims=list(train_sims),
             test_sims=list(test_sims),
-            n_frames=30,
+            n_frames=20,
             n_sims=n_sims_train_total,
             n_layers=1,
             hidden_size=96,
             data_dir_train=data_dir_train,
             data_dirs_test=data_dirs_test,
             iter=i,
-            inertia_input=args.inertia_input,
+            str_extra_input=args.extra_input,
+            extra_input_n=extra_input_n,
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
 
         optimizer_dict = {"Adam": torch.optim.Adam}
-
-        ndata_dict = {
-            "pos": 24,
-            "eucl_motion": 12,
-            "quat": 7,
-            "log_quat": 7,
-            "dual_quat": 8,
-            "pos_diff": 24,
-            "pos_diff_start": 24,
-            "log_dualQ": 6,
-        }
 
         start_time = time.time()
         model = model_pipeline(

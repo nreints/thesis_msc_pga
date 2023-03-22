@@ -17,12 +17,12 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 class fcnn(nn.Module):
     def __init__(self, n_data, config):
         super().__init__()
-        extra_input = config["extra_input_n"]
 
         # Add first layers
         self.layers = [
             nn.Linear(
-                config["n_frames"] * n_data + extra_input, config["hidden_sizes"][0]
+                config["n_frames"] * n_data + config["extra_input_n"],
+                config["hidden_sizes"][0],
             )
         ]
 
@@ -65,8 +65,6 @@ class MyDataset(data.Dataset):
         data_type,
         dir,
         extra_input,
-        normalize_extra_input=True,
-        return_normalization=True,
     ):
         super().__init__()
         self.n_frames_perentry = n_frames
@@ -75,8 +73,6 @@ class MyDataset(data.Dataset):
         self.data_type = data_type
         self.dir = dir
         self.extra_input = extra_input
-        # self.norm_extra_input = normalize_extra_input
-        # self.return_normalization = return_normalization
         self.collect_data()
 
     def collect_data(self):
@@ -98,7 +94,6 @@ class MyDataset(data.Dataset):
                         self.n_frames_perentry * self.n_datap_perframe
                         + self.extra_input[1],
                     )
-                    self.extra_input_data = torch.zeros(len_data, self.extra_input[1])
                     self.target = torch.zeros((len_data, self.n_datap_perframe))
                     self.target_pos = torch.zeros((len_data, 24))
                     self.start_pos = torch.zeros_like(self.target_pos)
@@ -237,7 +232,7 @@ def train_model(
 
         # Set model to train mode
         model.train()
-        print(f"     --> Epoch_time; {time.time() - epoch_time}")
+        print(f"     --> Epoch time; {time.time() - epoch_time}")
 
 
 def eval_model(
@@ -375,7 +370,6 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         data_type=config.data_type,
         dir=config.data_dir_train,
         extra_input=(config.str_extra_input, config.extra_input_n),
-        return_normalization=True,
     )
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
