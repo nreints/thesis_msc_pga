@@ -67,7 +67,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         i = randint(0, nr_sims - 1)
         print(f"Using random simulation number {i}, data_type {data_type}")
     else:
-        print(f"Using simulation {i}")
+        print(f"Using simulation {i}, data_type {data_type}")
 
     with open(f"{data_dir}/sim_{i}.pickle", "rb") as f:
         file = pickle.load(f)
@@ -83,7 +83,11 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             start_pos = torch.tensor(
                 file["data"]["pos"][0], dtype=torch.float32
             ).flatten()
+            start_xpos = torch.tensor(
+                file["data"]["xpos_start"], dtype=torch.float32
+            ).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
+            start_xpos = start_xpos[None, :].repeat(nr_frames, 1, 1)
 
         if "rotation_axis_trans" in file["data"].keys():
             rot_axis_trans = file["data"]["rotation_axis_trans"]
@@ -92,15 +96,29 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             rot_axis_trans = None
 
         # Load the data in correct data type
-        original_data = torch.tensor(
-            file["data"][data_type], dtype=torch.float32
-        ).flatten(start_dim=1)
-        if data_type[-3:] == "ori":
-            data_type = data_type[:-4]
+        original_data = torch.FloatTensor(file["data"][data_type]).flatten(start_dim=1)
+        if data_type == "quat":
+            print("shape original_data: ", original_data.shape)
+            data_in_file = file["data"][data_type].squeeze()
+            print("shape data_in_file: ", data_in_file.shape)
+            print(np.any(data_in_file[:, 4:] != 0))
+            print(torch.any(original_data[:][4:] != 0))
+            exit()
+        # if data_type[-3:] == "ori":
+        #     data_type = data_type[:-4]
         # Convert to xyz position data for plotting
-        plot_data = convert(original_data, start_pos, data_type).reshape(
-            nr_frames, 8, 3
-        )
+        if (
+            data_type[-3:] != "ori"
+            and data_type != "pos"
+            and data_type != "pos_diff_start"
+        ):
+            plot_data = convert(
+                original_data, start_pos, data_type, start_xpos
+            ).reshape(nr_frames, 8, 3)
+        else:
+            plot_data = convert(original_data, start_pos, data_type).reshape(
+                nr_frames, 8, 3
+            )
 
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(
@@ -470,7 +488,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(10, 20)_r(0, 0)_tennis_pNone_gNone",
+        default="data_t(0, 0)_r(5, 10)_tennis_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -542,16 +560,16 @@ if __name__ == "__main__":
     # -----------------------------------
     else:
         # Below the test for all datatypes
-        i = randint(0, nr_sims - 1)
-
-        print("simulation", i)
+        # i = randint(0, nr_sims - 1)
+        i = 0
+        # print("simulation", i)
         # Test all data types:
 
         data_types = [
             "pos",
-            "eucl_motion",
+            # "eucl_motion",
             # "eucl_motion_ori",
-            # "quat",
+            "quat",
             # "quat_ori",
             # "log_quat",
             # "log_quat_ori",

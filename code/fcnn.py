@@ -97,9 +97,13 @@ class MyDataset(data.Dataset):
                     self.target = torch.zeros((len_data, self.n_datap_perframe))
                     self.target_pos = torch.zeros((len_data, 24))
                     self.start_pos = torch.zeros_like(self.target_pos)
+                    self.xpos_start = torch.zeros((len_data, 3))
                 for frame in range(data_per_sim):
                     # Always save the start position for converting
-                    self.start_pos[count] = pos_data[0].flatten()
+                    self.start_pos[count] = torch.FloatTensor(pos_data[0].flatten())
+                    self.xpos_start[count] = torch.FloatTensor(
+                        data_all["xpos_start"].flatten()
+                    )
                     train_end = frame + self.n_frames_perentry
                     if self.extra_input[1] != 0:
                         extra_input_values = torch.FloatTensor(
@@ -123,6 +127,7 @@ class MyDataset(data.Dataset):
         self.normalize_extra_input = torch.mean(
             torch.norm(self.data[:, -self.extra_input[1] :], dim=1)
         )
+        # print(self.xpos_start.shape)
         # print("mean of norm extra_input", self.normalize_extra_input.item())
         # self.data[:, -self.extra_input[1] :] = self.extra_input_data
         print(f"The dataloader took {time.time() - start_time} seconds.")
@@ -137,8 +142,8 @@ class MyDataset(data.Dataset):
         data_target = self.target[idx]
         data_start = self.start_pos[idx]
         data_pos_target = self.target_pos[idx]
-        data_normalized = self.normalized_data[idx]
-        return data_point, data_target, data_start, data_pos_target, data_normalized
+        start_xpos = self.xpos_start[idx]
+        return data_point, data_target, data_start, data_pos_target, start_xpos
 
 
 def train_log(loss, epoch, config):
@@ -168,16 +173,22 @@ def train_model(
     for epoch in range(num_epochs):
         epoch_time = time.time()
         loss_epoch = 0
-        for data_inputs, data_labels, start_pos, pos_target, data_norm in data_loader:
+        for (
+            data_inputs,
+            data_labels,
+            start_pos,
+            pos_target,
+            xpos_start,
+        ) in data_loader:
 
             # Set data to current device
             data_inputs = data_inputs.to(
                 device
             )  # Shape: [batch, frames x n_data + config["extra_input_n"]]
-            data_norm = data_norm.to(device)
             data_labels = data_labels.to(device)  # Shape: [batch, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
+            xpos_start = xpos_start.to(device)
             if config["str_extra_input"] == "inertia_body":
                 data_inputs[:, -config["extra_input_n"] :] = (
                     data_inputs[:, -config["extra_input_n"] :]
@@ -191,7 +202,17 @@ def train_model(
             # preds = preds * data_set_train.std + data_set_train.mean
 
             # Convert predictions to xyz-data
-            alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+            if config.data_type[-3:] != "ori":
+                alt_preds = convert(
+                    preds,
+                    start_pos,
+                    data_loader.dataset.data_type,
+                    xpos_start,
+                )
+            # print(alt_preds)
+
+            else:
+                print("FIX THIS, NOT IMPLEMENTED YET!")
             # print("alt_preds:", alt_preds[0])
             # print("pos_targ", pos_target[0])
             # exit()
@@ -206,14 +227,14 @@ def train_model(
                 norm_penalty = 0
 
             position_loss = loss_module(alt_preds, pos_target)
-
             # Calculate the total loss
             loss = position_loss + norm_penalty
 
-            loss_epoch += loss
+            loss_epoch += position_loss
 
             # Perform backpropagation
             optimizer.zero_grad()
+            # loss = torch.tensor(loss, requires_grad=True)
             loss.backward()
 
             optimizer.step()
@@ -248,27 +269,40 @@ def eval_model(
                 total_loss = 0
                 total_convert_loss = 0
                 wandb_total_convert_loss = 0
-                for data_inputs, data_labels, start_pos, pos_target, _ in data_loader:
+                for (
+                    data_inputs,
+                    data_labels,
+                    start_pos,
+                    pos_target,
+                    xpos_start,
+                ) in data_loader:
                     if config["str_extra_input"] == "inertia_body":
                         data_inputs[:, -config["extra_input_n"] :] = (
                             data_inputs[:, -config["extra_input_n"] :]
                             / data_set_train.normalize_extra_input
                         )
                     # Set data to current device
-                    # data_inputs = data_inputs.to(device)
+                    data_inputs = data_inputs.to(device)
                     # data_norm = (data_inputs - data_set_train.mean) / data_set_train.std
                     data_labels = data_labels.to(device)
-
+                    xpos_start = xpos_start.to(device)
                     # Get predictions
                     preds = model(data_inputs)
                     # preds = model(data_norm)
                     preds = preds.squeeze(dim=1)
                     # preds = preds * data_set_train.std + data_set_train.mean
+                    print(data_labels[0][-3:])
 
                     # Convert predictions to xyz-data
-                    alt_preds = convert(
-                        preds.detach().cpu(), start_pos, data_loader.dataset.data_type
-                    )
+                    if config.data_type[-3:] != "ori":
+                        alt_preds = convert(
+                            preds.detach().cpu(),
+                            start_pos,
+                            data_loader.dataset.data_type,
+                            xpos_start,
+                        )
+                    else:
+                        print("FIX THIS, NOT IMPLEMENTED YET!")
 
                     # Determine norm penalty for quaternion data
                     if (
@@ -458,10 +492,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print(args.data_dir_train)
+    # print(args.data_dir_train)
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dir_train = "data/" + args.data_dir_train
-    print(data_dir_train)
+    print(f"Training on dataset: {data_dir_train}")
     # data_dirs_test = args.data_dir_test]
 
     # data_dirs_test = os.listdir("data")
@@ -470,7 +504,7 @@ if __name__ == "__main__":
 
     data_dirs_test = [
         " ".join(args.data_dir_train),
-        "data_tennis_pNone_gNone_tennisEffect",
+        # "data_tennis_pNone_gNone_tennisEffect",
     ]
     print(f"Testing on datasets: {data_dirs_test}")
 
@@ -510,7 +544,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 4000
+        n_sims_train = 2000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims

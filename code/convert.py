@@ -4,7 +4,17 @@ import roma
 # import time
 
 
-def eucl2pos(eucl_motion, start_pos):
+def eucl2pos(eucl_motion, start_pos, xpos_start):
+    if len(eucl_motion.shape) == 2:
+        rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
+        start_origin = start_pos.reshape(-1, 8, 3).mT - xpos_start.reshape(-1, 1, 3).mT
+        mult = torch.bmm(rotations, start_origin).mT
+        out = mult + eucl_motion[:, 9:].reshape(-1, 1, 3) + xpos_start.reshape(-1, 1, 3)
+        return out.flatten(start_dim=1)
+    print("ERRRRROOOOOOOOOORRRR")
+
+
+def eucl2pos_ori(eucl_motion, start_pos):
     """
     Transforms a batch of vectors by a rotation matrix and translation vector.
 
@@ -23,17 +33,11 @@ def eucl2pos(eucl_motion, start_pos):
     """
     # In case of fcnn
     if len(eucl_motion.shape) == 2:
-        # rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
-        # mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
+        rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
+        mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
 
-        # out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
-        # return out
-
-        # rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
-        # mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
-        print(start_pos.reshape(-1, 8, 3).shape)
-        print(eucl_motion[:, 9:].shape)
-        return (start_pos.reshape(-1, 8, 3) + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
+        out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
+        return out
 
     # In case of LSTM/GRU
     else:
@@ -80,7 +84,28 @@ def fast_rotVecQuat(v, q):
     return rotated_v
 
 
-def quat2pos(quat, start_pos):
+def quat2pos(quat, start_pos, xpos_start):
+    if len(quat.shape) == 2:
+        start_pos_shape = start_pos.shape
+        start_origin = (start_pos.reshape(-1, 8, 3) - xpos_start).reshape(
+            start_pos_shape
+        )
+        rotated_start = fast_rotVecQuat(
+            start_origin,
+            quat[:, :4],
+        )
+        print(quat[:, 4:])
+        repeated_trans = quat[:, 4:][:, None, :]
+        print(repeated_trans)
+
+        if torch.any(quat[:, 4:] != 0):
+            print(quat[:, 4:][quat[:, 4:] != 0])
+            exit()
+        out = rotated_start + repeated_trans + xpos_start
+        return out.flatten(start_dim=1)
+
+
+def quat2pos_ori(quat, start_pos):
     """
     Input:
         - quat: Original predictions (quaternion motion)
@@ -308,7 +333,7 @@ def diff_pos_start2pos(true_preds, start_pos):
     return result.squeeze()
 
 
-def convert(true_preds, start_pos, data_type):
+def convert(true_preds, start_pos, data_type, xpos_start=None):
     """
     Converts true predictions given data type.
     Input:
@@ -321,11 +346,13 @@ def convert(true_preds, start_pos, data_type):
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type == "eucl_motion":
-        return eucl2pos(true_preds, start_pos)
-    elif data_type == "eucl_motion_old":
-        return eucl2pos(true_preds, start_pos)
+        return eucl2pos(true_preds, start_pos, xpos_start)
+    elif data_type == "eucl_motion_ori":
+        return eucl2pos_ori(true_preds, start_pos)
     elif data_type == "quat":
-        return quat2pos(true_preds, start_pos)
+        return quat2pos(true_preds, start_pos, xpos_start)
+    elif data_type == "quat_ori":
+        return quat2pos_ori(true_preds, start_pos)
     elif data_type == "log_quat":
         return log_quat2pos(true_preds, start_pos)
     elif data_type == "dual_quat":

@@ -202,6 +202,7 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
         "size_massCentroid": np.empty((n_steps, 2, 3)),
         "size_squared_massCentroid": np.empty((n_steps, 2, 3)),
         "start": np.empty((8, 3)),
+        "xpos_start": np.empty((1, 3)),
     }
 
 
@@ -314,6 +315,7 @@ def generate_data(
 
             if i == 0:
                 start_xpos = copy.deepcopy(xpos)
+                dataset["xpos_start"] = start_xpos
 
                 start_xyz = global_pos
                 # print(start_xpos, start_xyz)
@@ -344,28 +346,25 @@ def generate_data(
                 # print(np.linalg.inv(start_rotMat) @ start_xpos)
                 # print(current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos)
                 rel_trans = xpos - start_xpos
-                print("rel trans\n", rel_trans)
+                # print("rel trans\n", rel_trans)
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
-                print(
-                    "Same\n",
-                    current_rotMat @ np.linalg.inv(start_rotMat),
-                    "\n",
-                    np.linalg.inv(start_rotMat) @ current_rotMat,
-                )
                 # print(dataset["eucl_motion"][i][:, :9].shape)
                 dataset["eucl_motion"][i][:, :9] = rel_rot.flatten()
                 dataset["eucl_motion"][i][:, 9:] = rel_trans
-                print(f"rel rot\n {rel_rot}")
-                print(dataset["pos"][0].shape, start_xpos.shape)
-                print("rotated local\n", rel_rot @ xyz_local)
-                current_pos_recalculated = (
-                    (rel_rot @ (dataset["pos"][0].T - start_xpos[:, None])).T
-                    + rel_trans[None, :]
-                    + start_xpos[None, :]
-                )
-                print("current pos\n", current_pos_recalculated)
-                print("global pos\n", global_pos)
-                print(current_pos_recalculated - global_pos)
+                # print(f"rel rot\n {rel_rot}")
+                # #
+                # print(dataset["pos"][0])
+                # print(start_xyz)
+                # exit()
+                # TODO Opslaan start_xpos
+                # current_pos_recalculated = (
+                #     (rel_rot @ (dataset["pos"][0].T - start_xpos[:, None])).T
+                #     + start_xpos[None, :]
+                #     + rel_trans[None, :]
+                # )
+                # print("current pos\n", current_pos_recalculated)
+                # print("global pos\n", global_pos)
+                # print(current_pos_recalculated - global_pos)
                 rel_quaternion_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse
                 )
@@ -379,19 +378,35 @@ def generate_data(
                 dataset["rotation_axis_trans"][i][:3] = rotation_axis
                 dataset["rotation_axis_trans"][i][3:] = xpos
                 # dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
-                quaternion = rel_quaternion_pyquat.elements
+                rel_quaternion = rel_quaternion_pyquat.elements
 
-                dataset["quat"][i][:, :4] = quaternion
+                ################################################################
+                # q_norm = rel_quaternion_pyquat.normalised
+                # rotated_v = np.zeros_like(dataset["pos"][0])
+                # for i in range(len(dataset["pos"][0])):
+                #     v = dataset["pos"][0][i] - start_xpos
+                #     rotated_v[i] = q_norm.rotate(v)
+                # recalculated_pos = rotated_v + start_xpos + rel_trans
+
+                # print("recalculated\n", recalculated_pos)
+                # print("global pos\n", global_pos)
+                # if any(rel_trans != 0):
+                #     print(rel_trans)
+                #     exit()
+
+                ################################################################
+
+                dataset["quat"][i][:, :4] = rel_quaternion
                 dataset["quat"][i][:, 4:] = rel_trans
                 # dataset["quat"][i] = np.append(quaternion, rel_trans)
 
                 # Collect Log Quaternion data
-                dataset["log_quat"][i][:, :4] = calculate_log_quat(quaternion)
+                dataset["log_quat"][i][:, :4] = calculate_log_quat(rel_quaternion)
                 dataset["log_quat"][i][:, 4:] = rel_trans
                 # dataset["log_quat"][i] = np.append(
                 #     calculate_log_quat(quaternion), rel_trans
                 # )
-                dualQuaternion = get_dualQ(quaternion, rel_trans)
+                dualQuaternion = get_dualQ(rel_quaternion, rel_trans)
                 # Collect Dual-Quaternion data
                 dataset["dual_quat"][i] = dualQuaternion
                 # Collect log_dualQ data (= bivector = rotation axis)
@@ -458,7 +473,7 @@ def get_sizes(symmetry):
     )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
     sizes = ratio * random_size
     # print("sizes of cube:", "12 24 72")
-    return "3 3 3", [3, 3, 3]
+    # return "3 3 3", [3, 3, 3]
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
 
@@ -597,13 +612,13 @@ def write_data_nsim(
             print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-        euler = "0 0 0"
+        # euler = "0 0 0"
         # print(f"initial orientation: {euler}")
         # Define sizes
         sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
-        # pos = "0 0 0"
+        pos = "3 4 5"
         # print(f"initial position: {pos}")
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
@@ -638,9 +653,9 @@ if __name__ == "__main__":
         help="symmetry of the box.\nfull: symmetric box 1:1:1\n; semi: 2 sides of same length, other longer 1:1:10\n;tennis: tennis_racket effect 1:3:10\n;none: random lengths for each side",
         default="tennis",
     )
-    parser.add_argument("-l_min", type=int, help="linear qvel min", default=10)
-    parser.add_argument("-l_max", type=int, help="linear qvel max", default=20)
-    parser.add_argument("-a_min", type=int, help="angular qvel min", default=4)
+    parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=5)
     parser.add_argument("-a_max", type=int, help="angular qvel max", default=10)
     parser.add_argument(
         "-integrator",
