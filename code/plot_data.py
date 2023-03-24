@@ -97,13 +97,13 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
 
         # Load the data in correct data type
         original_data = torch.FloatTensor(file["data"][data_type]).flatten(start_dim=1)
-        if data_type == "quat":
-            print("shape original_data: ", original_data.shape)
-            data_in_file = file["data"][data_type].squeeze()
-            print("shape data_in_file: ", data_in_file.shape)
-            print(np.any(data_in_file[:, 4:] != 0))
-            print(torch.any(original_data[:][4:] != 0))
-            exit()
+        # if data_type == "quat":
+        #     print("shape original_data: ", original_data.shape)
+        #     data_in_file = file["data"][data_type].squeeze()
+        #     print("shape data_in_file: ", data_in_file.shape)
+        #     print(np.all(data_in_file[:, 4:] == 0))
+        #     print(torch.all(original_data[:, 4:] == 0))
+        #     exit()
         # if data_type[-3:] == "ori":
         #     data_type = data_type[:-4]
         # Convert to xyz position data for plotting
@@ -112,6 +112,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             and data_type != "pos"
             and data_type != "pos_diff_start"
         ):
+            print("THis concvert")
             plot_data = convert(
                 original_data, start_pos, data_type, start_xpos
             ).reshape(nr_frames, 8, 3)
@@ -488,7 +489,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(0, 0)_r(5, 10)_tennis_pNone_gNone",
+        default="data_t(20, 40)_r(5, 10)_tennis_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -560,22 +561,22 @@ if __name__ == "__main__":
     # -----------------------------------
     else:
         # Below the test for all datatypes
-        # i = randint(0, nr_sims - 1)
-        i = 0
+        i = randint(0, nr_sims - 1)
+        # i = 0
         # print("simulation", i)
         # Test all data types:
 
         data_types = [
             "pos",
-            # "eucl_motion",
+            "eucl_motion",
             # "eucl_motion_ori",
             "quat",
             # "quat_ori",
-            # "log_quat",
+            "log_quat",
             # "log_quat_ori",
-            # "dual_quat",
+            "dual_quat",
             # "dual_quat_ori",
-            # "log_dualQ",
+            "log_dualQ",
             # "log_dualQ_ori",
             # "pos_diff_start",
         ]

@@ -342,7 +342,7 @@ def generate_data(
                 # Collect rotation matrix
                 current_rotMat = get_mat(data, geom_id)
                 # print(xpos, start_xpos)
-                print("--------")
+                # print("--------")
                 # print(np.linalg.inv(start_rotMat) @ start_xpos)
                 # print(current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos)
                 rel_trans = xpos - start_xpos
@@ -374,9 +374,7 @@ def generate_data(
                 #     quaternion_pyquat *= -1
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
                 # print("----")
-                rotation_axis = rel_quaternion_pyquat.axis
-                dataset["rotation_axis_trans"][i][:3] = rotation_axis
-                dataset["rotation_axis_trans"][i][3:] = xpos
+
                 # dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
                 rel_quaternion = rel_quaternion_pyquat.elements
 
@@ -395,7 +393,9 @@ def generate_data(
                 #     exit()
 
                 ################################################################
-
+                rotation_axis = rel_quaternion_pyquat.axis
+                dataset["rotation_axis_trans"][i][:3] = rotation_axis
+                dataset["rotation_axis_trans"][i][3:] = xpos
                 dataset["quat"][i][:, :4] = rel_quaternion
                 dataset["quat"][i][:, 4:] = rel_trans
                 # dataset["quat"][i] = np.append(quaternion, rel_trans)
@@ -618,7 +618,7 @@ def write_data_nsim(
         sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
-        pos = "3 4 5"
+        # pos = "3 4 5"
         # print(f"initial position: {pos}")
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
@@ -643,7 +643,7 @@ def write_data_nsim(
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=5000)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=300)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument(
         "-s",

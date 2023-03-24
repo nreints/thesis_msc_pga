@@ -194,10 +194,10 @@ def train_model(
                     data_inputs[:, -config["extra_input_n"] :]
                     / data_set_train.normalize_extra_input
                 )
+            # print("data_inputs:", data_inputs[0])
             # Get predictions
             preds = model(data_inputs)  # Shape: [batch, n_data]
             # print("perdictions:", preds[0])
-            # print("labels", data_labels[0])
             # preds = model(data_norm)
             # preds = preds * data_set_train.std + data_set_train.mean
 
@@ -212,7 +212,12 @@ def train_model(
             # print(alt_preds)
 
             else:
-                print("FIX THIS, NOT IMPLEMENTED YET!")
+                alt_preds = convert(
+                    preds,
+                    start_pos,
+                    data_loader.dataset.data_type,
+                )
+                # print("alt_preds", alt_preds[0][0])
             # print("alt_preds:", alt_preds[0])
             # print("pos_targ", pos_target[0])
             # exit()
@@ -227,6 +232,7 @@ def train_model(
                 norm_penalty = 0
 
             position_loss = loss_module(alt_preds, pos_target)
+            # print(position_loss)
             # Calculate the total loss
             loss = position_loss + norm_penalty
 
@@ -291,10 +297,10 @@ def eval_model(
                     # preds = model(data_norm)
                     preds = preds.squeeze(dim=1)
                     # preds = preds * data_set_train.std + data_set_train.mean
-                    print(data_labels[0][-3:])
+                    # print(data_labels[0][-3:])
 
                     # Convert predictions to xyz-data
-                    if config.data_type[-3:] != "ori":
+                    if config.data_type[-3:] != "ori" and config.data_type != "pos":
                         alt_preds = convert(
                             preds.detach().cpu(),
                             start_pos,
@@ -302,7 +308,11 @@ def eval_model(
                             xpos_start,
                         )
                     else:
-                        print("FIX THIS, NOT IMPLEMENTED YET!")
+                        alt_preds = convert(
+                            preds.detach().cpu(),
+                            start_pos,
+                            data_loader.dataset.data_type,
+                        )
 
                     # Determine norm penalty for quaternion data
                     if (
@@ -396,11 +406,15 @@ def model_pipeline(
 
 
 def make(config, ndata_dict, loss_dict, optimizer_dict):
+    if config.data_type[-3:] == "ori":
+        n_datapoints = ndata_dict[config.data_type[:-4]]
+    else:
+        n_datapoints = ndata_dict[config.data_type]
     # Make the data
     data_set_train = MyDataset(
         sims=config.train_sims,
         n_frames=config.n_frames,
-        n_data=ndata_dict[config.data_type],
+        n_data=n_datapoints,
         data_type=config.data_type,
         dir=config.data_dir_train,
         extra_input=(config.str_extra_input, config.extra_input_n),
@@ -417,7 +431,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         data_set_test = MyDataset(
             sims=config.test_sims,
             n_frames=config.n_frames,
-            n_data=ndata_dict[config.data_type],
+            n_data=n_datapoints,
             data_type=config.data_type,
             dir="data/" + test_data_dir,
             extra_input=(config.str_extra_input, config.extra_input_n),
@@ -430,7 +444,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     print("-- Finished Test Dataloader(s) --")
 
     # Make the model
-    model = fcnn(ndata_dict[config.data_type], config).to(device)
+    model = fcnn(n_datapoints, config).to(device)
 
     # Make the loss and optimizer
     criterion = loss_dict[config.loss_type](reduction=config.loss_reduction_type)
@@ -544,7 +558,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 2000
+        n_sims_train = 1000
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims
