@@ -197,10 +197,10 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
         "size_squared": size_squared,
         "size_mass": np.append(size, mass),
         "size_squared_mass": np.append(size_squared, mass),
-        "size_centroid": np.empty((2, 3)),
-        "size_squared_centroid": np.empty((2, 3)),
-        "size_massCentroid": np.empty((n_steps, 2, 3)),
-        "size_squared_massCentroid": np.empty((n_steps, 2, 3)),
+        # "size_centroid": np.empty((2, 3)),
+        # "size_squared_centroid": np.empty((2, 3)),
+        # "size_massCentroid": np.empty((n_steps, 2, 3)),
+        # "size_squared_massCentroid": np.empty((n_steps, 2, 3)),
         "start": np.empty((8, 3)),
         "xpos_start": np.empty((1, 3)),
     }
@@ -209,6 +209,7 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
 def generate_data(
     string,
     n_steps,
+    dict_name,
     visualize=False,
     vel_range_l=(0, 0),
     vel_range_a=(0, 0),
@@ -236,14 +237,6 @@ def generate_data(
     # Generate MjData object
     data = mujoco.MjData(model)
 
-    # print("body_inertia", model.body_inertia)
-    # print("meanmass", model.stat.meanmass)
-    # H = np.zeros((model.nv, model.nv))
-    # print("qM", data.qM)
-    # print("qLD", data.qLD)
-    # L = mujoco.mj_fullM(model, H, data.qM)
-    # print("L = mujoco.mj_fullM(model, H, data.qM)", L)
-    # print(f"nM {model.nM} & nv {model.nv}")
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
     data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1], size=3)
     # data.qvel[0:3] = [0, -3, 0]
@@ -281,37 +274,10 @@ def generate_data(
 
             xpos = data.geom_xpos[geom_id]
             global_pos = get_vert_coords(data, geom_id, xyz_local).T
+            current_rotMat = get_mat(data, geom_id)
 
             # Collect position data after rotation and translation.
             dataset["pos"][i] = global_pos
-
-            # print("--------")
-            # print("body_inertia", model.body_inertia)
-            # print("meanmass", model.stat.meanmass)
-            # H = np.zeros((model.nv, model.nv))
-            # print("qM", data.qM)
-            # print("qLD", data.qLD)
-            # L = mujoco.mj_fullM(model, H, data.qM)
-            # print("L = mujoco.mj_fullM(model, H, data.qM)", L)
-            # print(f"nM {model.nM} & nv {model.nv}")
-            # # H = np.zeros((model.nv, model.nv))
-            # # print("body_inertia", model.body_inertia)
-            # # print("qLD", data.qLD)  # number of non-zeros in sparse inertia matrix
-            # print(
-            #     "diag(D)", 1 / data.qLDiagInv
-            # )  # number of degrees of freedom = dim(qvel)
-            # print(
-            #     "sqrt(diag(D))", 1 / data.qLDiagSqrtInv
-            # )  # number of degrees of freedom = dim(qvel)
-
-            # print("qM", data.qM)
-            # L = mujoco.mj_fullM(model, H, data.qM)
-            # # print("L", L)
-            # print("nM, nv", model.nM, model.nv)
-            # print(data.qM == data.qLD)
-            # # if i == 3:
-            # #     exit()
-            # exit()
 
             if i == 0:
                 start_xpos = copy.deepcopy(xpos)
@@ -340,59 +306,19 @@ def generate_data(
 
             else:
                 # Collect rotation matrix
-                current_rotMat = get_mat(data, geom_id)
-                # print(xpos, start_xpos)
-                # print("--------")
-                # print(np.linalg.inv(start_rotMat) @ start_xpos)
-                # print(current_rotMat @ np.linalg.inv(start_rotMat) @ start_xpos)
                 rel_trans = xpos - start_xpos
-                # print("rel trans\n", rel_trans)
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
-                # print(dataset["eucl_motion"][i][:, :9].shape)
                 dataset["eucl_motion"][i][:, :9] = rel_rot.flatten()
                 dataset["eucl_motion"][i][:, 9:] = rel_trans
-                # print(f"rel rot\n {rel_rot}")
-                # #
-                # print(dataset["pos"][0])
-                # print(start_xyz)
-                # exit()
-                # TODO Opslaan start_xpos
-                # current_pos_recalculated = (
-                #     (rel_rot @ (dataset["pos"][0].T - start_xpos[:, None])).T
-                #     + start_xpos[None, :]
-                #     + rel_trans[None, :]
-                # )
-                # print("current pos\n", current_pos_recalculated)
-                # print("global pos\n", global_pos)
-                # print(current_pos_recalculated - global_pos)
                 rel_quaternion_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse
                 )
-                # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
                 # TODO Steven van Leo
                 # if quaternion_pyquat.elements[0] < 0:
                 #     quaternion_pyquat *= -1
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
-                # print("----")
-
-                # dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
                 rel_quaternion = rel_quaternion_pyquat.elements
 
-                ################################################################
-                # q_norm = rel_quaternion_pyquat.normalised
-                # rotated_v = np.zeros_like(dataset["pos"][0])
-                # for i in range(len(dataset["pos"][0])):
-                #     v = dataset["pos"][0][i] - start_xpos
-                #     rotated_v[i] = q_norm.rotate(v)
-                # recalculated_pos = rotated_v + start_xpos + rel_trans
-
-                # print("recalculated\n", recalculated_pos)
-                # print("global pos\n", global_pos)
-                # if any(rel_trans != 0):
-                #     print(rel_trans)
-                #     exit()
-
-                ################################################################
                 rotation_axis = rel_quaternion_pyquat.axis
                 dataset["rotation_axis_trans"][i][:3] = rotation_axis
                 dataset["rotation_axis_trans"][i][3:] = xpos
@@ -403,9 +329,6 @@ def generate_data(
                 # Collect Log Quaternion data
                 dataset["log_quat"][i][:, :4] = calculate_log_quat(rel_quaternion)
                 dataset["log_quat"][i][:, 4:] = rel_trans
-                # dataset["log_quat"][i] = np.append(
-                #     calculate_log_quat(quaternion), rel_trans
-                # )
                 dualQuaternion = get_dualQ(rel_quaternion, rel_trans)
                 # Collect Dual-Quaternion data
                 dataset["dual_quat"][i] = dualQuaternion
@@ -415,29 +338,32 @@ def generate_data(
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
 
-                # # Relative to origin centered cube.
-                dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
-                dataset["eucl_motion_ori"][i][:, 9:] = xpos
-                # dataset["eucl_motion_ori"][i] = np.append(current_rotMat, xpos)
-                quat = get_quat(data, body_id)
-                dataset["quat_ori"][i][:, :4] = quat
-                dataset["quat_ori"][i][:, 4:] = xpos
-                # dataset["quat_ori"][i] = np.append(quat, xpos)
-                dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
-                dataset["log_quat_ori"][i][:, 4:] = xpos
-                # dataset["log_quat_ori"][i] = np.append(calculate_log_quat(quat), xpos)
-                dual_quat = get_dualQ(quat, xpos)
-                dataset["dual_quat_ori"][i] = dual_quat
-                dataset["log_dualQ_ori"][i] = logDual(dual_quat)
+            # Relative to origin centered cube.
+            dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
+            dataset["eucl_motion_ori"][i][:, 9:] = xpos
+            # dataset["eucl_motion_ori"][i] = np.append(current_rotMat, xpos)
+            quat = get_quat(data, body_id)
+            dataset["quat_ori"][i][:, :4] = quat
+            dataset["quat_ori"][i][:, 4:] = xpos
+            # dataset["quat_ori"][i] = np.append(quat, xpos)
+            dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
+            dataset["log_quat_ori"][i][:, 4:] = xpos
+            # dataset["log_quat_ori"][i] = np.append(calculate_log_quat(quat), xpos)
+            dual_quat = get_dualQ(quat, xpos)
+            dataset["dual_quat_ori"][i] = dual_quat
+            dataset["log_dualQ_ori"][i] = logDual(dual_quat)
 
-            # if i>100:
-            #     exit()
         else:
             print("Visualisation failed")
             break
 
     if visualize:
         viewer.close()
+
+    for key, data_thing in dataset.items():
+        assert not np.any(
+            np.isnan(data_thing)
+        ), f"Encountered NaN in {key}. Try to recreate dataset {dict_name}\n Number of NaNs: {np.sum(np.isnan(data_thing))}"
 
     return dataset
 
@@ -623,7 +549,13 @@ def write_data_nsim(
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
         dataset = generate_data(
-            string, n_steps, visualize, vel_range_l, vel_range_a, tennis_effect
+            string,
+            n_steps,
+            dir,
+            visualize,
+            vel_range_l,
+            vel_range_a,
+            tennis_effect,
         )
         sim_data = {
             "vars": {
@@ -658,7 +590,8 @@ if __name__ == "__main__":
     parser.add_argument("-a_min", type=int, help="angular qvel min", default=5)
     parser.add_argument("-a_max", type=int, help="angular qvel max", default=10)
     parser.add_argument(
-        "-integrator",
+        "-i",
+        "--integrator",
         type=str,
         choices=["RK4", "Euler"],
         help="type of integrator to use",
