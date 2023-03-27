@@ -120,9 +120,9 @@ class MyDataset(data.Dataset):
                     self.target_pos[count] = pos_data[train_end + 1].flatten()
                     count += 1
 
-        self.mean = torch.mean(self.data)
-        self.std = torch.std(self.data)
-        self.normalized_data = (self.data - self.mean) / self.std
+        # self.mean = torch.mean(self.data)
+        # self.std = torch.std(self.data)
+        # self.normalized_data = (self.data - self.mean) / self.std
 
         self.normalize_extra_input = torch.mean(
             torch.norm(self.data[:, -self.extra_input[1] :], dim=1)
@@ -185,6 +185,9 @@ def train_model(
             data_inputs = data_inputs.to(
                 device
             )  # Shape: [batch, frames x n_data + config["extra_input_n"]]
+            if torch.any(torch.isnan(data_inputs)):
+                print("ASHH")
+                exit()
             data_labels = data_labels.to(device)  # Shape: [batch, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
@@ -197,7 +200,6 @@ def train_model(
             # print("data_inputs:", data_inputs[0])
             # Get predictions
             preds = model(data_inputs)  # Shape: [batch, n_data]
-            # print("perdictions:", preds[0])
             # preds = model(data_norm)
             # preds = preds * data_set_train.std + data_set_train.mean
 
@@ -220,7 +222,9 @@ def train_model(
                 # print("alt_preds", alt_preds[0][0])
             # print("alt_preds:", alt_preds[0])
             # print("pos_targ", pos_target[0])
-            # exit()
+            if torch.any(torch.isnan(preds)):
+                print("5")
+                exit()
 
             # Determine norm penalty for quaternion data
             if config["data_type"] == "quat" or config["data_type"] == "dual_quat":
@@ -232,7 +236,6 @@ def train_model(
                 norm_penalty = 0
 
             position_loss = loss_module(alt_preds, pos_target)
-            # print(position_loss)
             # Calculate the total loss
             loss = position_loss + norm_penalty
 
@@ -558,7 +561,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 1000
+        n_sims_train = 100
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims

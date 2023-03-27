@@ -7,14 +7,30 @@ import roma
 def eucl2pos(eucl_motion, start_pos, xpos_start):
     if len(eucl_motion.shape) == 2:
         if xpos_start is None:
+            print("print correct")
             xpos_start = 0
         else:
             xpos_start = xpos_start.reshape(-1, 1, 3)
+        if torch.any(torch.isnan(eucl_motion)):
+            print("FUCK")
+            exit()
         rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
+        if torch.any(torch.isnan(rotations)):
+            print("1")
+            exit()
         # print("Convert", rotations)
         start_origin = (start_pos.reshape(-1, 8, 3) - xpos_start).mT
+        if torch.any(torch.isnan(start_origin)):
+            print("2")
+            exit()
         mult = torch.bmm(rotations, start_origin).mT
+        if torch.any(torch.isnan(mult)):
+            print("3")
+            exit()
         out = mult + eucl_motion[:, 9:].reshape(-1, 1, 3) + xpos_start
+        if torch.any(torch.isnan(out)):
+            print("4")
+            exit()
         return out.flatten(start_dim=1)
     # In case of LSTM/GRU
     else:
