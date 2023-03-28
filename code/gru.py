@@ -195,9 +195,13 @@ class MyDataset(data.Dataset):
                         len_data, self.n_frames_perentry, self.n_datap_perframe
                     )
                     self.extra_input_data = torch.zeros((len_data, self.extra_input[1]))
+                    self.xpos_start = torch.zeros((len_data, 3))
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     self.start_pos[count] = torch.FloatTensor(
                         data_all["pos"][0].flatten()
+                    )
+                    self.xpos_start[count] = torch.FloatTensor(
+                        data_all["xpos_start"].flatten()
                     )
                     train_end = frame + self.n_frames_perentry
                     self.data[count] = data[frame:train_end].reshape(
@@ -236,7 +240,15 @@ class MyDataset(data.Dataset):
         data_target_pos = self.target_pos[idx]
         data_start = self.start_pos[idx]
         extra_input_data = self.extra_input_data[idx]
-        return data_point, data_target, data_target_pos, data_start, extra_input_data
+        start_xpos = self.xpos_start[idx]
+        return (
+            data_point,
+            data_target,
+            data_target_pos,
+            data_start,
+            extra_input_data,
+            start_xpos,
+        )
 
 
 def train_log(loss, epoch):
@@ -272,6 +284,7 @@ def train_model(
             pos_target,
             start_pos,
             extra_input_data,
+            xpos_start,
         ) in data_loader:
             # start = time.time()
 
@@ -280,9 +293,9 @@ def train_model(
             pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
             extra_input_data = extra_input_data.to(device)  # Shape: [batch, 3]
-            print(data_inputs[0][:].shape)
-            print(data_labels[0][:][:, 4:])
-            exit()
+            # print(data_inputs[0][:].shape)
+            # print(data_labels[0][:][:, 4:])
+            # exit()
             if config["str_extra_input"] == "inertia_body":
                 # print("normalizing")
                 extra_input_data = (
@@ -296,7 +309,21 @@ def train_model(
             else:
                 _, _, preds = model(data_inputs)  # Shape: [batch, frames, n_data]
 
-            alt_preds = convert(preds, start_pos, data_loader.dataset.data_type)
+            if config.data_type[-3:] != "ori":
+                alt_preds = convert(
+                    preds,
+                    start_pos,
+                    data_loader.dataset.data_type,
+                    xpos_start,
+                )
+            # print(alt_preds)
+
+            else:
+                alt_preds = convert(
+                    preds,
+                    start_pos,
+                    data_loader.dataset.data_type,
+                )
 
             loss = loss_module(alt_preds, pos_target)
 
@@ -337,6 +364,7 @@ def eval_model(model, data_loaders, config, current_epoch, losses, data_set_trai
                     data_labels_pos,
                     start_pos,
                     extra_input_data,
+                    xpos_start,
                 ) in data_loader:
 
                     # Determine prediction of model on dev set
@@ -358,11 +386,22 @@ def eval_model(model, data_loaders, config, current_epoch, losses, data_set_trai
                         )  # Shape: [batch, frames, n_data]
                         preds = preds.squeeze(dim=1)
 
-                    # if config['data_type'] == 'pos':
-                    #     preds = preds.reshape((preds.shape[0], preds.shape[1], 8, 3))
-                    alt_preds = convert(
-                        preds.detach().cpu(), start_pos, data_loader.dataset.data_type
-                    )
+                    # Convert predictions to xyz-data
+                    if config.data_type[-3:] != "ori":
+                        alt_preds = convert(
+                            preds.detach().cpu(),
+                            start_pos,
+                            data_loader.dataset.data_type,
+                            xpos_start,
+                        )
+                    # print(alt_preds)
+
+                    else:
+                        alt_preds = convert(
+                            preds,
+                            start_pos,
+                            data_loader.dataset.data_type,
+                        )
 
                     total_loss += loss_module(preds, data_labels)
                     total_convert_loss += loss_module(alt_preds, data_labels_pos)
@@ -418,16 +457,20 @@ def model_pipeline(
 
 
 def make(config, ndata_dict, loss_dict, optimizer_dict):
+    if config.data_type[-3:] == "ori":
+        n_datapoints = ndata_dict[config.data_type[:-4]]
+    else:
+        n_datapoints = ndata_dict[config.data_type]
     # Make the data
     data_set_train = MyDataset(
         sims=config.train_sims,
         n_frames=config.n_frames,
-        n_data=ndata_dict[config.data_type],
+        n_data=n_datapoints,
         data_type=config.data_type,
         dir=config.data_dir_train,
         extra_input=(config.str_extra_input, config.extra_input_n),
     )
-    # data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=ndata_dict[config.data_type], data_type=config.data_type, dir=config.data_dir_train)
+    # data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=n_datapoints, data_type=config.data_type, dir=config.data_dir_train)
 
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
@@ -442,7 +485,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         data_set_test = MyDataset(
             sims=config.test_sims,
             n_frames=config.n_frames,
-            n_data=ndata_dict[config.data_type],
+            n_data=n_datapoints,
             data_type=config.data_type,
             dir="data/" + test_data_dir,
             # dir="data/"+test_data_dir #TODO Only for testing
@@ -456,7 +499,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     print("-- Finished Test Dataloader(s) --")
 
     # Make the model
-    model = GRU(config, ndata_dict[config.data_type], num_outputs=3).to(device)
+    model = GRU(config, n_datapoints, num_outputs=3).to(device)
 
     # Make the loss and optimizer
     criterion = loss_dict[config.loss_type](reduction=config.loss_reduction_type)
@@ -539,14 +582,14 @@ if __name__ == "__main__":
 
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
-    data_dirs_test = [os.listdir("data")[3]]  # TODO ONLY FOR TESTing
-    if ".DS_Store" in data_dirs_test:
-        data_dirs_test.remove(".DS_Store")
-    data_dirs_test = [data_dir_train]
-    data_dirs_test = [
-        " ".join(args.data_dir_train),
-        # "data_tennis_pNone_gNone_tennisEffect",
-    ]
+    # data_dirs_test = [os.listdir("data")[3]]  # TODO ONLY FOR TESTing
+    # if ".DS_Store" in data_dirs_test:
+    #     data_dirs_test.remove(".DS_Store")
+    data_dirs_test = [" ".join(args.data_dir_train)]
+    # data_dirs_test = [
+    #     " ".join(args.data_dir_train),
+    #     # "data_tennis_pNone_gNone_tennisEffect",
+    # ]
 
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]
@@ -560,7 +603,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total = len(os.listdir(data_dir_train))
-        n_sims_train_total = 200
+        n_sims_train_total = 2000
         sims_train = {i for i in range(n_sims_train_total)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train_total)))
         test_sims = sims_train - train_sims
