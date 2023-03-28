@@ -325,6 +325,14 @@ def train_model(
                     data_loader.dataset.data_type,
                 )
 
+            assert not torch.any(
+                torch.isnan(alt_preds)
+            ), f"Encountered NaN in alt_preds."
+
+            assert not torch.any(
+                torch.isnan(pos_target)
+            ), f"Encountered NaN in alt_preds."
+
             loss = loss_module(alt_preds, pos_target)
 
             optimizer.zero_grad()

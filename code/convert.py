@@ -5,6 +5,22 @@ import roma
 
 
 def eucl2pos(eucl_motion, start_pos, xpos_start):
+    """
+    Transforms a batch of vectors by a rotation matrix and translation vector.
+
+    Input:
+        eucl_motion: Original predictions (euclidean motion)
+            (batch x 12)
+            (batch x frames x 20)
+        start_pos: Start position of simulation
+            (batch x 24)
+            (batch x 24)
+
+    Output:
+        Converted eucledian motion to current xyz position
+            (batch x 24)
+            (batch x frames x 24)
+    """
     if len(eucl_motion.shape) == 2:
         if xpos_start is None:
             xpos_start = 0
@@ -44,32 +60,6 @@ def eucl2pos(eucl_motion, start_pos, xpos_start):
         return out
 
 
-def eucl2pos_ori(eucl_motion, start_pos):
-    """
-    Transforms a batch of vectors by a rotation matrix and translation vector.
-
-    Input:
-        eucl_motion: Original predictions (euclidean motion)
-            (batch x 12)
-            (batch x frames x 20)
-        start_pos: Start position of simulation
-            (batch x 24)
-            (batch x 24)
-
-    Output:
-        Converted eucledian motion to current xyz position
-            (batch x 24)
-            (batch x frames x 24)
-    """
-    # In case of fcnn
-    if len(eucl_motion.shape) == 2:
-        rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
-        mult = torch.bmm(rotations, start_pos.reshape(-1, 8, 3).mT).mT
-
-        out = (mult + eucl_motion[:, 9:][:, None, :]).flatten(start_dim=1)
-        return out
-
-
 def fast_rotVecQuat(v, q):
     """
     Input:
@@ -97,6 +87,17 @@ def fast_rotVecQuat(v, q):
 
 
 def quat2pos(quat, start_pos, xpos_start):
+    """
+    Input:
+        - quat: Original predictions (quaternion motion)
+            (batch, 7) or (batch, frames, 7)
+        - start_pos: Start position of simulation
+            (batch, 24) or (batch, frames, 24)
+
+    Output:
+        - Converted quaternion to current xyz position
+            (batch, 24) or (batch, frames, 24)
+    """
     if len(quat.shape) == 2:
         if xpos_start is None:
             xpos_start = 0
@@ -120,41 +121,30 @@ def quat2pos(quat, start_pos, xpos_start):
         #     print("repeated zeros!!")
         out = rotated_start + repeated_trans + xpos_start
         return out.flatten(start_dim=1)
-
-
-def quat2pos_ori(quat, start_pos):
-    """
-    Input:
-        - quat: Original predictions (quaternion motion)
-            (batch, 7) or (batch, frames, 7)
-        - start_pos: Start position of simulation
-            (batch, 24) or (batch, frames, 24)
-
-    Output:
-        - Converted quaternion to current xyz position
-            (batch, 24) or (batch, frames, 24)
-    """
-    # In case of fcnn
-    if len(quat.shape) == 2:
-        rotated_start = fast_rotVecQuat(start_pos, quat[:, :4])
-        repeated_trans = quat[:, 4:][:, None, :]
-        out = (rotated_start + repeated_trans).flatten(start_dim=1)
-        return out
-
-    # In case of LSTM
     else:
+        if xpos_start is None:
+            xpos_start = 0
+        else:
+            xpos_start = (
+                xpos_start[:, None, :]
+                .repeat(1, quat.shape[1], 1)
+                .flatten(end_dim=1)[:, None, :]
+            )
         quat_flat = quat.flatten(end_dim=1)
         # For visualisation
         if len(start_pos.shape) != 3:
             start_pos = start_pos[:, None, :]
-
-        repeated_start_pos = start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1)
+        repeated_start_pos = (
+            start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1).reshape(-1, 8, 3)
+        )
+        start_origin = (repeated_start_pos - xpos_start).flatten(start_dim=1)
 
         # Rotate start by quaternion
-        rotated_start = fast_rotVecQuat(repeated_start_pos, quat_flat[:, :4])
-
+        rotated_start = fast_rotVecQuat(start_origin, quat_flat[:, :4])
         # Add Translation
-        out = (rotated_start + quat_flat[:, 4:][:, None, :]).flatten(start_dim=1)
+        out = (rotated_start + xpos_start + quat_flat[:, 4:][:, None, :]).flatten(
+            start_dim=1
+        )
         # Fix shape
         out = out.reshape(quat.shape[0], quat.shape[1], out.shape[-1])
         return out
@@ -362,18 +352,24 @@ def convert(true_preds, start_pos, data_type, xpos_start=None):
     """
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
-    elif data_type == "eucl_motion" or (data_type[:-4] == "eucl_motion"):
+    elif data_type[:11] == "eucl_motion":
+        print("eucl convert")
         return eucl2pos(true_preds, start_pos, xpos_start)
-    elif data_type == "quat":
+    elif data_type[:4] == "quat":
+        # print("quat convert")
         return quat2pos(true_preds, start_pos, xpos_start)
-    elif data_type == "quat_ori":
-        return quat2pos(true_preds, start_pos, xpos_start)
-    elif data_type == "log_quat":
+    # elif data_type == "quat_ori":
+    #     return quat2pos(true_preds, start_pos, xpos_start)
+    elif data_type[:8] == "log_quat":
+        print("log_quat convert")
         return log_quat2pos(true_preds, start_pos, xpos_start)
-    elif data_type == "dual_quat":
+    elif data_type[:9] == "dual_quat":
+        print("dual_quat convert")
         return dualQ2pos(true_preds, start_pos, xpos_start)
     elif data_type == "pos_diff_start":
+        print("pos_diff_start convert")
         return diff_pos_start2pos(true_preds, start_pos)
-    elif data_type == "log_dualQ":
+    elif data_type[:9] == "log_dualQ":
+        print("log_dualQ convert")
         return log_dualQ2pos(true_preds, start_pos, xpos_start)
     raise Exception(f"No function to convert {data_type}")
