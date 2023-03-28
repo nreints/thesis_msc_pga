@@ -99,6 +99,7 @@ def quat2pos(quat, start_pos, xpos_start):
             (batch, 24) or (batch, frames, 24)
     """
     if len(quat.shape) == 2:
+        # print("1 a")
         if xpos_start is None:
             xpos_start = 0
         else:
@@ -111,25 +112,20 @@ def quat2pos(quat, start_pos, xpos_start):
             start_origin,
             quat[:, :4],
         )
-        # print(quat[:, 4:])
         repeated_trans = quat[:, 4:][:, None, :]
-        # print(repeated_trans)
-
-        # if torch.all(quat[:, 4:] == 0):
-        #     print("all zeros!!")
-        # if torch.all(repeated_trans[:,:,4:] == 0):
-        #     print("repeated zeros!!")
         out = rotated_start + repeated_trans + xpos_start
         return out.flatten(start_dim=1)
     else:
+        # print("2 a", quat.shape)
         if xpos_start is None:
             xpos_start = 0
         else:
-            xpos_start = (
-                xpos_start[:, None, :]
-                .repeat(1, quat.shape[1], 1)
-                .flatten(end_dim=1)[:, None, :]
-            )
+            if len(xpos_start.shape) != 3:
+                xpos_start = xpos_start[:, None, :]
+            xpos_start = xpos_start.repeat(1, quat.shape[1], 1).flatten(end_dim=1)[
+                :, None, :
+            ]
+        # print("xpos", xpos_start.shape)
         quat_flat = quat.flatten(end_dim=1)
         # For visualisation
         if len(start_pos.shape) != 3:
@@ -137,16 +133,23 @@ def quat2pos(quat, start_pos, xpos_start):
         repeated_start_pos = (
             start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1).reshape(-1, 8, 3)
         )
+        # print("repeated_start_pos", repeated_start_pos.shape)
         start_origin = (repeated_start_pos - xpos_start).flatten(start_dim=1)
+        # print("start_origin", start_origin.shape)
 
         # Rotate start by quaternion
         rotated_start = fast_rotVecQuat(start_origin, quat_flat[:, :4])
         # Add Translation
+        # print("rotated_start", rotated_start.shape)
+        # print("ahh", (rotated_start + xpos_start + quat_flat[:, 4:][:, None, :]).shape)
         out = (rotated_start + xpos_start + quat_flat[:, 4:][:, None, :]).flatten(
             start_dim=1
         )
+        # print(out.shape)
+        # print(quat.shape[0], quat.shape[1], out.shape[-1])
         # Fix shape
         out = out.reshape(quat.shape[0], quat.shape[1], out.shape[-1])
+        # print(out.shape)
         return out
 
 
@@ -353,7 +356,6 @@ def convert(true_preds, start_pos, data_type, xpos_start=None):
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type[:11] == "eucl_motion":
-        print("eucl convert")
         return eucl2pos(true_preds, start_pos, xpos_start)
     elif data_type[:4] == "quat":
         # print("quat convert")

@@ -98,7 +98,7 @@ class GRU(nn.Module):
                 self.n_layers, x.shape[0], self.h_size
             )
         x, h = self.rnn(x, h)
-        # print(x.shape, "H")
+
         if return_all:
             x = self.fc(x)
         else:
@@ -142,40 +142,6 @@ class MyDataset(data.Dataset):
         self.collect_data()
 
     def collect_data(self):
-        # start_time = time.time()
-        # self.data = []
-        # self.target = []
-        # self.target_pos = []
-        # self.start_pos = []
-
-        # for i in self.sims:
-        #     with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
-        #         data_all = pickle.load(f)["data"]
-        #         data = data_all[self.data_type]
-        #         for frame in range(len(data) - (self.n_frames_perentry + 1)):
-        #             self.start_pos.append(data_all["pos"][0].flatten())
-        #             train_end = frame + self.n_frames_perentry
-        #             # [frames, n_data]
-        #             self.data.append(
-        #                 data[frame:train_end].reshape(-1, self.n_datap_perframe)
-        #             )
-        #             # [frames, n_data]
-        #             self.target.append(
-        #                 data[frame + 1 : train_end + 1].reshape(
-        #                     -1, self.n_datap_perframe
-        #                 )
-        #             )
-        #             # [frames, 8, 3]
-        #             self.target_pos.append(data_all["pos"][frame + 1 : train_end + 1])
-
-        # # Shape [(n_simsx(total_nr_frames-n_frames_perentry-1)), n_frames_perentry, n_data]
-        # self.data = torch.FloatTensor(np.asarray(self.data))
-        # self.target = torch.FloatTensor(np.asarray(self.target))
-        # self.target_pos = torch.FloatTensor(np.asarray(self.target_pos)).flatten(
-        #     start_dim=2
-        # )
-        # self.start_pos = torch.FloatTensor(np.asarray(self.start_pos))
-
         count = 0
         for i in self.sims:
             with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
@@ -632,7 +598,7 @@ if __name__ == "__main__":
 
         config = dict(
             learning_rate=args.learning_rate,
-            epochs=20,
+            epochs=10,
             batch_size=args.batch_size,
             dropout=0.2,
             loss_type=args.loss,
@@ -674,5 +640,5 @@ if __name__ == "__main__":
 
         torch.save(
             model_dict,
-            f"models/lstm/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'.pickle",
+            f"models/gru/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'.pickle",
         )

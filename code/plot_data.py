@@ -2,6 +2,7 @@ import torch
 import matplotlib.pyplot as plt
 from fcnn import fcnn
 from lstm import LSTM
+from gru import GRU
 import pickle
 from random import randint
 import numpy as np
@@ -29,16 +30,24 @@ def load_model(data_type, architecture, data_dir):
     """
     # Load model
     model_dict = torch.load(
-        f"models/{architecture}/{data_type}_{architecture}_['{data_dir}'].pickle",
+        f"models/{architecture}/{data_type}_{architecture}_'['{data_dir}']'.pickle",
         map_location=torch.device(device),
     )
     config = model_dict["config"]
     ndata_dict = model_dict["data_dict"]
+    if config["data_type"][-3:] == "ori":
+        n_datapoints = ndata_dict[config["data_type"][:-4]]
+    else:
+        n_datapoints = ndata_dict[config["data_type"]]
 
     if architecture == "fcnn":
-        model = fcnn(ndata_dict[config["data_type"]], config)
-    elif architecture == "lstm" or architecture == "quaternet":
-        model = LSTM(ndata_dict[config["data_type"]], config)
+        model = fcnn(n_datapoints, config)
+    elif architecture == "lstm":
+        model = LSTM(n_datapoints, config)
+    elif architecture == "gru":
+        model = GRU(config, n_datapoints)
+    else:
+        raise IndexError(f"Architecture {architecture} not yet supported")
 
     model.load_state_dict(model_dict["model"])
     model.eval()
@@ -83,11 +92,11 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             start_pos = torch.tensor(
                 file["data"]["pos"][0], dtype=torch.float32
             ).flatten()
-            start_xpos = torch.tensor(
-                file["data"]["xpos_start"], dtype=torch.float32
-            ).flatten()
             start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
-            start_xpos = start_xpos[None, :].repeat(nr_frames, 1, 1)
+        start_xpos = torch.tensor(
+            file["data"]["xpos_start"], dtype=torch.float32
+        ).flatten()
+        start_xpos = start_xpos[None, :].repeat(nr_frames, 1, 1)
 
         if "rotation_axis_trans" in file["data"].keys():
             rot_axis_trans = file["data"]["rotation_axis_trans"]
@@ -112,7 +121,6 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
             and data_type != "pos"
             and data_type != "pos_diff_start"
         ):
-            print("THis concvert")
             plot_data = convert(
                 original_data, start_pos, data_type, start_xpos
             ).reshape(nr_frames, 8, 3)
@@ -136,6 +144,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         original_data,
         plot_data_true_pos,
         start_pos[0],
+        start_xpos[0],
         nr_frames,
         i,
         rot_axis_trans,
@@ -144,7 +153,7 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
 
 
 def get_prediction_fcnn(
-    original_data, data_type, xyz_data, start_pos, nr_input_frames, model
+    original_data, data_type, xyz_data, start_pos, xpos_start, nr_input_frames, model
 ):
     """
     Gets prediction of the pre-trained fcnn.
@@ -183,6 +192,7 @@ def get_prediction_lstm(
     data_type,
     xyz_data,
     start_pos,
+    xpos_start,
     nr_input_frames,
     model,
     out_is_in=False,
@@ -231,6 +241,71 @@ def get_prediction_lstm(
             result[frame_id + 1 : frame_id + nr_input_frames + 1] = convert(
                 prediction, start_pos, data_type
             ).reshape(-1, 8, 3)[: out_shape[0], :, :]
+
+    return result
+
+
+def get_prediction_gru(
+    original_data,
+    data_type,
+    xyz_data,
+    start_pos,
+    xpos_start,
+    nr_input_frames,
+    model,
+    out_is_in=False,
+):
+    """
+    Gets prediction of the pre-trained lstm.
+
+    Input:
+        - original_data: input data in data_type.
+        - data_type: data type currently used.
+        - xyz_data: xyz data.
+        - start_pos: start position of the simulation.
+        - nr_input_frames: number of frames the fcnn is trained on.
+        - model: the trained model.
+        - out_is_in:
+                    False; do not use output of the model as input.
+                    True; do use output of the model as input.
+
+    Output:
+        - prediction: converted to xyz positions output of the model based on original_data and start_pos.
+    """
+    # prediction should be xyz data for plot
+    frames, vert, dim = xyz_data.shape
+
+    # Because LSTM predicts 1 more frame
+    result = torch.zeros((frames + 1, vert, dim))
+
+    # Get first position
+    start_pos = start_pos[None, :]
+    hidden = torch.zeros(1, 1, 96)
+
+    for frame_id in range(0, xyz_data.shape[0], nr_input_frames):
+        # Get 20 frames shape: (1, 480)
+        if not out_is_in or frame_id == 0:
+            input_data = original_data[frame_id : frame_id + nr_input_frames]
+            input_data = input_data.unsqueeze(dim=0)
+
+        # Save the prediction in result
+        with torch.no_grad():  # Deactivate gradients for the following code
+            prediction, _, _ = model(input_data)
+            if out_is_in:
+                input_data = prediction
+            print(prediction.shape)
+            out_shape = prediction[frame_id + 1 : frame_id + nr_input_frames + 1].shape
+            if data_type[-3:] != "ori":
+                converted_prediction = convert(
+                    prediction, start_pos, data_type, xpos_start
+                ).reshape(-1, 8, 3)
+            else:
+                converted_prediction = convert(
+                    prediction, start_pos, data_type
+                ).reshape(-1, 8, 3)
+            print("converted pred", converted_prediction.shape)
+            print("into: ", result[frame_id + 1 : frame_id + nr_input_frames + 1].shape)
+            result[frame_id + 1 : frame_id + nr_input_frames + 1] = converted_prediction
 
     return result
 
@@ -482,14 +557,24 @@ def plot_datatypes(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--data_type", type=str, help="data type to visualize", default="pos"
+        "--data_type", type=str, help="data type to visualize", default="quat"
     )
-    parser.add_argument("-architecture", type=str, help="architecture", default="fcnn")
+    parser.add_argument(
+        "-architecture",
+        type=str,
+        choices=[
+            "fcnn",
+            "lstm",
+            "gru",
+        ],
+        help="architecture",
+        default="fcnn",
+    )
     parser.add_argument(
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(20, 40)_r(5, 10)_tennis_pNone_gNone",
+        default="data_t(0, 0)_r(5, 10)_full_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
@@ -520,6 +605,7 @@ if __name__ == "__main__":
             ori_data,
             pos_data,
             start,
+            xpos_start,
             nr_frames,
             sim_id,
             _,
@@ -529,22 +615,38 @@ if __name__ == "__main__":
         nr_input_frames = config["n_frames"]
         if architecture == "fcnn":
             prediction = get_prediction_fcnn(
-                ori_data, data_type, plot_data, start, nr_input_frames, model
+                ori_data,
+                data_type,
+                plot_data,
+                start,
+                xpos_start,
+                nr_input_frames,
+                model,
             )
-        elif (
-            architecture == "lstm"
-            or architecture == "quaternet"
-            or architecture == "gru"
-        ):
+        elif architecture == "lstm":
             prediction = get_prediction_lstm(
                 ori_data,
                 data_type,
                 plot_data,
                 start,
+                xpos_start,
                 nr_input_frames,
                 model,
                 out_is_in=False,
             )
+        elif architecture == "quaternet" or architecture == "gru":
+            prediction = get_prediction_gru(
+                ori_data,
+                data_type,
+                plot_data,
+                start,
+                xpos_start,
+                nr_input_frames,
+                model,
+                out_is_in=False,
+            )
+        else:
+            raise IndexError(f"Cannot get prediction for {architecture}")
 
         plot_3D_animation(
             np.array(plot_data),
