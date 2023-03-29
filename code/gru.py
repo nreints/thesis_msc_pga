@@ -263,16 +263,12 @@ def train_model(
             pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
             extra_input_data = extra_input_data.to(device)  # Shape: [batch, 3]
-            # print(data_inputs[0][:].shape)
-            # print(data_labels[0][:][:, 4:])
             # exit()
             if config["str_extra_input"] == "inertia_body":
-                # print("normalizing")
                 extra_input_data = (
                     extra_input_data / data_set_train.normalize_extra_input
                 )
             if config.extra_input_n != 0:
-                # print("adding extra")
                 _, _, preds = model(
                     data_inputs, extra_input_data
                 )  # Shape: [batch, frames, n_data]
@@ -286,7 +282,6 @@ def train_model(
                     data_loader.dataset.data_type,
                     xpos_start,
                 )
-            # print(alt_preds)
 
             else:
                 alt_preds = convert(
@@ -367,7 +362,11 @@ def eval_model(model, data_loaders, config, current_epoch, losses, data_set_trai
                             data_inputs
                         )  # Shape: [batch, frames, n_data]
                         preds = preds.squeeze(dim=1)
-
+                    # print("--------------------------")
+                    # print(data_labels[0, :3, -3:])
+                    # print(preds[0, :3, -3:])
+                    # print(preds[0, :, -3:].mean(dim=0))
+                    # exit()
                     # Convert predictions to xyz-data
                     if config.data_type[-3:] != "ori":
                         alt_preds = convert(
@@ -584,7 +583,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total = len(os.listdir(data_dir_train))
-        n_sims_train_total = 4000
+        n_sims_train_total = 2000
         sims_train = range(0, n_sims_train_total)
         train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
         test_sims = set(sims_train) - set(train_sims)
