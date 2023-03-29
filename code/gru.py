@@ -10,6 +10,9 @@ import time
 import os
 import argparse
 
+# import warnings
+
+# warnings.filterwarnings("error")
 # from quaternion import qmul
 # import torch.nn.functional as F
 
@@ -53,12 +56,13 @@ class GRU(nn.Module):
             num_layers=self.n_layers,
             batch_first=True,
         )
-        self.pre_hidden_lin_layer = nn.Sequential(
-            nn.Linear(
-                config["extra_input_n"],
-                self.n_layers * self.h_size,
+        if config["extra_input_n"] != 0:
+            self.pre_hidden_lin_layer = nn.Sequential(
+                nn.Linear(
+                    config["extra_input_n"],
+                    self.n_layers * self.h_size,
+                )
             )
-        )
         self.h0 = nn.Parameter(
             torch.zeros(self.n_layers, 1, self.h_size).normal_(std=0.01),
             requires_grad=True,
@@ -343,7 +347,11 @@ def eval_model(model, data_loaders, config, current_epoch, losses, data_set_trai
 
                     # Determine prediction of model on dev set
                     data_inputs = data_inputs.to(device)
-
+                    # print("input:", data_inputs[0, 0:3, -3:])
+                    # print("label:", data_labels[0, 0:3, -3:])
+                    # print(
+                    #     "pos la:", data_labels_pos[0, 0:3].reshape(-1, 8, 3).mean(dim=1)
+                    # )
                     data_labels = data_labels.to(device)
                     extra_input_data = extra_input_data.to(device)
                     if config["str_extra_input"] == "inertia_body":
@@ -368,10 +376,8 @@ def eval_model(model, data_loaders, config, current_epoch, losses, data_set_trai
                             data_loader.dataset.data_type,
                             xpos_start,
                         )
-                    # print(alt_preds)
 
                     else:
-                        print(preds)
                         alt_preds = convert(
                             preds,
                             start_pos,
@@ -528,7 +534,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--batch_size", type=int, default=1024, help="Batch size")
     parser.add_argument(
-        "--learning_rate", "-lr", type=float, default=0.0001, help="Batch size"
+        "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
     )
     args = parser.parse_args()
 
@@ -579,9 +585,9 @@ if __name__ == "__main__":
         # Divide the train en test dataset
         n_sims_train_total = len(os.listdir(data_dir_train))
         n_sims_train_total = 4000
-        sims_train = {i for i in range(n_sims_train_total)}
-        train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train_total)))
-        test_sims = sims_train - train_sims
+        sims_train = range(0, n_sims_train_total)
+        train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
+        test_sims = set(sims_train) - set(train_sims)
         print(f"Number of train simulations: {len(train_sims)}")
         print(f"Number of test simulations: {len(test_sims)}")
         # if data_dir_train == data_dir_test:
