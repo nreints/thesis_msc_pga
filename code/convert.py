@@ -99,7 +99,6 @@ def quat2pos(quat, start_pos, xpos_start):
             (batch, 24) or (batch, frames, 24)
     """
     if len(quat.shape) == 2:
-        # print("1 a")
         if xpos_start is None:
             xpos_start = 0
         else:
@@ -116,16 +115,15 @@ def quat2pos(quat, start_pos, xpos_start):
         out = rotated_start + repeated_trans + xpos_start
         return out.flatten(start_dim=1)
     else:
-        # print("2 a", quat.shape)
         if xpos_start is None:
             xpos_start = 0
         else:
+            # For visualisation
             if len(xpos_start.shape) != 3:
                 xpos_start = xpos_start[:, None, :]
             xpos_start = xpos_start.repeat(1, quat.shape[1], 1).flatten(end_dim=1)[
                 :, None, :
             ]
-        # print("xpos", xpos_start.shape)
         quat_flat = quat.flatten(end_dim=1)
         # For visualisation
         if len(start_pos.shape) != 3:
@@ -133,23 +131,16 @@ def quat2pos(quat, start_pos, xpos_start):
         repeated_start_pos = (
             start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1).reshape(-1, 8, 3)
         )
-        # print("repeated_start_pos", repeated_start_pos.shape)
         start_origin = (repeated_start_pos - xpos_start).flatten(start_dim=1)
-        # print("start_origin", start_origin.shape)
 
         # Rotate start by quaternion
         rotated_start = fast_rotVecQuat(start_origin, quat_flat[:, :4])
         # Add Translation
-        # print("rotated_start", rotated_start.shape)
-        # print("ahh", (rotated_start + xpos_start + quat_flat[:, 4:][:, None, :]).shape)
         out = (rotated_start + xpos_start + quat_flat[:, 4:][:, None, :]).flatten(
             start_dim=1
         )
-        # print(out.shape)
-        # print(quat.shape[0], quat.shape[1], out.shape[-1])
         # Fix shape
         out = out.reshape(quat.shape[0], quat.shape[1], out.shape[-1])
-        # print(out.shape)
         return out
 
 
@@ -358,20 +349,13 @@ def convert(true_preds, start_pos, data_type, xpos_start=None):
     elif data_type[:11] == "eucl_motion":
         return eucl2pos(true_preds, start_pos, xpos_start)
     elif data_type[:4] == "quat":
-        # print("quat convert")
         return quat2pos(true_preds, start_pos, xpos_start)
-    # elif data_type == "quat_ori":
-    #     return quat2pos(true_preds, start_pos, xpos_start)
     elif data_type[:8] == "log_quat":
-        print("log_quat convert")
         return log_quat2pos(true_preds, start_pos, xpos_start)
     elif data_type[:9] == "dual_quat":
-        print("dual_quat convert")
         return dualQ2pos(true_preds, start_pos, xpos_start)
     elif data_type == "pos_diff_start":
-        print("pos_diff_start convert")
         return diff_pos_start2pos(true_preds, start_pos)
     elif data_type[:9] == "log_dualQ":
-        print("log_dualQ convert")
         return log_dualQ2pos(true_preds, start_pos, xpos_start)
     raise Exception(f"No function to convert {data_type}")
