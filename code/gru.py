@@ -182,7 +182,6 @@ class MyDataset(data.Dataset):
                     )
 
                     if self.extra_input[1] != 0:
-                        # TODO
                         extra_input_values = torch.FloatTensor(
                             data_all[self.extra_input[0]]
                         )
@@ -191,16 +190,12 @@ class MyDataset(data.Dataset):
                         data_all["pos"][frame + 1 : train_end + 1]
                     ).flatten(start_dim=1)
                     count += 1
-        # print(time.time() - start_time)
-        # exit()
+
         self.normalize_extra_input = torch.mean(
             torch.norm(self.extra_input_data, dim=1)
         )
-        # print(self.normalize_extra_input)
-        # exit()
 
     def __len__(self):
-        # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
         return self.data.shape[0]
 
     def __getitem__(self, idx):
@@ -263,6 +258,7 @@ def train_model(
             pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
             extra_input_data = extra_input_data.to(device)  # Shape: [batch, 3]
+            xpos_start = xpos_start.to(device)
             # exit()
             if config["str_extra_input"] == "inertia_body":
                 extra_input_data = (
@@ -361,7 +357,7 @@ def eval_model(model, data_loaders, config, current_epoch, losses, data_set_trai
                         _, _, preds = model(
                             data_inputs
                         )  # Shape: [batch, frames, n_data]
-                        preds = preds.squeeze(dim=1)
+                    preds = preds.squeeze(dim=1)
                     # print("--------------------------")
                     # print(data_labels[0, :3, -3:])
                     # print(preds[0, :3, -3:])
@@ -562,14 +558,12 @@ if __name__ == "__main__":
 
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dirs_test = args.data_dir_test
-    # data_dirs_test = [os.listdir("data")[3]]  # TODO ONLY FOR TESTing
     # if ".DS_Store" in data_dirs_test:
     #     data_dirs_test.remove(".DS_Store")
-    data_dirs_test = [" ".join(args.data_dir_train)]
-    # data_dirs_test = [
-    #     " ".join(args.data_dir_train),
-    #     # "data_tennis_pNone_gNone_tennisEffect",
-    # ]
+    data_dirs_test = [
+        " ".join(args.data_dir_train),
+        # "data_tennis_pNone_gNone_tennisEffect",
+    ]
 
     # if args.data_dir_test == "":
     #     data_dirs_test = [data_dir_train]

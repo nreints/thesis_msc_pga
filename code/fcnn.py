@@ -133,7 +133,6 @@ class MyDataset(data.Dataset):
         print(f"The dataloader took {time.time() - start_time} seconds.")
 
     def __len__(self):
-        # Number of data point we have
         return self.data.shape[0]
 
     def __getitem__(self, idx):
@@ -150,7 +149,7 @@ def train_log(loss, epoch, config):
     """
     Log the train loss to Weights and Biases
     """
-    wandb.log({f"Train loss {config.data_dir_train[5:-12]}": loss}, step=epoch)
+    wandb.log({f"Train loss": loss}, step=epoch)
 
 
 def train_model(
@@ -529,7 +528,7 @@ if __name__ == "__main__":
     #     data_dirs_test = [data_dir_train]
     # else:
     #     data_dirs_test = "data/" + args.data_dir_test
-    losses = [nn.MSELoss, nn.L1Loss]
+    losses = [nn.MSELoss]
 
     if not os.path.exists(data_dir_train):
         raise IndexError(f"No directory for the train data {data_dir_train}")
