@@ -164,7 +164,7 @@ def train_model(
     num_epochs,
     config,
     losses,
-    data_set_train,
+    normalization,
 ):
     print("--- Started Training ---")
     # Set model to train mode
@@ -196,8 +196,7 @@ def train_model(
             xpos_start = xpos_start.to(device)
             if config["str_extra_input"] == "inertia_body":
                 data_inputs[:, -config["extra_input_n"] :] = (
-                    data_inputs[:, -config["extra_input_n"] :]
-                    / data_set_train.normalize_extra_input
+                    data_inputs[:, -config["extra_input_n"] :] / normalization
                 )
 
             # Get predictions
@@ -259,7 +258,7 @@ def train_model(
 
         # Evaluate model
         true_loss, convert_loss, total_convert_loss = eval_model(
-            model, test_loaders, loss_module, config, epoch, losses, data_set_train
+            model, test_loaders, loss_module, config, epoch, losses, normalization
         )
 
         # Set model to train mode
@@ -268,7 +267,7 @@ def train_model(
 
 
 def eval_model(
-    model, data_loaders, loss_module, config, current_epoch, losses, data_set_train
+    model, data_loaders, loss_module, config, current_epoch, losses, normalization
 ):
 
     model.eval()  # Set model to eval mode
@@ -289,8 +288,7 @@ def eval_model(
                 ) in data_loader:
                     if config["str_extra_input"] == "inertia_body":
                         data_inputs[:, -config["extra_input_n"] :] = (
-                            data_inputs[:, -config["extra_input_n"] :]
-                            / data_set_train.normalize_extra_input
+                            data_inputs[:, -config["extra_input_n"] :] / normalization
                         )
                     # Set data to current device
                     data_inputs = data_inputs.to(device)
@@ -381,7 +379,6 @@ def model_pipeline(
             test_loaders,
             criterion,
             optimizer,
-            data_set_train,
             normalize_extra_input,
         ) = make(
             config,
@@ -401,7 +398,7 @@ def model_pipeline(
             config.epochs,
             config,
             losses,
-            data_set_train,
+            normalize_extra_input,
         )
 
         # and test its final performance
@@ -412,7 +409,7 @@ def model_pipeline(
             config,
             config.epochs,
             losses,
-            data_set_train,
+            normalize_extra_input,
         )
 
     return model, normalize_extra_input
@@ -472,7 +469,6 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         test_data_loaders,
         criterion,
         optimizer,
-        data_set_train,
         data_set_train.normalize_extra_input,
     )
 

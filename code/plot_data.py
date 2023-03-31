@@ -204,9 +204,10 @@ def get_prediction_fcnn(
         input_data = input_data.unsqueeze(dim=0).flatten(start_dim=1)
         if normalize_extra_input[0] == "inertia_body":
             extra_input_data /= normalize_extra_input[2]
-        input_data = torch.hstack(
-            (input_data, extra_input_data[None, :].type(torch.float))
-        )
+        if normalize_extra_input[1] != 0:
+            input_data = torch.hstack(
+                (input_data, extra_input_data[None, :].type(torch.float))
+            )
         # Save the prediction in result
         with torch.no_grad():
             prediction = model(input_data)
@@ -257,8 +258,8 @@ def get_prediction_lstm(
 
     # Get first position
     start_pos = start_pos[None, :]
-    hidden = torch.zeros(1, 1, 96)
-    cell = torch.zeros(1, 1, 96)  # TODO
+    hidden_in = torch.zeros(1, 1, 96)
+    cell_in = torch.zeros(1, 1, 96)  # TODO
 
     for frame_id in range(0, xyz_data.shape[0], nr_input_frames):
         # Get 20 frames shape: (1, 480)
@@ -266,17 +267,23 @@ def get_prediction_lstm(
             input_data = original_data[frame_id : frame_id + nr_input_frames]
             input_data = input_data.unsqueeze(dim=0)
         if config["str_extra_input"] == "inertia_body":
-            extra_input_data = extra_input_data / normalize_extra_input[2]
+            extra_input_data = (extra_input_data / normalize_extra_input[2]).type(
+                torch.float
+            )
 
         # Save the prediction in result
         with torch.no_grad():  # Deactivate gradients for the following code
-            if normalize_extra_input != 0:
+            if normalize_extra_input != 0 and frame_id == 0:
                 prediction, (hidden, cell) = model(
-                    input_data, (extra_input_data, None)
+                    input_data, (extra_input_data, cell_in)
                 )  # Shape: [batch, frames, n_data]
-            else:
+            elif frame_id == 0:
                 prediction, (hidden, cell) = model(
-                    input_data
+                    input_data, (hidden_in, cell_in)
+                )  # Shape: [batch, frames, n_data]
+            elif out_is_in:  # TODO VRAAG LARS
+                prediction, (hidden, cell) = model(
+                    input_data, (hidden, cell)
                 )  # Shape: [batch, frames, n_data]
             # prediction, (hidden, cell) = model(input_data, (hidden, cell))
             if out_is_in:
@@ -336,11 +343,13 @@ def get_prediction_gru(
             input_data = original_data[frame_id : frame_id + nr_input_frames]
             input_data = input_data.unsqueeze(dim=0)
             if config["str_extra_input"] == "inertia_body":
-                extra_input_data = extra_input_data / normalize_extra_input[2]
+                extra_input_data = (extra_input_data / normalize_extra_input[2]).type(
+                    torch.float
+                )
 
         # Save the prediction in result
         with torch.no_grad():  # Deactivate gradients for the following code
-            if config.extra_input_n != 0:
+            if normalize_extra_input != 0 and frame_id == 0:  # TODO VRAAG LARS
                 _, _, prediction = model(
                     input_data, extra_input_data
                 )  # Shape: [batch, frames, n_data]

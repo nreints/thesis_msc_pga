@@ -230,7 +230,7 @@ def train_model(
     num_epochs,
     config,
     losses,
-    data_set_train,
+    normalization,
 ):
     print("-- Started Training --")
     # Set model to train mode
@@ -261,9 +261,7 @@ def train_model(
             xpos_start = xpos_start.to(device)
             # exit()
             if config["str_extra_input"] == "inertia_body":
-                extra_input_data = (
-                    extra_input_data / data_set_train.normalize_extra_input
-                )
+                extra_input_data /= normalization
             if config.extra_input_n != 0:
                 _, _, preds = model(
                     data_inputs, extra_input_data
@@ -312,13 +310,13 @@ def train_model(
         )
 
         convert_loss = eval_model(
-            model, test_loaders, config, epoch, losses, data_set_train
+            model, test_loaders, config, epoch, losses, normalization
         )
         model.train()
         print(f"     --> Epoch time; {time.time() - epoch_time}")
 
 
-def eval_model(model, data_loaders, config, current_epoch, losses, data_set_train):
+def eval_model(model, data_loaders, config, current_epoch, losses, normalization):
     model.eval()  # Set model to eval mode
 
     with torch.no_grad():  # Deactivate gradients for the following code
@@ -346,9 +344,7 @@ def eval_model(model, data_loaders, config, current_epoch, losses, data_set_trai
                     data_labels = data_labels.to(device)
                     extra_input_data = extra_input_data.to(device)
                     if config["str_extra_input"] == "inertia_body":
-                        extra_input_data = (
-                            extra_input_data / data_set_train.normalize_extra_input
-                        )
+                        extra_input_data /= normalization
                     if config.extra_input_n != 0:
                         _, _, preds = model(
                             data_inputs, extra_input_data
@@ -408,9 +404,14 @@ def model_pipeline(
         wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}"
 
         # make the model, data, and optimization problem
-        model, train_loader, test_loader, criterion, optimizer, data_set_train = make(
-            config, ndata_dict, loss_dict, optimizer_dict
-        )
+        (
+            model,
+            train_loader,
+            test_loader,
+            criterion,
+            optimizer,
+            normalize_extra_input,
+        ) = make(config, ndata_dict, loss_dict, optimizer_dict)
         print(model)
 
         # and use them to train the model
@@ -423,13 +424,15 @@ def model_pipeline(
             config.epochs,
             config,
             losses,
-            data_set_train,
+            normalize_extra_input,
         )
 
         # and test its final performance
-        eval_model(model, test_loader, config, config.epochs, losses, data_set_train)
+        eval_model(
+            model, test_loader, config, config.epochs, losses, normalize_extra_input
+        )
 
-    return model
+    return model, normalize_extra_input
 
 
 def make(config, ndata_dict, loss_dict, optimizer_dict):
@@ -489,7 +492,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         test_data_loaders,
         criterion,
         optimizer,
-        data_set_train,
+        data_set_train.normalize_extra_input,
     )
 
 
@@ -577,7 +580,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total = len(os.listdir(data_dir_train))
-        n_sims_train_total = 2000
+        n_sims_train_total = 20
         sims_train = range(0, n_sims_train_total)
         train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
         test_sims = set(sims_train) - set(train_sims)
@@ -624,7 +627,7 @@ if __name__ == "__main__":
         optimizer_dict = {"Adam": torch.optim.Adam}
 
         start_time = time.time()
-        model = model_pipeline(
+        model, normalize_extra_input = model_pipeline(
             config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses
         )
         print("It took ", time.time() - start_time, " seconds.")
@@ -633,6 +636,11 @@ if __name__ == "__main__":
             "config": config,
             "data_dict": ndata_dict,
             "model": model.state_dict(),
+            "normalize_extra_input": (
+                args.extra_input,
+                extra_input_n,
+                normalize_extra_input,
+            ),
         }
 
         if not os.path.exists("models"):
@@ -640,5 +648,8 @@ if __name__ == "__main__":
 
         torch.save(
             model_dict,
-            f"models/gru/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'.pickle",
+            f"models/gru/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'_'{args.extra_input}'.pickle",
+        )
+        print(
+            f"Saved model in: models/gru/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'_'{args.extra_input}'.pickle"
         )
