@@ -16,7 +16,7 @@ import matplotlib.cm as cm
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
-def load_model(data_type, architecture, data_dir):
+def load_model(data_type, architecture, data_dir, extra_input_str):
     """
     Loads a pretrained model.
 
@@ -30,10 +30,11 @@ def load_model(data_type, architecture, data_dir):
     """
     # Load model
     model_dict = torch.load(
-        f"models/{architecture}/{data_type}_{architecture}_'['{data_dir}']'.pickle",
+        f"models/{architecture}/{data_type}_{architecture}_'['{data_dir}']'_'{extra_input_str}'.pickle",
         map_location=torch.device(device),
     )
     config = model_dict["config"]
+    normalize_extra_input = model_dict["normalize_extra_input"]
     ndata_dict = model_dict["data_dict"]
     if config["data_type"][-3:] == "ori":
         n_datapoints = ndata_dict[config["data_type"][:-4]]
@@ -52,10 +53,10 @@ def load_model(data_type, architecture, data_dir):
     model.load_state_dict(model_dict["model"])
     model.eval()
 
-    return model, config
+    return model, config, normalize_extra_input
 
 
-def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
+def get_random_sim_data(data_type, nr_sims, data_dir, normalize_extra_input, i=None):
     """
     Collects the data from a random simulation.
 
@@ -80,6 +81,10 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
 
     with open(f"{data_dir}/sim_{i}.pickle", "rb") as f:
         file = pickle.load(f)
+        if normalize_extra_input[1] != 0:
+            extra_input = file["data"][normalize_extra_input[0]]
+        else:
+            extra_input = None
         nr_frames = file["vars"]["n_steps"]
         # Load the correct start position repeat for converting
         if data_type[-3:] == "ori":
@@ -149,11 +154,32 @@ def get_random_sim_data(data_type, nr_sims, data_dir, i=None):
         i,
         rot_axis_trans,
         ranges,
+        extra_input,
     )
 
 
+def convert_preds(prediction, start_pos, data_type, xpos_start):
+    if data_type[-3:] != "ori":
+        converted_prediction = convert(
+            prediction, start_pos, data_type, xpos_start
+        ).reshape(-1, 8, 3)
+    else:
+        converted_prediction = convert(prediction, start_pos, data_type).reshape(
+            -1, 8, 3
+        )
+    return converted_prediction
+
+
 def get_prediction_fcnn(
-    original_data, data_type, xyz_data, start_pos, xpos_start, nr_input_frames, model
+    original_data,
+    data_type,
+    xyz_data,
+    start_pos,
+    xpos_start,
+    nr_input_frames,
+    model,
+    normalize_extra_input,
+    extra_input_data,
 ):
     """
     Gets prediction of the pre-trained fcnn.
@@ -176,13 +202,20 @@ def get_prediction_fcnn(
         input_data = original_data[frame_id - nr_input_frames : frame_id]
         # Reshape to (1, nr_input_frames*n_data)
         input_data = input_data.unsqueeze(dim=0).flatten(start_dim=1)
-
+        if normalize_extra_input[0] == "inertia_body":
+            extra_input_data /= normalize_extra_input[2]
+        input_data = torch.hstack(
+            (input_data, extra_input_data[None, :].type(torch.float))
+        )
         # Save the prediction in result
         with torch.no_grad():
             prediction = model(input_data)
-            result[frame_id] = convert(prediction, start_pos, data_type).reshape(
-                -1, 8, 3
+            converted_prediction = convert_preds(
+                prediction, start_pos, data_type, xpos_start
             )
+            # convert(prediction, start_pos, data_type).reshape(-1, 8, 3)
+            result[frame_id] = converted_prediction
+            print("saved")
 
     return result
 
@@ -195,6 +228,8 @@ def get_prediction_lstm(
     xpos_start,
     nr_input_frames,
     model,
+    normalize_extra_input,
+    extra_input_data,
     out_is_in=False,
 ):
     """
@@ -230,6 +265,8 @@ def get_prediction_lstm(
         if not out_is_in or frame_id == 0:
             input_data = original_data[frame_id : frame_id + nr_input_frames]
             input_data = input_data.unsqueeze(dim=0)
+        if config["str_extra_input"] == "inertia_body":
+            extra_input_data = extra_input_data / normalize_extra_input[2]
 
         # Save the prediction in result
         with torch.no_grad():  # Deactivate gradients for the following code
@@ -238,9 +275,11 @@ def get_prediction_lstm(
                 input_data = prediction
 
             out_shape = prediction[frame_id + 1 : frame_id + nr_input_frames + 1].shape
-            result[frame_id + 1 : frame_id + nr_input_frames + 1] = convert(
-                prediction, start_pos, data_type
-            ).reshape(-1, 8, 3)[: out_shape[0], :, :]
+            converted_prediction = convert_preds(
+                prediction, start_pos, data_type, xpos_start
+            )
+            # convert(prediction, start_pos, data_type).reshape(-1, 8, 3)[: out_shape[0], :, :]
+            result[frame_id + 1 : frame_id + nr_input_frames + 1] = converted_prediction
 
     return result
 
@@ -253,6 +292,8 @@ def get_prediction_gru(
     xpos_start,
     nr_input_frames,
     model,
+    normalize_extra_input,
+    extra_input_data,
     out_is_in=False,
 ):
     """
@@ -275,36 +316,32 @@ def get_prediction_gru(
     # prediction should be xyz data for plot
     frames, vert, dim = xyz_data.shape
 
-    # Because LSTM predicts 1 more frame
+    # Because GRU predicts 1 more frame
     result = torch.zeros((frames + 1, vert, dim))
 
     # Get first position
     start_pos = start_pos[None, :]
-    hidden = torch.zeros(1, 1, 96)
 
     for frame_id in range(0, xyz_data.shape[0], nr_input_frames):
         # Get 20 frames shape: (1, 480)
         if not out_is_in or frame_id == 0:
             input_data = original_data[frame_id : frame_id + nr_input_frames]
             input_data = input_data.unsqueeze(dim=0)
+            if config["str_extra_input"] == "inertia_body":
+                extra_input_data = extra_input_data / normalize_extra_input[2]
 
         # Save the prediction in result
         with torch.no_grad():  # Deactivate gradients for the following code
             prediction, _, _ = model(input_data)
             if out_is_in:
                 input_data = prediction
-            print(prediction.shape)
-            out_shape = prediction[frame_id + 1 : frame_id + nr_input_frames + 1].shape
-            if data_type[-3:] != "ori":
-                converted_prediction = convert(
-                    prediction, start_pos, data_type, xpos_start
-                ).reshape(-1, 8, 3)
-            else:
-                converted_prediction = convert(
-                    prediction, start_pos, data_type
-                ).reshape(-1, 8, 3)
-            print("converted pred", converted_prediction.shape)
-            print("into: ", result[frame_id + 1 : frame_id + nr_input_frames + 1].shape)
+            # print(prediction.shape)
+            # out_shape = prediction[frame_id + 1 : frame_id + nr_input_frames + 1].shape
+            converted_prediction = convert_preds(
+                prediction, start_pos, data_type, xpos_start
+            )
+            # print("converted pred", converted_prediction.shape)
+            # print("into: ", result[frame_id + 1 : frame_id + nr_input_frames + 1].shape)
             result[frame_id + 1 : frame_id + nr_input_frames + 1] = converted_prediction
 
     return result
@@ -577,6 +614,17 @@ if __name__ == "__main__":
         default="data_t(0, 0)_r(5, 10)_full_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
+    parser.add_argument(
+        "-extra_input",
+        type=str,
+        choices=[
+            "inertia_body",
+            "size",
+            "size_squared",
+            "size_mass",
+            "size_squared_mass",
+        ],
+    )
     args = parser.parse_args()
 
     data_dir = "data/" + args.data_dir
@@ -599,7 +647,9 @@ if __name__ == "__main__":
         architecture = args.architecture
         print(f"Visualizing {architecture} trained on {data_type}")
 
-        model, config = load_model(data_type, architecture, args.data_dir)
+        model, config, normalize_extra_input = load_model(
+            data_type, architecture, args.data_dir, args.extra_input
+        )
         (
             plot_data,
             ori_data,
@@ -610,7 +660,8 @@ if __name__ == "__main__":
             sim_id,
             _,
             range_plot,
-        ) = get_random_sim_data(data_type, nr_sims, data_dir)
+            extra_input,
+        ) = get_random_sim_data(data_type, nr_sims, data_dir, normalize_extra_input)
 
         nr_input_frames = config["n_frames"]
         if architecture == "fcnn":
@@ -622,6 +673,8 @@ if __name__ == "__main__":
                 xpos_start,
                 nr_input_frames,
                 model,
+                normalize_extra_input,
+                extra_input,
             )
         elif architecture == "lstm":
             prediction = get_prediction_lstm(
@@ -632,6 +685,8 @@ if __name__ == "__main__":
                 xpos_start,
                 nr_input_frames,
                 model,
+                normalize_extra_input,
+                extra_input,
                 out_is_in=False,
             )
         elif architecture == "quaternet" or architecture == "gru":
@@ -643,6 +698,8 @@ if __name__ == "__main__":
                 xpos_start,
                 nr_input_frames,
                 model,
+                normalize_extra_input,
+                extra_input,
                 out_is_in=False,
             )
         else:

@@ -448,7 +448,7 @@ if __name__ == "__main__":
             "size_squared_mass",
         ],
     )
-    parser.add_argument("--batch_size", type=int, default=64, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
     parser.add_argument(
         "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
     )

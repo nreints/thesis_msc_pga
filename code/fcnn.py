@@ -127,6 +127,9 @@ class MyDataset(data.Dataset):
         self.normalize_extra_input = torch.mean(
             torch.norm(self.data[:, -self.extra_input[1] :], dim=1)
         )
+        assert (
+            self.normalize_extra_input != 0
+        ), f"The normalization of the extra input is zero. This leads to zero-division."
         # print(self.xpos_start.shape)
         # print("mean of norm extra_input", self.normalize_extra_input.item())
         # self.data[:, -self.extra_input[1] :] = self.extra_input_data
@@ -184,9 +187,9 @@ def train_model(
             data_inputs = data_inputs.to(
                 device
             )  # Shape: [batch, frames x n_data + config["extra_input_n"]]
-            if torch.any(torch.isnan(data_inputs)):
-                print("ASHH")
-                exit()
+            assert not torch.any(
+                torch.isnan(data_inputs)
+            ), f"Encountered NaN in the data inputs."
             data_labels = data_labels.to(device)  # Shape: [batch, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, n_data]
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
@@ -196,7 +199,7 @@ def train_model(
                     data_inputs[:, -config["extra_input_n"] :]
                     / data_set_train.normalize_extra_input
                 )
-            # print("data_inputs:", data_inputs[0])
+
             # Get predictions
             preds = model(data_inputs)  # Shape: [batch, n_data]
             # preds = model(data_norm)
@@ -372,7 +375,15 @@ def model_pipeline(
         wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}/"
 
         # make the model, data, and optimization problem
-        model, train_loader, test_loaders, criterion, optimizer, data_set_train = make(
+        (
+            model,
+            train_loader,
+            test_loaders,
+            criterion,
+            optimizer,
+            data_set_train,
+            normalize_extra_input,
+        ) = make(
             config,
             ndata_dict,
             loss_dict,
@@ -404,7 +415,7 @@ def model_pipeline(
             data_set_train,
         )
 
-    return model
+    return model, normalize_extra_input
 
 
 def make(config, ndata_dict, loss_dict, optimizer_dict):
@@ -424,6 +435,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     train_data_loader = data.DataLoader(
         data_set_train, batch_size=config.batch_size, shuffle=True
     )
+
     print("-- Finished Train Dataloader --")
 
     test_data_loaders = []
@@ -461,6 +473,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         criterion,
         optimizer,
         data_set_train,
+        data_set_train.normalize_extra_input,
     )
 
 
@@ -507,8 +520,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
-    # print(args.data_dir_train)
+    print(args.extra_input)
+    print(args.data_dir_train)
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dir_train = "data/" + args.data_dir_train
     print(f"Training on dataset: {data_dir_train}")
@@ -560,7 +573,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 2000
+        n_sims_train = 20
         sims_train = {i for i in range(n_sims_train)}
         train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
         test_sims = sims_train - train_sims
@@ -605,6 +618,7 @@ if __name__ == "__main__":
             # inertia_input=args.inertia_input,
             str_extra_input=args.extra_input,
             extra_input_n=extra_input_n,
+            data_loader_normalization=0,
         )
 
         loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
@@ -612,7 +626,7 @@ if __name__ == "__main__":
         optimizer_dict = {"Adam": torch.optim.Adam}
 
         start_time = time.time()
-        model = model_pipeline(
+        model, normalize_extra_input = model_pipeline(
             config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses
         )
         print(f"It took {time.time() - start_time} seconds to train & eval the model.")
@@ -620,11 +634,22 @@ if __name__ == "__main__":
             "config": config,
             "data_dict": ndata_dict,
             "model": model.state_dict(),
+            "normalize_extra_input": (
+                args.extra_input,
+                extra_input_n,
+                normalize_extra_input,
+            ),
         }
+        print(config.keys())
         # Save model
         if not os.path.exists("models"):
             os.mkdir("models")
+        if not os.path.exists("models/fcnn"):
+            os.mkdir("models/fcnn")
         torch.save(
             model_dict,
-            f"models/fcnn/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'.pickle",
+            f"models/fcnn/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'_'{args.extra_input}'.pickle",
+        )
+        print(
+            f"Saved model in: models/fcnn/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'_'{args.extra_input}'.pickle"
         )

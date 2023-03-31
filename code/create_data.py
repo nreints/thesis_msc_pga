@@ -363,7 +363,7 @@ def generate_data(
     for key, data_part in dataset.items():
         assert not np.any(
             np.isnan(data_part)
-        ), f"Encountered NaN in {key}. Try to recreate dataset {dict_name}\n Number of NaNs: {np.sum(np.isnan(data_part))}"
+        ), f"Encountered NaN in {key}. Try to recreate dataset {dict_name}.\n Number of NaNs: {np.sum(np.isnan(data_part))}"
 
     return dataset
 
