@@ -270,7 +270,15 @@ def get_prediction_lstm(
 
         # Save the prediction in result
         with torch.no_grad():  # Deactivate gradients for the following code
-            prediction, (hidden, cell) = model(input_data, (hidden, cell))
+            if normalize_extra_input != 0:
+                prediction, (hidden, cell) = model(
+                    input_data, (extra_input_data, None)
+                )  # Shape: [batch, frames, n_data]
+            else:
+                prediction, (hidden, cell) = model(
+                    input_data
+                )  # Shape: [batch, frames, n_data]
+            # prediction, (hidden, cell) = model(input_data, (hidden, cell))
             if out_is_in:
                 input_data = prediction
 
@@ -332,7 +340,13 @@ def get_prediction_gru(
 
         # Save the prediction in result
         with torch.no_grad():  # Deactivate gradients for the following code
-            prediction, _, _ = model(input_data)
+            if config.extra_input_n != 0:
+                _, _, prediction = model(
+                    input_data, extra_input_data
+                )  # Shape: [batch, frames, n_data]
+            else:
+                _, _, prediction = model(input_data)  # Shape: [batch, frames, n_data]
+            _, _, prediction = model(input_data)
             if out_is_in:
                 input_data = prediction
             # print(prediction.shape)
