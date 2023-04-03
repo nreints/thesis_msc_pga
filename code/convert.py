@@ -10,27 +10,34 @@ def eucl2pos(eucl_motion, start_pos, xpos_start):
 
     Input:
         eucl_motion: Original predictions (euclidean motion)
-            (batch x 12)
-            (batch x frames x 20)
+            - Shape for non-recurrent network: (batch, 12)
+            - Shape for recurrent network: (batch, frames, 12)
         start_pos: Start position of simulation
-            (batch x 24)
-            (batch x 24)
+            - Shape for non-recurrent network: (batch, 24)
+            - Shape for recurrent network: (batch, 24)
+        xpos_start: Start position of centroid
+            - If necessary: (batch_size, 3)
+            - If not necessary: None
 
     Output:
         Converted eucledian motion to current xyz position
-            (batch x 24)
-            (batch x frames x 24)
+            - Shape for non-recurrent network: (batch, 24)
+            - Shape for recurrent network: (batch, frames, 24)
     """
     if len(eucl_motion.shape) == 2:
         if xpos_start is None:
             xpos_start = 0
         else:
             xpos_start = xpos_start.reshape(-1, 1, 3)
-        rotations = eucl_motion[:, :9].reshape(-1, 3, 3)
-        start_origin = (start_pos.reshape(-1, 8, 3) - xpos_start).mT
-        mult = torch.bmm(rotations, start_origin).mT
-        out = mult + eucl_motion[:, 9:].reshape(-1, 1, 3) + xpos_start
-        return out.flatten(start_dim=1)
+        rotations = eucl_motion[:, :9].reshape(-1, 3, 3)  # [Batch_size, 3, 3]
+        start_origin = (
+            start_pos.reshape(-1, 8, 3) - xpos_start
+        ).mT  # [batch_size, 3, 8]
+        mult = torch.bmm(rotations, start_origin).mT  # [batch_size, 8, 3]
+        out = (
+            mult + eucl_motion[:, 9:].reshape(-1, 1, 3) + xpos_start
+        )  # [batch_size, 8, 3]
+        return out.flatten(start_dim=1)  # [batch_size, 24]
     # In case of LSTM/GRU
     else:
         if xpos_start is None:
@@ -44,24 +51,27 @@ def eucl2pos(eucl_motion, start_pos, xpos_start):
         rotations = eucl_motion[..., :9].reshape(
             eucl_motion.shape[0], eucl_motion.shape[1], 3, 3
         )  # [Batch_size, frames, 3, 3]
-        flat_rotations = rotations.flatten(end_dim=1)
+        flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
         start_origin = (
             start_pos.reshape(-1, 8, 3)[:, None, :]
             .repeat(1, eucl_motion.shape[1], 1, 1)
             .flatten(end_dim=1)
             - xpos_start
-        )
+        ).mT  # [Batch_size x frames, 3, 8]
 
-        mult = torch.bmm(flat_rotations, start_origin.mT).mT
+        mult = torch.bmm(flat_rotations, start_origin).mT  # [Batch_size x frames, 8, 3]
         out = (
             mult + xpos_start + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]
-        ).flatten(start_dim=1)
+        ).flatten(
+            start_dim=1
+        )  # [Batch_size x frames, 24]
         out = out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1])
-        return out
+        return out  # [Batch_size, frames, 24]
 
 
 def fast_rotVecQuat(v, q):
     """
+    Returns rotated vectors v by quaternions q.
     Input:
         v: vector to be rotated
             shape: (* x 24)
@@ -69,7 +79,7 @@ def fast_rotVecQuat(v, q):
             shape: (* x 4)
 
     Output:
-        Rotated batch of vectors v by a batch quaternion q.
+        Rotated batch of vectors v by a batch of quaternions q.
     """
 
     device = v.device
@@ -90,9 +100,14 @@ def quat2pos(quat, start_pos, xpos_start):
     """
     Input:
         - quat: Original predictions (quaternion motion)
-            (batch, 7) or (batch, frames, 7)
+            - Shape for non-recurrent network: (batch, 7)
+            - Shape for recurrent network: (batch, frames, 7)
         - start_pos: Start position of simulation
-            (batch, 24) or (batch, frames, 24)
+            - Shape for non-recurrent network: (batch, 24)
+            - Shape for recurrent network: (batch, 24)
+        - xpos_start: Start position of centroid
+            - If necessary: (batch, 3)
+            - If not necessary: None
 
     Output:
         - Converted quaternion to current xyz position
@@ -148,9 +163,14 @@ def log_quat2pos(log_quat, start_pos, start_xpos):
     """
     Input:
         - log_quat: Original predictions (log quaternion motion)
-            Shape: (batch, 7) or (batch, frames, 7)
+            - Shape for non-recurrent network: (batch, 7)
+            - Shape for recurrent network: (batch, frames, 7)
         - start_pos: Start position of simulation
-            Shape: (batch, 24) or (batch, frames, 24)
+            - Shape for non-recurrent network: (batch, 24)
+            - Shape for recurrent network: (batch, 24)
+        - xpos_start: Start position of centroid
+            - If necessary: (batch, 3)
+            - If not necessary: None
 
     Output:
         - Converted log quaternion to current xyz position
@@ -213,9 +233,14 @@ def dualQ2pos(dualQ, start_pos, start_xpos):
     """
     Input:
         - dualQ: Original predictions (Dual quaternion)
-            Shape (batch_size, *, 8)
+            - Shape for non-recurrent network: (batch, 8)
+            - Shape for recurrent network: (batch, frames, 8)
         - start_pos: Start position of simulation
-            Shape (batch_size, *, 8, 3)
+            - Shape for non-recurrent network: (batch, 24)
+            - Shape for recurrent network: (batch, 24)
+        - xpos_start: Start position of centroid
+            - If necessary: (batch, 3)
+            - If not necessary: None
 
     Output:
         - Converted Dual-quaternion to current position
@@ -255,9 +280,14 @@ def log_dualQ2pos(logDualQ_in, start_pos, start_xpos):
     """
     Input:
         - log_dualQ: Original predictions (logarithm of dual quaternion)
-            Shape (batch_size, 6) or (batch_size, frames, 6)
+            - Shape for non-recurrent network: (batch, 6)
+            - Shape for recurrent network: (batch, frames, 6)
         - start_pos: Start position of simulation
-            Shape (batch_size, 24) or (batch_size, frames, 24)
+            - Shape for non-recurrent network: (batch, 24)
+            - Shape for recurrent network: (batch, 24)
+        - xpos_start: Start position of centroid
+            - If necessary: (batch, 3)
+            - If not necessary: None
 
     Output:
         - Converted Dual-quaternion to current position
@@ -318,9 +348,11 @@ def diff_pos_start2pos(true_preds, start_pos):
     """
     Input:
         - true_preds: Original predictions (difference compared to start)
-            Shape [batch_size, frames, datapoints]
+            - Shape for non-recurrent network: (batch, 24)
+            - Shape for recurrent network: (batch, frames, 24)
         - start_pos: Start position of simulation
-            Shape [batch_size, datapoints]
+            - Shape for non-recurrent network: (batch, 24)
+            - Shape for recurrent network: (batch, 24)
     Output:
         - Converted difference to current position
     """
@@ -354,8 +386,8 @@ def convert(true_preds, start_pos, data_type, xpos_start=None):
         return log_quat2pos(true_preds, start_pos, xpos_start)
     elif data_type[:9] == "dual_quat":
         return dualQ2pos(true_preds, start_pos, xpos_start)
-    elif data_type == "pos_diff_start":
-        return diff_pos_start2pos(true_preds, start_pos)
     elif data_type[:9] == "log_dualQ":
         return log_dualQ2pos(true_preds, start_pos, xpos_start)
+    elif data_type == "pos_diff_start":
+        return diff_pos_start2pos(true_preds, start_pos)
     raise Exception(f"No function to convert {data_type}")

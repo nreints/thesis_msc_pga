@@ -22,13 +22,14 @@ def get_mat(data, obj_id):
 
     Output:
         - rotation matrix describing the motion.
+            Shape: (3, 3).
     """
     return data.geom_xmat[obj_id].reshape(3, 3)
 
 
 def get_vert_local(model, obj_id):
     """
-    Returns the locations of the vertices centered around zero.
+    Returns the locations of the vertices centered around zero before rotation.
 
     Input:
         - model; MjModel object containing the simulation information.
@@ -114,20 +115,19 @@ def get_dualQ(quat, translation):
     Returns the dualquaternion of an object.
 
     Input:
-        - quat; quaternion that describes the rotation (4 dimensional). Convention [a, bi, cj, dk].
-        - translation; translation vector that describes the translation (3 dimensional).
+        - quat; quaternion that describes the rotation. Convention [a, bi, cj, dk].
+            Shape (4,1)
+        - translation; translation vector that describes the translation.
+            Shape (3,1)
 
     Output:
-        - Dual Quaternion that describes the rotation and translation (8 dimensional).
+        - Dual Quaternion that describes the rotation and translation.
+            Shape (8,1)
     """
     # https://cs.gmu.edu/~jmlien/teaching/cs451/uploads/Main/dual-quaternion.pdf
     qr = quat
-
     t = np.hstack((np.array([0]), translation))
 
-    # if qr[0] == 1 & (qr[1] == qr[2] == qr[3] == 0):
-    #     qd = t
-    # else:
     qd = (0.5 * Quaternion(t) * Quaternion(quat)).elements
 
     dual = np.append(qr, qd)
@@ -139,10 +139,12 @@ def logDual(r):
     Returns the logarithm of a dual quaternion r.
 
     Input:
-        - r: rotor / dual quaternion (8 dimensional).
+        - r: rotor / dual quaternion.
+            - Shape (8,1)
 
     Output:
         - bivector / logarithm of a rotor (6 dimensional).
+            - Shape (6,1)
     (14 mul, 5 add, 1 div, 1 acos, 1 sqrt)
     """
 
@@ -171,11 +173,13 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
 
     Input:
         - n_steps; number of steps in simulation.
+        - half_size; half of the length, width, and height of the object.
+        - mass; mass of the object
+        - body_inertia; #TODO principal moments of inertia of the object.
 
     Output:
         - Dictionary to store the data in.
     """
-    # print(body_inertia)
     size = half_size * 2
     size_squared = size**2
     return {
@@ -226,6 +230,9 @@ def generate_data(
             - False; do not visualize in MuJoCo.
         - vel_range_l; range to choose values from for the linear velocity.
         - vel_range_a; range to choose values from for the angular velocity.
+        - pure_tennis; boolean
+            True; ensure the tennis effect occurs
+            False; the tennis effect might occur
 
     Output:
         - dataset; dictionary with all data.
@@ -284,7 +291,6 @@ def generate_data(
                 dataset["xpos_start"] = start_xpos
 
                 start_xyz = global_pos
-                # print(start_xpos, start_xyz)
 
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
@@ -293,7 +299,6 @@ def generate_data(
                 dataset["eucl_motion"][i] = np.append(np.eye(3), np.zeros(3))
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
-                prev_quat = start_quat
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
 
@@ -322,18 +327,21 @@ def generate_data(
                 rotation_axis = rel_quaternion_pyquat.axis
                 dataset["rotation_axis_trans"][i][:3] = rotation_axis
                 dataset["rotation_axis_trans"][i][3:] = xpos
+
                 dataset["quat"][i][:, :4] = rel_quaternion
                 dataset["quat"][i][:, 4:] = rel_trans
-                # dataset["quat"][i] = np.append(quaternion, rel_trans)
 
                 # Collect Log Quaternion data
                 dataset["log_quat"][i][:, :4] = calculate_log_quat(rel_quaternion)
                 dataset["log_quat"][i][:, 4:] = rel_trans
-                dualQuaternion = get_dualQ(rel_quaternion, rel_trans)
+
                 # Collect Dual-Quaternion data
+                dualQuaternion = get_dualQ(rel_quaternion, rel_trans)
                 dataset["dual_quat"][i] = dualQuaternion
+
                 # Collect log_dualQ data (= bivector = rotation axis)
                 dataset["log_dualQ"][i] = logDual(dualQuaternion)
+
                 dataset["pos_diff_start"][i] = (
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
                 )
@@ -341,14 +349,14 @@ def generate_data(
             # Relative to origin centered cube.
             dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
             dataset["eucl_motion_ori"][i][:, 9:] = xpos
-            # dataset["eucl_motion_ori"][i] = np.append(current_rotMat, xpos)
+
             quat = get_quat(data, body_id)
             dataset["quat_ori"][i][:, :4] = quat
             dataset["quat_ori"][i][:, 4:] = xpos
-            # dataset["quat_ori"][i] = np.append(quat, xpos)
+
             dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
             dataset["log_quat_ori"][i][:, 4:] = xpos
-            # dataset["log_quat_ori"][i] = np.append(calculate_log_quat(quat), xpos)
+
             dual_quat = get_dualQ(quat, xpos)
             dataset["dual_quat_ori"][i] = dual_quat
             dataset["log_dualQ_ori"][i] = logDual(dual_quat)
@@ -360,6 +368,7 @@ def generate_data(
     if visualize:
         viewer.close()
 
+    # Check for any NaNs in the generated data
     for key, data_part in dataset.items():
         assert not np.any(
             np.isnan(data_part)
@@ -394,12 +403,8 @@ def get_sizes(symmetry):
         raise argparse.ArgumentError(
             f"Not a valid string for argument symmetry: {symmetry}"
         )
-    random_size = np.random.uniform(
-        0.5, 5
-    )  # TODO willen we dat ze gemiddeld even groot zijn? Ik heb nu dat de kortste zijde gemiddeld even groot is.
+    random_size = np.random.uniform(0.5, 5)
     sizes = ratio * random_size
-    # print("sizes of cube:", "12 24 72")
-    # return "3 3 3", [3, 3, 3]
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
 
@@ -420,16 +425,17 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav, tennis_ef
     """
     dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}"
     if not os.path.exists("data"):
+        print(f"Creating directory 'data'")
         os.mkdir("data")
     if tennis_effect:
         dir = f"data/data_{symmetry}_p{plane}_g{grav}_tennisEffect"
     if not os.path.exists(dir):
-        print("Creating directory")
+        print(f"Creating directory '{dir}'")
         os.mkdir(dir)
     # Warn if directory already exists with more simulations.
     elif len(os.listdir(dir)) > num_sims:
         print(
-            f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory manually."
+            f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory {dir}."
         )
         raise IndexError(
             f"This directory ({dir}) already exists with fewer simulations."
@@ -538,14 +544,10 @@ def write_data_nsim(
             print(f"Generating sim {sim_id}/{num_sims-1}")
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
-        # euler = "0 0 0"
-        # print(f"initial orientation: {euler}")
         # Define sizes
         sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
-        # pos = "3 4 5"
-        # print(f"initial position: {pos}")
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
         # Create dataset
         dataset = generate_data(
