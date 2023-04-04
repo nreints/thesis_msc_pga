@@ -57,6 +57,7 @@ class fcnn(nn.Module):
 
 
 class MyDataset(data.Dataset):
+    
     def __init__(
         self,
         sims,
@@ -66,6 +67,17 @@ class MyDataset(data.Dataset):
         dir,
         extra_input,
     ):
+        """
+        Inputs:
+            - sims; simulation IDs to use in this dataset
+            - n_frames; number of input frames
+            - n_data; number of datapoints given the data_type
+            - data_type; type of the data
+            - dir; directory where the data is stored
+            - extra_input; tuple
+                - extra_input[0]; type of extra input
+                - extra_input[1]; number of extra input values
+        """
         super().__init__()
         self.n_frames_perentry = n_frames
         self.n_datap_perframe = n_data
@@ -303,7 +315,7 @@ def eval_model(
                     # print(data_labels[0][-3:])
 
                     # Convert predictions to xyz-data
-                    if config.data_type[-3:] != "ori" and config.data_type != "pos":
+                    if config.data_type[-3:] != "ori":
                         alt_preds = convert(
                             preds.detach().cpu(),
                             start_pos,
@@ -438,7 +450,6 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     test_data_loaders = []
 
     for test_data_dir in config.data_dirs_test:
-        # print("data/"+test_data_dir)
         data_set_test = MyDataset(
             sims=config.test_sims,
             n_frames=config.n_frames,
@@ -611,7 +622,6 @@ if __name__ == "__main__":
             data_dir_train=data_dir_train,
             data_dirs_test=data_dirs_test,
             iter=i,
-            # inertia_input=args.inertia_input,
             str_extra_input=args.extra_input,
             extra_input_n=extra_input_n,
             data_loader_normalization=0,
@@ -636,7 +646,6 @@ if __name__ == "__main__":
                 normalize_extra_input,
             ),
         }
-        print(config.keys())
         # Save model
         if not os.path.exists("models"):
             os.mkdir("models")

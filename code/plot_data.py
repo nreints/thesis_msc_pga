@@ -63,14 +63,23 @@ def get_random_sim_data(data_type, nr_sims, data_dir, normalize_extra_input, i=N
     Input:
         - data_type: type of the data that needs to be collected.
         - nr_sims: total number of available simulations ().
+        - data_dir: directory in which the data is stored.
+        - normalize_extra_input: tuple
+            - extra_input[0]: type of extra input
+            - extra_input[1]: number of extra input values
         - i: id of simulation to select, default; select random simulation.
 
     Output:
-        - plot_data; xyz data converted from data in data_type.
-        - original_data; data in the format of data_type.
-        - plot_data_true_pos; original xyz data.
-        - start_pos[0]; start position (xyz) of the simulation.
+        - plot_data: xyz data converted from data in data_type.
+        - original_data: data in the format of data_type.
+        - plot_data_true_pos: original xyz data.
+        - start_pos[0]: start position (xyz) of the simulation.
+        - start_xpos[0]: start position of centroid
         - nr_frames: number of frames to collect.
+        - i: id of the simulation used.
+        - rot_axis_trans: rotation axis with translation.
+        - ranges: ranges for the xyz axis of the plot.
+        - extra_input: extra input when extra_input[0] != None.
     """
     # Select random simulation
     if i is None:
@@ -111,21 +120,8 @@ def get_random_sim_data(data_type, nr_sims, data_dir, normalize_extra_input, i=N
 
         # Load the data in correct data type
         original_data = torch.FloatTensor(file["data"][data_type]).flatten(start_dim=1)
-        # if data_type == "quat":
-        #     print("shape original_data: ", original_data.shape)
-        #     data_in_file = file["data"][data_type].squeeze()
-        #     print("shape data_in_file: ", data_in_file.shape)
-        #     print(np.all(data_in_file[:, 4:] == 0))
-        #     print(torch.all(original_data[:, 4:] == 0))
-        #     exit()
-        # if data_type[-3:] == "ori":
-        #     data_type = data_type[:-4]
         # Convert to xyz position data for plotting
-        if (
-            data_type[-3:] != "ori"
-            and data_type != "pos"
-            and data_type != "pos_diff_start"
-        ):
+        if data_type[-3:] != "ori":
             plot_data = convert(
                 original_data, start_pos, data_type, start_xpos
             ).reshape(nr_frames, 8, 3)
@@ -159,6 +155,18 @@ def get_random_sim_data(data_type, nr_sims, data_dir, normalize_extra_input, i=N
 
 
 def convert_preds(prediction, start_pos, data_type, xpos_start):
+    """
+    Converts predictions to cartesian positions.
+
+    Input:
+        - prediction: prediction of the model
+        - start_pos: start position of the vertices
+        - data_type: type of the data
+        - xpos_start: start position of centroid
+
+    Output:
+        - converted_prediction: prediction converted to cartesian postions
+    """
     if data_type[-3:] != "ori":
         converted_prediction = convert(
             prediction, start_pos, data_type, xpos_start
@@ -191,6 +199,10 @@ def get_prediction_fcnn(
         - start_pos: start position of the simulation.
         - nr_input_frames: number of frames the fcnn is trained on.
         - model: the trained model.
+        - normalize_extra_input: tuple
+            - extra_input[0]: type of extra input
+            - extra_input[1]: number of extra input values
+        - extra_input_data: extra input data on top of original data
 
     Output:
         - prediction: converted to xyz positions output of the model based on original_data and start_pos.
@@ -243,9 +255,14 @@ def get_prediction_lstm(
         - start_pos: start position of the simulation.
         - nr_input_frames: number of frames the fcnn is trained on.
         - model: the trained model.
+        - normalize_extra_input: tuple
+            - extra_input[0]: type of extra input
+            - extra_input[1]: number of extra input values
+        - extra_input_data: extra input data on top of original data
         - out_is_in:
-                    False; do not use output of the model as input.
-                    True; do use output of the model as input.
+            - False; do not use output of the model as input.
+            - True; do use output of the model as input.
+
 
     Output:
         - prediction: converted to xyz positions output of the model based on original_data and start_pos.
@@ -321,6 +338,10 @@ def get_prediction_gru(
         - start_pos: start position of the simulation.
         - nr_input_frames: number of frames the fcnn is trained on.
         - model: the trained model.
+        - normalize_extra_input: tuple
+            - extra_input[0]: type of extra input
+            - extra_input[1]: number of extra input values
+        - extra_input_data: extra input data on top of original data
         - out_is_in:
                     False; do not use output of the model as input.
                     True; do use output of the model as input.
@@ -399,6 +420,19 @@ def calculate_edges(cube):
     return edges
 
 
+def plot_cube(cube_data, ax, label, color_cube):
+    ax.scatter(
+        cube_data[:, 0],
+        cube_data[:, 1],
+        cube_data[:, 2],
+        linewidth=0.5,
+        color=color_cube,
+        label=label,
+    )
+    cube_edges = calculate_edges(cube_data)
+    ax.plot(cube_edges[:, 0], cube_edges[:, 1], cube_edges[:, 2], c=color_cube)
+
+
 def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     """
     Plots the cubes.
@@ -414,19 +448,6 @@ def plot_cubes(conv_cube, pred_cube, check_cube, ax):
     plot_cube(conv_cube, ax, "converted", "b")
     plot_cube(pred_cube, ax, "predicted", "r")
     plot_cube(check_cube, ax, "real pos", "black")
-
-
-def plot_cube(cube_data, ax, label, color_cube):
-    ax.scatter(
-        cube_data[:, 0],
-        cube_data[:, 1],
-        cube_data[:, 2],
-        linewidth=0.5,
-        color=color_cube,
-        label=label,
-    )
-    cube_edges = calculate_edges(cube_data)
-    ax.plot(cube_edges[:, 0], cube_edges[:, 1], cube_edges[:, 2], c=color_cube)
 
 
 def plot_3D_animation(
@@ -450,6 +471,9 @@ def plot_3D_animation(
         - data_type: original data type of data.
         - architecture: architecture of the pretrained model.
         - nr_frames: total number of frames in the simulation.
+        - sim_id: id of the simulation.
+        - data_dir: data directory in which the simulation was saved.
+        - range_plot: ranges of the x,y,z-axis of the plot.
     """
     # Open figure
     fig = plt.figure()
@@ -497,9 +521,9 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
 
         # Scatter vertice data in different colors
         x_values = converted_cube.T[0]
-        colors_more = cm.rainbow(np.linspace(0, 1, len(x_values)))
+        color_range = cm.rainbow(np.linspace(0, 1, len(x_values)))
         for s, point in enumerate(converted_cube):
-            ax.scatter(point[0], point[1], point[2], color=colors_more[s])
+            ax.scatter(point[0], point[1], point[2], color=color_range[s])
 
         # Calculate the edges
         converted_cube_edges = calculate_edges(converted_cube)
@@ -572,6 +596,16 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
 
 
 def set_ax_properties(ax, idx, sim_id, data_dir, range_plot):
+    """
+    Sets the properties of the plot.
+
+    Input:
+        - ax: subplot.
+        - idx: frame index.
+        - sim_id: id of the simulation.
+        - data_dir: data directory in which the simulation was saved.
+        - range_plot: ranges of the x,y,z-axis of the plot.
+    """
     ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
     ax.set_ylim(range_plot[1][0], range_plot[1][1])
     ax.set_zlim(range_plot[2][0], range_plot[2][1])
@@ -587,7 +621,16 @@ def plot_datatypes(
     plot_data, data_types, nr_frames, rot_axis, sim_id, data_dir, range_plot
 ):
     """
-    Plots 3D animation of the cubes in all data types
+    Plots 3D animation of the cubes in all data types.
+
+    Input:
+        - plot_data: converted xyz vertice positions.
+        - data_types: list of data types to plot.
+        - nr_frames: total number of frames in the simulation.
+        - rot_axis: axis of rotation.
+        - sim_id: id of the simulation.
+        - data_dir: data directory in which the simulation was saved.
+        - range_plot: ranges of the x,y,z-axis of the plot.
     """
     # Open figure
     fig = plt.figure()

@@ -68,9 +68,14 @@ class MyDataset(data.Dataset):
     def __init__(self, sims, n_frames, n_data, data_type, dir, extra_input):
         """
         Inputs:
-            n_sims -
-            size - Number of data points we want to generate
-            std - Standard deviation of the noise (see generate_continuous_xor function)
+            - sims; simulation IDs to use in this dataset
+            - n_frames; number of input frames
+            - n_data; number of datapoints given the data_type
+            - data_type; type of the data
+            - dir; directory where the data is stored
+            - extra_input; tuple
+                - extra_input[0]; type of extra input
+                - extra_input[1]; number of extra input values
         """
         super().__init__()
         self.n_frames_perentry = n_frames
@@ -456,7 +461,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
     )
-    args = parser.parse_args()
+
     args = parser.parse_args()
 
     n_extra_input = {

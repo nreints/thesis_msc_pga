@@ -132,9 +132,14 @@ class MyDataset(data.Dataset):
     def __init__(self, sims, n_frames, n_data, data_type, dir, extra_input):
         """
         Inputs:
-            n_sims -
-            size - Number of data points we want to generate
-            std - Standard deviation of the noise (see generate_continuous_xor function)
+            - sims; simulation IDs to use in this dataset
+            - n_frames; number of input frames
+            - n_data; number of datapoints given the data_type
+            - data_type; type of the data
+            - dir; directory where the data is stored
+            - extra_input; tuple
+                - extra_input[0]; type of extra input
+                - extra_input[1]; number of extra input values
         """
         super().__init__()
         self.n_frames_perentry = n_frames
@@ -218,7 +223,6 @@ class MyDataset(data.Dataset):
 
 def train_log(loss, epoch):
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
-    # print(f"Loss after " + f" examples: {loss:.3f}")
 
 
 def train_model(
@@ -251,7 +255,6 @@ def train_model(
             extra_input_data,
             xpos_start,
         ) in data_loader:
-            # start = time.time()
 
             data_inputs = data_inputs.to(device)  # Shape: [batch, frames, n_data]
             data_labels = data_labels.to(device)  # Shape: [batch, frames, n_data]
@@ -259,9 +262,10 @@ def train_model(
             start_pos = start_pos.to(device)  # Shape: [batch, n_data]
             extra_input_data = extra_input_data.to(device)  # Shape: [batch, 3]
             xpos_start = xpos_start.to(device)
-            # exit()
+
             if config["str_extra_input"] == "inertia_body":
                 extra_input_data /= normalization
+
             if config.extra_input_n != 0:
                 _, _, preds = model(
                     data_inputs, extra_input_data
@@ -276,7 +280,6 @@ def train_model(
                     data_loader.dataset.data_type,
                     xpos_start,
                 )
-
             else:
                 alt_preds = convert(
                     preds,
@@ -336,15 +339,12 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
 
                     # Determine prediction of model on dev set
                     data_inputs = data_inputs.to(device)
-                    # print("input:", data_inputs[0, 0:3, -3:])
-                    # print("label:", data_labels[0, 0:3, -3:])
-                    # print(
-                    #     "pos la:", data_labels_pos[0, 0:3].reshape(-1, 8, 3).mean(dim=1)
-                    # )
                     data_labels = data_labels.to(device)
                     extra_input_data = extra_input_data.to(device)
+
                     if config["str_extra_input"] == "inertia_body":
                         extra_input_data /= normalization
+
                     if config.extra_input_n != 0:
                         _, _, preds = model(
                             data_inputs, extra_input_data
@@ -353,12 +353,8 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                         _, _, preds = model(
                             data_inputs
                         )  # Shape: [batch, frames, n_data]
-                    preds = preds.squeeze(dim=1)
-                    # print("--------------------------")
-                    # print(data_labels[0, :3, -3:])
-                    # print(preds[0, :3, -3:])
-                    # print(preds[0, :, -3:].mean(dim=0))
-                    # exit()
+                    print(preds.shape)
+
                     # Convert predictions to xyz-data
                     if config.data_type[-3:] != "ori":
                         alt_preds = convert(
