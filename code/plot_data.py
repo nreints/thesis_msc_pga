@@ -793,8 +793,8 @@ if __name__ == "__main__":
 
         data_types = [
             "pos",
-            "eucl_motion",
-            # "eucl_motion_ori",
+            "rot_mat",
+            # "rot_mat_ori",
             "quat",
             # "quat_ori",
             "log_quat",

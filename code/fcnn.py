@@ -57,7 +57,6 @@ class fcnn(nn.Module):
 
 
 class MyDataset(data.Dataset):
-    
     def __init__(
         self,
         sims,
@@ -527,8 +526,7 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    print(args.extra_input)
-    print(args.data_dir_train)
+
     data_dir_train = "data/" + " ".join(args.data_dir_train)
     # data_dir_train = "data/" + args.data_dir_train
     print(f"Training on dataset: {data_dir_train}")
@@ -555,7 +553,7 @@ if __name__ == "__main__":
 
     ndata_dict = {
         "pos": 24,
-        "eucl_motion": 12,
+        "rot_mat": 12,
         "quat": 7,
         "log_quat": 7,
         "dual_quat": 8,

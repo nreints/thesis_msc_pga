@@ -478,7 +478,7 @@ if __name__ == "__main__":
 
     ndata_dict = {
         "pos": 24,
-        "eucl_motion": 12,
+        "rot_mat": 12,
         "quat": 7,
         "log_quat": 7,
         "dual_quat": 8,

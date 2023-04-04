@@ -184,13 +184,13 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
     size_squared = size**2
     return {
         "pos": np.empty((n_steps, 8, 3)),
-        "eucl_motion": np.empty((n_steps, 1, 12)),
+        "rot_mat": np.empty((n_steps, 1, 12)),
         "quat": np.empty((n_steps, 1, 7)),
         "log_quat": np.empty((n_steps, 1, 7)),
         "dual_quat": np.empty((n_steps, 1, 8)),
         "log_dualQ": np.empty((n_steps, 6)),
         "pos_diff_start": np.empty((n_steps, 8, 3)),
-        "eucl_motion_ori": np.empty((n_steps, 1, 12)),
+        "rot_mat_ori": np.empty((n_steps, 1, 12)),
         "quat_ori": np.empty((n_steps, 1, 7)),
         "log_quat_ori": np.empty((n_steps, 1, 7)),
         "dual_quat_ori": np.empty((n_steps, 1, 8)),
@@ -296,7 +296,7 @@ def generate_data(
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
 
                 start_rotMat = copy.deepcopy(get_mat(data, geom_id))
-                dataset["eucl_motion"][i] = np.append(np.eye(3), np.zeros(3))
+                dataset["rot_mat"][i] = np.append(np.eye(3), np.zeros(3))
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
@@ -313,8 +313,8 @@ def generate_data(
                 # Collect rotation matrix
                 rel_trans = xpos - start_xpos
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
-                dataset["eucl_motion"][i][:, :9] = rel_rot.flatten()
-                dataset["eucl_motion"][i][:, 9:] = rel_trans
+                dataset["rot_mat"][i][:, :9] = rel_rot.flatten()
+                dataset["rot_mat"][i][:, 9:] = rel_trans
                 rel_quaternion_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse
                 )
@@ -347,8 +347,8 @@ def generate_data(
                 )
 
             # Relative to origin centered cube.
-            dataset["eucl_motion_ori"][i][:, :9] = current_rotMat.flatten()
-            dataset["eucl_motion_ori"][i][:, 9:] = xpos
+            dataset["rot_mat_ori"][i][:, :9] = current_rotMat.flatten()
+            dataset["rot_mat_ori"][i][:, 9:] = xpos
 
             quat = get_quat(data, body_id)
             dataset["quat_ori"][i][:, :4] = quat

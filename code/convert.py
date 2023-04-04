@@ -4,12 +4,12 @@ import roma
 # import time
 
 
-def eucl2pos(eucl_motion, start_pos, xpos_start):
+def rotMat2pos(rot_mat, start_pos, xpos_start):
     """
     Transforms a batch of vectors by a rotation matrix and translation vector.
 
     Input:
-        eucl_motion: Original predictions (euclidean motion)
+        rot_mat: Original predictions (euclidean motion)
             - Shape for non-recurrent network: (batch, 12)
             - Shape for recurrent network: (batch, frames, 12)
         start_pos: Start position of simulation
@@ -24,18 +24,18 @@ def eucl2pos(eucl_motion, start_pos, xpos_start):
             - Shape for non-recurrent network: (batch, 24)
             - Shape for recurrent network: (batch, frames, 24)
     """
-    if len(eucl_motion.shape) == 2:
+    if len(rot_mat.shape) == 2:
         if xpos_start is None:
             xpos_start = 0
         else:
             xpos_start = xpos_start.reshape(-1, 1, 3)
-        rotations = eucl_motion[:, :9].reshape(-1, 3, 3)  # [Batch_size, 3, 3]
+        rotations = rot_mat[:, :9].reshape(-1, 3, 3)  # [Batch_size, 3, 3]
         start_origin = (
             start_pos.reshape(-1, 8, 3) - xpos_start
         ).mT  # [batch_size, 3, 8]
         mult = torch.bmm(rotations, start_origin).mT  # [batch_size, 8, 3]
         out = (
-            mult + eucl_motion[:, 9:].reshape(-1, 1, 3) + xpos_start
+            mult + rot_mat[:, 9:].reshape(-1, 1, 3) + xpos_start
         )  # [batch_size, 8, 3]
         return out.flatten(start_dim=1)  # [batch_size, 24]
     # In case of LSTM/GRU
@@ -45,27 +45,27 @@ def eucl2pos(eucl_motion, start_pos, xpos_start):
         else:
             xpos_start = (
                 xpos_start[:, None, :]
-                .repeat(1, eucl_motion.shape[1], 1)
+                .repeat(1, rot_mat.shape[1], 1)
                 .flatten(end_dim=1)[:, None, :]
             )
-        rotations = eucl_motion[..., :9].reshape(
-            eucl_motion.shape[0], eucl_motion.shape[1], 3, 3
+        rotations = rot_mat[..., :9].reshape(
+            rot_mat.shape[0], rot_mat.shape[1], 3, 3
         )  # [Batch_size, frames, 3, 3]
         flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
         start_origin = (
             start_pos.reshape(-1, 8, 3)[:, None, :]
-            .repeat(1, eucl_motion.shape[1], 1, 1)
+            .repeat(1, rot_mat.shape[1], 1, 1)
             .flatten(end_dim=1)
             - xpos_start
         ).mT  # [Batch_size x frames, 3, 8]
 
         mult = torch.bmm(flat_rotations, start_origin).mT  # [Batch_size x frames, 8, 3]
         out = (
-            mult + xpos_start + eucl_motion.flatten(end_dim=1)[:, 9:][:, None, :]
+            mult + xpos_start + rot_mat.flatten(end_dim=1)[:, 9:][:, None, :]
         ).flatten(
             start_dim=1
         )  # [Batch_size x frames, 24]
-        out = out.reshape(eucl_motion.shape[0], eucl_motion.shape[1], out.shape[-1])
+        out = out.reshape(rot_mat.shape[0], rot_mat.shape[1], out.shape[-1])
         return out  # [Batch_size, frames, 24]
 
 
@@ -378,8 +378,8 @@ def convert(true_preds, start_pos, data_type, xpos_start=None):
     """
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
-    elif data_type[:11] == "eucl_motion":
-        return eucl2pos(true_preds, start_pos, xpos_start)
+    elif data_type[:11] == "rot_mat":
+        return rotMat2pos(true_preds, start_pos, xpos_start)
     elif data_type[:4] == "quat":
         return quat2pos(true_preds, start_pos, xpos_start)
     elif data_type[:8] == "log_quat":
