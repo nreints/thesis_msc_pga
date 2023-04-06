@@ -1,6 +1,73 @@
 import os
 import torch
 import wandb
+import torch.utils.data as data
+import argparse
+
+
+def check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims):
+    assert len(os.listdir(data_dir_train)) >= max(
+        train_sims
+    ), "Not enough train simulations."
+    for data_dir_test in data_dirs_test:
+        assert len(os.listdir("data/" + data_dir_test)) >= max(
+            test_sims
+        ), f"Not enough test simulations in {data_dir_test}."
+
+
+def get_data_dirs(data_dir_train):
+    data_train_dir = " ".join(data_dir_train)
+    data_dir_train = "data/" + data_train_dir
+    print(f"Training on dataset: {data_dir_train}")
+
+    data_dirs_test = os.listdir("data")
+    if ".DS_Store" in data_dirs_test:
+        data_dirs_test.remove(".DS_Store")
+
+    print(f"Testing on datasets: {data_dirs_test}")
+    return data_train_dir, data_dirs_test
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-m",
+        "--mode_wandb",
+        type=str,
+        choices=["online", "offline", "disabled"],
+        help="mode of wandb: online, offline, disabled",
+        default="online",
+    )
+    parser.add_argument(
+        "-train_dir",
+        "--data_dir_train",
+        type=str,
+        help="directory of the train data",
+        nargs="+",
+        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
+    )
+    parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
+    parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
+    parser.add_argument(
+        "-i", "--iterations", type=int, help="Number of iterations", default=1
+    )
+    parser.add_argument(
+        "-extra_input",
+        type=str,
+        choices=[
+            "inertia_body",
+            "size",
+            "size_squared",
+            "size_mass",
+            "size_squared_mass",
+        ],
+    )
+    parser.add_argument("--batch_size", type=int, default=1024, help="Batch size")
+    parser.add_argument(
+        "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
+    )
+    return parser.parse_args()
+
 
 def save_model(config, ndata_dict, model, normalize_extra_input):
     model_dict = {
@@ -14,10 +81,12 @@ def save_model(config, ndata_dict, model, normalize_extra_input):
         ),
     }
     os.makedirs("models", exist_ok=True)
-    os.makedirs("models/fcnn", exist_ok=True)
-    os.makedirs(f"models/fcnn/{config['data_dir_train']}", exist_ok=True)
+    os.makedirs("models/{config['architecture']}", exist_ok=True)
+    os.makedirs(
+        f"models/{config['architecture']}/{config['data_dir_train']}", exist_ok=True
+    )
 
-    path_dir = f"models/fcnn/{config['data_dir_train']}/'{config['data_type']}'_'{config['str_extra_input']}'.pth"
+    path_dir = f"models/{config['architecture']}/{config['data_dir_train']}/'{config['data_type']}'_'{config['str_extra_input']}'.pth"
     torch.save(
         model_dict,
         path_dir,
@@ -30,15 +99,24 @@ def save_model(config, ndata_dict, model, normalize_extra_input):
 
 
 def model_pipeline(
-    hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb, losses
+    hyperparameters,
+    ndata_dict,
+    mode_wandb,
+    losses,
+    train_fn,
+    device,
+    dataset_class,
+    model_class,
 ):
+    loss_dict = {"L1": torch.nn.L1Loss, "L2": torch.nn.MSELoss}
+    optimizer_dict = {"Adam": torch.optim.Adam}
     # tell wandb to get started
     with wandb.init(
         project="test", config=hyperparameters, mode=mode_wandb, tags=[str(device)]
     ):
         # access all HPs through wandb.config, so logging matches execution!
-        config_wandb = wandb.config
-        wandb.run.name = f"{config_wandb.architecture}/{config_wandb.data_type}/{config_wandb.iter}/{config_wandb.str_extra_input}/"
+        config = wandb.config
+        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}/"
 
         # make the model, data, and optimization problem
         (
@@ -49,48 +127,43 @@ def model_pipeline(
             optimizer,
             normalize_extra_input,
         ) = make(
-            config_wandb,
+            config,
             ndata_dict,
             loss_dict,
             optimizer_dict,
+            dataset_class,
+            model_class,
+            device,
         )
-        print("Datatype:", config_wandb["data_type"])
+        print("Datatype:", config["data_type"])
 
         # and use them to train the model
-        train_model(
+        train_fn(
             model,
             optimizer,
             train_loader,
             test_loaders,
             criterion,
-            config_wandb.epochs,
-            config_wandb,
+            config.epochs,
+            config,
             losses,
             normalize_extra_input,
         )
 
-        # # and test its final performance
-        # eval_model(
-        #     model,
-        #     test_loaders,
-        #     criterion,
-        #     config_wandb,
-        #     config_wandb.epochs,
-        #     losses,
-        #     normalize_extra_input,
-        # )
-        save_model(config, ndata_dict, model, normalize_extra_input)
+        save_model(dict(config), ndata_dict, model, normalize_extra_input)
 
     return model
 
 
-def make(config, ndata_dict, loss_dict, optimizer_dict):
+def make(
+    config, ndata_dict, loss_dict, optimizer_dict, dataset_class, model_class, device
+):
     if config.data_type[-3:] == "ori":
         n_datapoints = ndata_dict[config.data_type[:-4]]
     else:
         n_datapoints = ndata_dict[config.data_type]
     # Make the data
-    data_set_train = MyDataset(
+    data_set_train = dataset_class(
         sims=config.train_sims,
         n_frames=config.n_frames,
         n_data=n_datapoints,
@@ -107,7 +180,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     test_data_loaders = []
 
     for test_data_dir in config.data_dirs_test:
-        data_set_test = MyDataset(
+        data_set_test = dataset_class(
             sims=config.test_sims,
             n_frames=config.n_frames,
             n_data=n_datapoints,
@@ -123,7 +196,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
     print("-- Finished Test Dataloader(s) --")
 
     # Make the model
-    model = fcnn(n_datapoints, config).to(device)
+    model = model_class(n_datapoints, config).to(device)
     print(model)
 
     # Make the loss and optimizer

@@ -8,46 +8,36 @@ import random
 import wandb
 import time
 import os
-import argparse
-
-# import warnings
-
-# warnings.filterwarnings("error")
-# from quaternion import qmul
-# import torch.nn.functional as F
+from general_functions import (
+    model_pipeline,
+    parse_args,
+    get_data_dirs,
+    check_number_sims,
+)
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
 class GRU(nn.Module):
     def __init__(
-        self, config, input_shape, num_outputs=0, num_controls=0, model_velocities=False
+        self,
+        input_shape,
+        config,
+        num_outputs=0,
     ):
         """
         Construct a QuaterNet neural network.
         Arguments:
          -- num_joints: number of skeleton joints.
          -- num_outputs: extra inputs/outputs (e.g. translations), in addition to joint rotations.
-         -- num_controls: extra input-only features.
          -- model_velocities: add a quaternion multiplication block on the RNN output to force
                               the network to model velocities instead of absolute rotations.
         """
         super().__init__()
 
-        # self.num_joints = num_joints
         self.num_outputs = num_outputs
-        self.num_controls = num_controls
         self.n_data = input_shape
         self.n_layers = config["n_layers"]
-
-        # if num_controls > 0:
-        #     fc1_size = 30
-        #     fc2_size = 30
-        #     self.fc1 = nn.Linear(num_controls, fc1_size)
-        #     self.fc2 = nn.Linear(fc1_size, fc2_size)
-        #     self.relu = nn.LeakyReLU(0.05, inplace=True)
-        # else:
-        #     fc2_size = 0
 
         self.h_size = config["hidden_size"]
         self.rnn = nn.GRU(
@@ -70,7 +60,7 @@ class GRU(nn.Module):
 
         self.fc = nn.Linear(self.h_size, input_shape)
 
-    def forward(self, x, h=None, return_prenorm=True, return_all=True):
+    def forward(self, x, h=None, return_all=True):
         """
         Run a forward pass of this model.
         Arguments:
@@ -84,16 +74,8 @@ class GRU(nn.Module):
                         argument should be left to False as it avoids unnecessary computation.
         """
         assert len(x.shape) == 3
-        # assert x.shape[-1] == self.num_joints*4 + self.num_outputs + self.num_controls
 
         x_orig = x
-        # print(self.num_controls)
-        # if self.num_controls > 0:
-        #     controls = x[:, :, self.num_joints*4+self.num_outputs:]
-        #     controls = self.relu(self.fc1(controls))
-        #     controls = self.relu(self.fc2(controls))
-        #     x = torch.cat((x[:, :, :self.num_joints*4+self.num_outputs], controls), dim=2)
-        # print(x.shape)
 
         if h is None:
             h = self.h0.expand(-1, x.shape[0], -1).contiguous()
@@ -109,23 +91,8 @@ class GRU(nn.Module):
             x = self.fc(x[:, -1:])
             x_orig = x_orig[:, -1:]
 
-        # print(x.shape, "l")
-
         pre_normalized = x[:, :, : self.n_data].contiguous()
-        # normalized = pre_normalized.view(-1, 4)
-        # if self.model_velocities:
-        #     normalized = qmul(normalized, x_orig[:, :, :self.num_joints*4].contiguous().view(-1, 4))
-        # normalized = F.normalize(normalized, dim=1).view(pre_normalized.shape)
-
-        # if self.num_outputs > 0:
-        #     x = torch.cat((normalized, x[:, :, self.num_joints*4:]), dim=2)
-        # else:
-        #     x = normalized
-
-        # if return_prenorm:
         return x, h, torch.cat((pre_normalized, x[:, :, self.n_data :]), dim=2)
-        # else:
-        # return x, h
 
 
 class MyDataset(data.Dataset):
@@ -393,191 +360,26 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
     return total_convert_loss.item() / len(data_loader)
 
 
-def save_model(config, ndata_dict, model, normalize_extra_input):
-    model_dict = {
-        "config": config,
-        "data_dict": ndata_dict,
-        "model": model.state_dict(),
-        "normalize_extra_input": (
-            config["str_extra_input"],
-            config["extra_input_n"],
-            normalize_extra_input,
-        ),
-    }
-    os.makedirs("models", exist_ok=True)
-    os.makedirs("models/gru", exist_ok=True)
-    os.makedirs(f"models/gru/{config['data_dir_train']}", exist_ok=True)
-
-    path_dir = f"models/gru/{config['data_dir_train']}/'{config['data_type']}'_'{config['str_extra_input']}'.pth"
-    torch.save(
-        model_dict,
-        path_dir,
-    )
-
-    artifact = wandb.Artifact("model", type="model")
-    artifact.add_file(path_dir)
-    wandb.run.log_artifact(artifact)
-    print("Saved model in ", path_dir)
-
-
-def model_pipeline(
-    hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb, losses
-):
-    # tell wandb to get started
-    with wandb.init(
-        project="test", config=hyperparameters, mode=mode_wandb, tags=[str(device)]
-    ):
-        # access all HPs through wandb.config, so logging matches execution!
-        config_wandb = wandb.config
-        wandb.run.name = f"{config_wandb.architecture}/{config_wandb.data_type}/{config_wandb.iter}/{config_wandb.str_extra_input}"
-
-        # make the model, data, and optimization problem
-        (
-            model,
-            train_loader,
-            test_loader,
-            criterion,
-            optimizer,
-            normalize_extra_input,
-        ) = make(config_wandb, ndata_dict, loss_dict, optimizer_dict)
-        print(model)
-
-        # and use them to train the model
-        train_model(
-            model,
-            optimizer,
-            train_loader,
-            test_loader,
-            criterion,
-            config_wandb.epochs,
-            config_wandb,
-            losses,
-            normalize_extra_input,
-        )
-
-        # # and test its final performance
-        # eval_model(
-        #     model,
-        #     test_loader,
-        #     config_wandb,
-        #     config_wandb.epochs,
-        #     losses,
-        #     normalize_extra_input,
-        # )
-
-        save_model(config, ndata_dict, model, normalize_extra_input)
-
-    return model
-
-
-def make(config, ndata_dict, loss_dict, optimizer_dict):
-    if config.data_type[-3:] == "ori":
-        n_datapoints = ndata_dict[config.data_type[:-4]]
-    else:
-        n_datapoints = ndata_dict[config.data_type]
-    # Make the data
-    data_set_train = MyDataset(
-        sims=config.train_sims,
-        n_frames=config.n_frames,
-        n_data=n_datapoints,
-        data_type=config.data_type,
-        dir="data/" + config.data_dir_train,
-        extra_input=(config.str_extra_input, config.extra_input_n),
-    )
-    # data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=n_datapoints, data_type=config.data_type, dir=config.data_dir_train)
-
-    train_data_loader = data.DataLoader(
-        data_set_train, batch_size=config.batch_size, shuffle=True
-    )
-
-    print("-- Finished Train Dataloader --")
-    # test_data_loader = data.DataLoader(data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False)
-
-    test_data_loaders = []
-
-    for test_data_dir in config.data_dirs_test:
-        data_set_test = MyDataset(
-            sims=config.test_sims,
-            n_frames=config.n_frames,
-            n_data=n_datapoints,
-            data_type=config.data_type,
-            dir="data/" + test_data_dir,
-            # dir="data/"+test_data_dir #TODO Only for testing
-            extra_input=(config.str_extra_input, config.extra_input_n),
-        )
-        test_data_loader = data.DataLoader(
-            data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
-        )
-        test_data_loaders += [test_data_loader]
-
-    print("-- Finished Test Dataloader(s) --")
-
-    # Make the model
-    model = GRU(config, n_datapoints, num_outputs=3).to(device)
-
-    # Make the loss and optimizer
-    criterion = loss_dict[config.loss_type](reduction=config.loss_reduction_type)
-    optimizer = optimizer_dict[config.optimizer](
-        model.parameters(), lr=config.learning_rate
-    )
-
-    return (
-        model,
-        train_data_loader,
-        test_data_loaders,
-        criterion,
-        optimizer,
-        data_set_train.normalize_extra_input,
-    )
-
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-m",
-        "--mode_wandb",
-        type=str,
-        choices=["online", "offline", "disabled"],
-        help="mode of wandb: online, offline, disabled",
-        default="online",
-    )
-    parser.add_argument(
-        "-train_dir",
-        "--data_dir_train",
-        type=str,
-        help="directory of the train data",
-        nargs="+",
-        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
-    )
-    # parser.add_argument(
-    #     "-train_dir",
-    #     "--data_dir_train",
-    #     type=str,
-    #     help="directory of the train data",
-    #     default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
-    # )
-    parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
-    parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
-    parser.add_argument(
-        "-i", "--iterations", type=int, help="Number of iterations", default=1
-    )
-    parser.add_argument(
-        "-extra_input",
-        type=str,
-        choices=[
-            "inertia_body",
-            "size",
-            "size_squared",
-            "size_mass",
-            "size_squared_mass",
-        ],
-    )
-    parser.add_argument("--batch_size", type=int, default=1024, help="Batch size")
-    parser.add_argument(
-        "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
-    )
-    args = parser.parse_args()
+    args = parse_args()
 
+    data_train_dir, data_dirs_test = get_data_dirs(args.data_dir_train)
+    data_dir_train = "data/" + data_train_dir
+
+    if not os.path.exists(data_dir_train):
+        raise IndexError(f"No directory for the train data {data_dir_train}")
+
+    ndata_dict = {
+        "pos": 24,
+        "rot_mat": 12,
+        "quat": 7,
+        "log_quat": 7,
+        "dual_quat": 8,
+        "pos_diff": 24,
+        "pos_diff_start": 24,
+        "pos_norm": 24,
+        "log_dualQ": 6,
+    }
     n_extra_input = {
         "inertia_body": 3,
         "size": 3,
@@ -589,37 +391,8 @@ if __name__ == "__main__":
         extra_input_n = n_extra_input[args.extra_input]
     else:
         extra_input_n = 0
-    ndata_dict = {
-        "pos": 24,
-        "rot_mat": 12,
-        "quat": 7,
-        "log_quat": 7,
-        "dual_quat": 8,
-        "pos_diff": 24,
-        "pos_diff_start": 24,
-        "log_dualQ": 6,
-    }
-    print(f"Running for data type: {args.data_type}")
 
-    data_train_dir = " ".join(args.data_dir_train)
-    data_dir_train = "data/" + data_train_dir
-    print(data_dir_train)
-    # data_dirs_test = args.data_dir_test
-    # if ".DS_Store" in data_dirs_test:
-    #     data_dirs_test.remove(".DS_Store")
-    data_dirs_test = [
-        data_train_dir,
-        # "data_tennis_pNone_gNone_tennisEffect",
-    ]
-
-    # if args.data_dir_test == "":
-    #     data_dirs_test = [data_dir_train]
-    # else:
-    #     data_dirs_test = "data/" + args.data_dir_test
     losses = [nn.MSELoss]
-    if not os.path.exists(data_dir_train):
-        raise IndexError("No directory for the train data {args.data_dir_train}")
-
     for i in range(args.iterations):
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
@@ -628,20 +401,9 @@ if __name__ == "__main__":
         sims_train = range(0, n_sims_train_total)
         train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
         test_sims = set(sims_train) - set(train_sims)
+        check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims)
         print(f"Number of train simulations: {len(train_sims)}")
         print(f"Number of test simulations: {len(test_sims)}")
-        # if data_dir_train == data_dir_test:
-        #     train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
-        #     test_sims = sims_train - train_sims
-        # else:
-        #     train_sims = sims_train
-        #     n_sims_test = len(os.listdir(data_dir_test))
-        #     # Use maximum number of test simulations or 20% of the train simulations
-        #     if n_sims_test < int(n_sims_train * 0.2):
-        #         print(f"Less than 20% of number train sims as test sims.")
-        #         test_sims = {i for i in range(n_sims_test)}
-        #     else:
-        #         test_sims = set(random.sample(sims_train, int(0.2 * n_sims_test)))
 
         config = dict(
             learning_rate=args.learning_rate,
@@ -666,12 +428,15 @@ if __name__ == "__main__":
             extra_input_n=extra_input_n,
         )
 
-        loss_dict = {"L1": nn.L1Loss, "L2": nn.MSELoss}
-
-        optimizer_dict = {"Adam": torch.optim.Adam}
-
         start_time = time.time()
         model = model_pipeline(
-            config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses
+            config,
+            ndata_dict,
+            args.mode_wandb,
+            losses,
+            train_model,
+            device,
+            MyDataset,
+            GRU,
         )
         print("It took ", time.time() - start_time, " seconds.")
