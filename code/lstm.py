@@ -308,15 +308,47 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                 print(
                     f"\t Logging test loss: {total_convert_loss / len(data_loader)} ({loss_module}: {config.data_dirs_test[i][5:]})"
                 )
+                if config.data_dirs_test[i] == config.data_dir_train[5:]:
+                    extra_wandb_string = ""
+                else:
+                    extra_wandb_string = " " + config.data_dirs_test[i][5:]
+
                 wandb.log(
                     {
-                        f"Test loss {config.data_dirs_test[i][5:]}, {str(loss_module)}": total_convert_loss
+                        f"Test loss{extra_wandb_string}": total_convert_loss
                         / len(data_loader)
                     },
                     step=current_epoch,
                 )
 
     return total_convert_loss.item() / len(data_loader)
+
+
+def save_model(config, ndata_dict, model, normalize_extra_input):
+    model_dict = {
+        "config": config,
+        "data_dict": ndata_dict,
+        "model": model.state_dict(),
+        "normalize_extra_input": (
+            config["str_extra_input"],
+            config["extra_input_n"],
+            normalize_extra_input,
+        ),
+    }
+    os.makedirs("models", exist_ok=True)
+    os.makedirs("models/lstm", exist_ok=True)
+    os.makedirs(f"models/lstm/{config['data_dir_train']}", exist_ok=True)
+
+    path_dir = f"models/lstm/{config['data_dir_train']}/'{config['data_type']}'_'{config['str_extra_input']}'.pth"
+    torch.save(
+        model_dict,
+        path_dir,
+    )
+
+    artifact = wandb.Artifact("model", type="model")
+    artifact.add_file(path_dir)
+    wandb.run.log_artifact(artifact)
+    print("Saved model in ", path_dir)
 
 
 def model_pipeline(
@@ -327,8 +359,8 @@ def model_pipeline(
         project="test", config=hyperparameters, mode=mode_wandb, tags=[str(device)]
     ):
         # access all HPs through wandb.config, so logging matches execution!
-        config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}"
+        config_wandb = wandb.config
+        wandb.run.name = f"{config_wandb.architecture}/{config_wandb.data_type}/{config_wandb.iter}/{config_wandb.str_extra_input}"
 
         # make the model, data, and optimization problem
         (
@@ -338,7 +370,7 @@ def model_pipeline(
             criterion,
             optimizer,
             normalize_extra_input,
-        ) = make(config, ndata_dict, loss_dict, optimizer_dict)
+        ) = make(config_wandb, ndata_dict, loss_dict, optimizer_dict)
         print(model)
 
         # and use them to train the model
@@ -348,18 +380,25 @@ def model_pipeline(
             train_loader,
             test_loader,
             criterion,
-            config.epochs,
-            config,
+            config_wandb.epochs,
+            config_wandb,
             losses,
             normalize_extra_input,
         )
 
-        # and test its final performance
-        eval_model(
-            model, test_loader, config, config.epochs, losses, normalize_extra_input
-        )
+        # # and test its final performance
+        # eval_model(
+        #     model,
+        #     test_loader,
+        #     config_wandb,
+        #     config_wandb.epochs,
+        #     losses,
+        #     normalize_extra_input,
+        # )
 
-    return model, normalize_extra_input
+        save_model(config, ndata_dict, model, normalize_extra_input)
+
+    return model
 
 
 def make(config, ndata_dict, loss_dict, optimizer_dict):
@@ -374,7 +413,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         n_frames=config.n_frames,
         n_data=n_datapoints,
         data_type=config.data_type,
-        dir=config.data_dir_train,
+        dir="data/" + config.data_dir_train,
         extra_input=(config.str_extra_input, config.extra_input_n),
     )
     # data_set_test = MyDataset(sims=config.test_sims, n_frames=config.n_frames, n_data=n_datapoints, data_type=config.data_type, dir=config.data_dir_train)
@@ -487,14 +526,15 @@ if __name__ == "__main__":
         "log_dualQ": 6,
     }
 
-    data_dir_train = "data/" + " ".join(args.data_dir_train)
+    data_train_dir = " ".join(args.data_dir_train)
+    data_dir_train = "data/" + data_train_dir
     # data_dirs_test = args.data_dir_test
     data_dirs_test = os.listdir("data")
     if ".DS_Store" in data_dirs_test:
         data_dirs_test.remove(".DS_Store")
 
     data_dirs_test = [
-        " ".join(args.data_dir_train),
+        data_train_dir,
         # "data_t(0, 0)_tennisEffect",
     ]
     # if args.data_dir_test == "":
@@ -547,7 +587,7 @@ if __name__ == "__main__":
             n_sims=n_sims_train_total,
             n_layers=1,
             hidden_size=96,
-            data_dir_train=data_dir_train,
+            data_dir_train=data_train_dir,
             data_dirs_test=data_dirs_test,
             iter=i,
             str_extra_input=args.extra_input,
@@ -559,29 +599,7 @@ if __name__ == "__main__":
         optimizer_dict = {"Adam": torch.optim.Adam}
 
         start_time = time.time()
-        model, normalize_extra_input = model_pipeline(
+        model = model_pipeline(
             config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses
         )
         print("It took ", time.time() - start_time, " seconds.")
-
-        model_dict = {
-            "config": config,
-            "data_dict": ndata_dict,
-            "model": model.state_dict(),
-            "normalize_extra_input": (
-                args.extra_input,
-                extra_input_n,
-                normalize_extra_input,
-            ),
-        }
-
-        if not os.path.exists("models"):
-            os.mkdir("models")
-
-        torch.save(
-            model_dict,
-            f"models/lstm/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'_'{args.extra_input}'.pickle",
-        )
-        print(
-            f"Saved model in: models/lstm/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'_'{args.extra_input}'.pickle"
-        )

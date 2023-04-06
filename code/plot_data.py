@@ -56,7 +56,9 @@ def load_model(data_type, architecture, data_dir, extra_input_str):
     return model, config, normalize_extra_input
 
 
-def get_random_sim_data(data_type, nr_sims, data_dir, normalize_extra_input, i=None):
+def get_random_sim_data(
+    data_type, nr_sims, data_dir, normalize_extra_input=(0, 0), i=None
+):
     """
     Collects the data from a random simulation.
 
@@ -677,7 +679,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(0, 0)_r(5, 10)_full_pNone_gNone",
+        default="data_t(20, 40)_r(0, 0)_tennis_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     parser.add_argument(
@@ -793,33 +795,69 @@ if __name__ == "__main__":
 
         data_types = [
             "pos",
-            "rot_mat",
-            # "rot_mat_ori",
-            "quat",
-            # "quat_ori",
-            "log_quat",
-            # "log_quat_ori",
-            "dual_quat",
-            # "dual_quat_ori",
-            "log_dualQ",
-            # "log_dualQ_ori",
+            # "rot_mat",
+            "rot_mat_ori",
+            # "quat",
+            "quat_ori",
+            # "log_quat",
+            "log_quat_ori",
+            # "dual_quat",
+            "dual_quat_ori",
+            # "log_dualQ",
+            "log_dualQ_ori",
             # "pos_diff_start",
         ]
+        # data_types = [
+        #     "pos",
+        #     "rot_mat",
+        #     # "rot_mat_ori",
+        #     "quat",
+        #     # "quat_ori",
+        #     "log_quat",
+        #     # "log_quat_ori",
+        #     "dual_quat",
+        #     # "dual_quat_ori",
+        #     "log_dualQ",
+        #     # "log_dualQ_ori",
+        #     "pos_diff_start",
+        # ]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 
         for data_thing in data_types:
             (
-                prediction,
+                converted_pos,
+                _,
                 _,
                 _,
                 _,
                 nr_frames,
-                _,
+                i,
                 rotation_axis_trans,
                 range_plot,
-            ) = get_random_sim_data(data_thing, nr_sims, data_dir, i)
-            plot_data.append(prediction)
+                _,
+            ) = get_random_sim_data(data_thing, nr_sims, data_dir, i=i)
+            plot_data.append(converted_pos)
             rot_trans_axis.append(rotation_axis_trans)
+        # Input:
+        #     - data_type: type of the data that needs to be collected.
+        #     - nr_sims: total number of available simulations ().
+        #     - data_dir: directory in which the data is stored.
+        #     - normalize_extra_input: tuple
+        #         - extra_input[0]: type of extra input
+        #         - extra_input[1]: number of extra input values
+        #     - i: id of simulation to select, default; select random simulation.
+
+        # Output:
+        #     - plot_data: xyz data converted from data_type.
+        #     - original_data: data in the format of data_type.
+        #     - plot_data_true_pos: original xyz data.
+        #     - start_pos[0]: start position (xyz) of the simulation.
+        #     - start_xpos[0]: start position of centroid
+        #     - nr_frames: number of frames to collect.
+        #     - i: id of the simulation used.
+        #     - rot_axis_trans: rotation axis with translation.
+        #     - ranges: ranges for the xyz axis of the plot.
+        #     - extra_input: extra input when extra_input[0] != None.
 
         plot_datatypes(
             plot_data,

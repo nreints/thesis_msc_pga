@@ -34,9 +34,7 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
             start_pos.reshape(-1, 8, 3) - xpos_start
         ).mT  # [batch_size, 3, 8]
         mult = torch.bmm(rotations, start_origin).mT  # [batch_size, 8, 3]
-        out = (
-            mult + rot_mat[:, 9:].reshape(-1, 1, 3) + xpos_start
-        )  # [batch_size, 8, 3]
+        out = mult + rot_mat[:, 9:].reshape(-1, 1, 3) + xpos_start  # [batch_size, 8, 3]
         return out.flatten(start_dim=1)  # [batch_size, 24]
     # In case of LSTM/GRU
     else:
@@ -378,7 +376,7 @@ def convert(true_preds, start_pos, data_type, xpos_start=None):
     """
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
-    elif data_type[:11] == "rot_mat":
+    elif data_type[:7] == "rot_mat":
         return rotMat2pos(true_preds, start_pos, xpos_start)
     elif data_type[:4] == "quat":
         return quat2pos(true_preds, start_pos, xpos_start)

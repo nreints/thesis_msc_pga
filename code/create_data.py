@@ -151,10 +151,10 @@ def logDual(r):
     if r[0] == 1 or math.isclose(r[0], 1):
         return np.array([-r[5], -r[6], -r[7], 0, 0, 0])
 
-    a = 1 / (1 - r[0] * r[0])
+    a = 1 / (1 - r[0] * r[0])  # inv squared length
 
-    b = np.arccos(r[0]) * np.sqrt(a)
-    c = a * r[4] * (1 - r[0] * b)
+    b = np.arccos(r[0]) * np.sqrt(a)  # rotation scale
+    c = a * r[4] * (1 - r[0] * b)  # translation scale
     return np.array(
         [
             c * r[1] - b * r[5],
@@ -577,7 +577,7 @@ def write_data_nsim(
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=300)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=2000)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
     parser.add_argument(
         "-s",
@@ -587,10 +587,10 @@ if __name__ == "__main__":
         help="symmetry of the box.\nfull: symmetric box 1:1:1\n; semi: 2 sides of same length, other longer 1:1:10\n;tennis: tennis_racket effect 1:3:10\n;none: random lengths for each side",
         default="tennis",
     )
-    parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
-    parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
-    parser.add_argument("-a_min", type=int, help="angular qvel min", default=5)
-    parser.add_argument("-a_max", type=int, help="angular qvel max", default=10)
+    parser.add_argument("-l_min", type=int, help="linear qvel min", default=17)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=40)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=0)
+    parser.add_argument("-a_max", type=int, help="angular qvel max", default=0)
     parser.add_argument(
         "-i",
         "--integrator",

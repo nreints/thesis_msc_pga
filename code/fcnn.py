@@ -259,6 +259,12 @@ def train_model(
             loss.backward()
 
             optimizer.step()
+        # if epoch == 5 or epoch == 10:
+        #     print(data_inputs[0].reshape(20, 12)[-2:])
+        #     print(data_labels[0])
+        #     print(pos_target[0].shape)
+        #     print(preds[0])
+        #     exit()
 
         print(f"Epoch {epoch}")
         # Log to W&B
@@ -352,18 +358,18 @@ def eval_model(
                 print(
                     f"\t Logging test loss {wandb_total_convert_loss / len(data_loader)} ({loss_module}: {config.data_dirs_test[i][5:]})"
                 )
-                name = config.data_dirs_test[i][5:-12]
-                if name[-1] == "_":
-                    name = config.data_dirs_test[i][-12:]
+                if config.data_dirs_test[i] == config.data_dir_train[5:]:
+                    extra_wandb_string = ""
+                else:
+                    extra_wandb_string = " " + config.data_dirs_test[i][5:]
+
                 wandb.log(
                     {
-                        f"Test loss {name} {loss_module}": wandb_total_convert_loss
+                        f"Test loss{extra_wandb_string}": wandb_total_convert_loss
                         / len(data_loader)
                     },
                     step=current_epoch,
                 )
-                # wandb.log({f"Test loss {config.data_dirs_test[i][5:]}": wandb_total_convert_loss / len(data_loader)})
-
     # Return the average loss
     return (
         total_loss.item() / len(data_loader),
@@ -372,16 +378,43 @@ def eval_model(
     )
 
 
+def save_model(config, ndata_dict, model, normalize_extra_input):
+    model_dict = {
+        "config": config,
+        "data_dict": ndata_dict,
+        "model": model.state_dict(),
+        "normalize_extra_input": (
+            config["str_extra_input"],
+            config["extra_input_n"],
+            normalize_extra_input,
+        ),
+    }
+    os.makedirs("models", exist_ok=True)
+    os.makedirs("models/fcnn", exist_ok=True)
+    os.makedirs(f"models/fcnn/{config['data_dir_train']}", exist_ok=True)
+
+    path_dir = f"models/fcnn/{config['data_dir_train']}/'{config['data_type']}'_'{config['str_extra_input']}'.pth"
+    torch.save(
+        model_dict,
+        path_dir,
+    )
+
+    artifact = wandb.Artifact("model", type="model")
+    artifact.add_file(path_dir)
+    wandb.run.log_artifact(artifact)
+    print("Saved model in ", path_dir)
+
+
 def model_pipeline(
     hyperparameters, ndata_dict, loss_dict, optimizer_dict, mode_wandb, losses
 ):
     # tell wandb to get started
     with wandb.init(
-        project="test", config=hyperparameters, mode=mode_wandb, tags=[device.type]
+        project="test", config=hyperparameters, mode=mode_wandb, tags=[str(device)]
     ):
         # access all HPs through wandb.config, so logging matches execution!
-        config = wandb.config
-        wandb.run.name = f"{config.architecture}/{config.data_type}/{config.iter}/{config.str_extra_input}/"
+        config_wandb = wandb.config
+        wandb.run.name = f"{config_wandb.architecture}/{config_wandb.data_type}/{config_wandb.iter}/{config_wandb.str_extra_input}/"
 
         # make the model, data, and optimization problem
         (
@@ -392,12 +425,12 @@ def model_pipeline(
             optimizer,
             normalize_extra_input,
         ) = make(
-            config,
+            config_wandb,
             ndata_dict,
             loss_dict,
             optimizer_dict,
         )
-        print("Datatype:", config["data_type"])
+        print("Datatype:", config_wandb["data_type"])
 
         # and use them to train the model
         train_model(
@@ -406,24 +439,25 @@ def model_pipeline(
             train_loader,
             test_loaders,
             criterion,
-            config.epochs,
-            config,
+            config_wandb.epochs,
+            config_wandb,
             losses,
             normalize_extra_input,
         )
 
-        # and test its final performance
-        eval_model(
-            model,
-            test_loaders,
-            criterion,
-            config,
-            config.epochs,
-            losses,
-            normalize_extra_input,
-        )
+        # # and test its final performance
+        # eval_model(
+        #     model,
+        #     test_loaders,
+        #     criterion,
+        #     config_wandb,
+        #     config_wandb.epochs,
+        #     losses,
+        #     normalize_extra_input,
+        # )
+        save_model(config, ndata_dict, model, normalize_extra_input)
 
-    return model, normalize_extra_input
+    return model
 
 
 def make(config, ndata_dict, loss_dict, optimizer_dict):
@@ -437,7 +471,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
         n_frames=config.n_frames,
         n_data=n_datapoints,
         data_type=config.data_type,
-        dir=config.data_dir_train,
+        dir="data/" + config.data_dir_train,
         extra_input=(config.str_extra_input, config.extra_input_n),
     )
     train_data_loader = data.DataLoader(
@@ -466,6 +500,7 @@ def make(config, ndata_dict, loss_dict, optimizer_dict):
 
     # Make the model
     model = fcnn(n_datapoints, config).to(device)
+    print(model)
 
     # Make the loss and optimizer
     criterion = loss_dict[config.loss_type](reduction=config.loss_reduction_type)
@@ -500,7 +535,7 @@ if __name__ == "__main__":
         type=str,
         help="directory of the train data",
         nargs="+",
-        default="data_t(0, 0)_r(5, 15)_tennis_pNone_gNone",
+        default="data_t(20, 40)_r(0, 0)_tennis_pNone_gNone",
     )
     parser.add_argument(
         "-l", "--loss", type=str, choices=["L1", "L2"], help="Loss type", default="L2"
@@ -527,19 +562,20 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    data_dir_train = "data/" + " ".join(args.data_dir_train)
+    data_train_dir = " ".join(args.data_dir_train)
+    data_dir_train = "data/" + data_train_dir
     # data_dir_train = "data/" + args.data_dir_train
     print(f"Training on dataset: {data_dir_train}")
     # data_dirs_test = args.data_dir_test]
 
-    # data_dirs_test = os.listdir("data")
-    # if ".DS_Store" in data_dirs_test:
-    #     data_dirs_test.remove(".DS_Store")
+    data_dirs_test = os.listdir("data")
+    if ".DS_Store" in data_dirs_test:
+        data_dirs_test.remove(".DS_Store")
 
-    data_dirs_test = [
-        " ".join(args.data_dir_train),
-        # "data_tennis_pNone_gNone_tennisEffect",
-    ]
+    # data_dirs_test = [
+    #     data_train_dir,
+    #     # "data_tennis_pNone_gNone_tennisEffect",
+    # ]
     print(f"Testing on datasets: {data_dirs_test}")
 
     # if args.data_dir_test == "":
@@ -613,11 +649,11 @@ if __name__ == "__main__":
             n_frames=20,
             n_sims=n_sims_train,
             hidden_sizes=[128, 256],
-            activation_func=["ReLU", "ReLU"],
-            dropout=[0.0, 0.0],
+            activation_func=["Tanh", "ReLU"],
+            dropout=[0, 0],
             batch_norm=[False, False, False],
             lam=0.01,
-            data_dir_train=data_dir_train,
+            data_dir_train=data_train_dir,
             data_dirs_test=data_dirs_test,
             iter=i,
             str_extra_input=args.extra_input,
@@ -630,29 +666,7 @@ if __name__ == "__main__":
         optimizer_dict = {"Adam": torch.optim.Adam}
 
         start_time = time.time()
-        model, normalize_extra_input = model_pipeline(
+        model = model_pipeline(
             config, ndata_dict, loss_dict, optimizer_dict, args.mode_wandb, losses
         )
         print(f"It took {time.time() - start_time} seconds to train & eval the model.")
-        model_dict = {
-            "config": config,
-            "data_dict": ndata_dict,
-            "model": model.state_dict(),
-            "normalize_extra_input": (
-                args.extra_input,
-                extra_input_n,
-                normalize_extra_input,
-            ),
-        }
-        # Save model
-        if not os.path.exists("models"):
-            os.mkdir("models")
-        if not os.path.exists("models/fcnn"):
-            os.mkdir("models/fcnn")
-        torch.save(
-            model_dict,
-            f"models/fcnn/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'_'{args.extra_input}'.pickle",
-        )
-        print(
-            f"Saved model in: models/fcnn/{config['data_type']}_{config['architecture']}_'{args.data_dir_train}'_'{args.extra_input}'.pickle"
-        )
