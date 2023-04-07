@@ -278,21 +278,21 @@ def make(
     Makes dataloaders, model, criterion and optimizer.
 
     Input:
-        - config:
-        - ndata_dict:
-        - loss_dict:
-        - optimizer_dict:
-        - dataset_class:
-        - model_class:
-        - device:
+        - config: dictionary with (wandb) configuration.
+        - ndata_dict: dictionary with number of datapoints per data type.
+        - loss_dict: dictionary with loss name and corresponding pytorch functions.
+        - optimizer_dict: dictionary with optimizer name and corresponding pytorch functions.
+        - dataset_class: specific class with the dataset.
+        - model_class: specific class of the model.
+        - device: current device.
 
     Output:
-        - model:
-        - train_data_loader:
-        - test_data_loaders:
-        - criterion:
-        - optimizer:
-        - data_set_train.normalize_extra_input:
+        - model: model of correct class.
+        - train_data_loader: dataloader for train data.
+        - test_data_loaders: dataloader for test data.
+        - criterion: loss function.
+        - optimizer: optimizer function.
+        - data_set_train.normalize_extra_input: normalization factor to apply to the extra input.
     """
     if config.data_type[-3:] == "ori":
         n_datapoints = ndata_dict[config.data_type[:-4]]
@@ -352,6 +352,15 @@ def make(
 
 
 def train_log(loss, epoch, loss_module, data_dir_train):
+    """
+    Logs the train loss to WandB.
+
+    Input:
+        - loss: loss of current epoch.
+        - epoch: current epoch.
+        - loss_module: type of loss.
+        - data_dir_train: data directory for the train data.
+    """
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
     print(
         f"\t Logging train Loss: {round(loss.item(), 10)} [{loss_module}: {data_dir_train}]"
@@ -362,13 +371,23 @@ def eval_log(
     data_dir_test,
     data_dir_train,
     loss,
-    current_epoch,
+    epoch,
     loss_module,
 ):
+    """
+    Logs the test loss to WandB.
+
+    Input:
+        - data_dir_test: data directory for the test data.
+        - data_dir_train: data directory for the train data.
+        - loss: loss of current epoch.
+        - epoch: current epoch.
+        - loss_module: type of loss.
+    """
     wandb_string = wandb_eval_string(data_dir_test, data_dir_train)
     wandb.log(
         {f"Test loss{wandb_string}": loss},
-        step=current_epoch,
+        step=epoch,
     )
 
     print(
