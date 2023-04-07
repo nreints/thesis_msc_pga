@@ -104,7 +104,7 @@ class MyDataset(data.Dataset):
                     self.data = torch.zeros(
                         len_data, self.n_frames_perentry, self.n_datap_perframe
                     )
-                    self.extra_input_data = torch.zeros((len_data, 3))
+                    self.extra_input_data = torch.zeros((len_data, self.extra_input[1]))
                     self.xpos_start = torch.zeros((len_data, 3))
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
                     self.start_pos[count] = torch.FloatTensor(
