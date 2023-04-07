@@ -6,6 +6,13 @@ import random
 import argparse
 
 
+def wandb_eval_string(data_dir_test, data_dir_train):
+    if data_dir_test == data_dir_train[5:]:
+        return ""
+    else:
+        return " " + data_dir_test[5:]
+
+
 def nr_extra_input(extra_input_str):
     n_extra_input = {
         "inertia_body": 3,
@@ -251,3 +258,24 @@ def make(
         optimizer,
         data_set_train.normalize_extra_input,
     )
+
+
+def train_log(loss, epoch, loss_module, data_dir_train):
+    wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
+    print(f"\t Logging train Loss: {round(loss, 10)} ({loss_module}: {data_dir_train})")
+
+
+def eval_log(
+    data_dir_test,
+    data_dir_train,
+    loss,
+    current_epoch,
+    loss_module,
+):
+    wandb_string = wandb_eval_string(data_dir_test, data_dir_train)
+    wandb.log(
+        {f"Test loss{wandb_string}": loss},
+        step=current_epoch,
+    )
+
+    print(f"\t Logging test loss: {loss} ({loss_module}: {data_dir_test[5:]})")

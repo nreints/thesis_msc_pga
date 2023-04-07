@@ -7,13 +7,7 @@ from convert import *
 import wandb
 import time
 import os
-from general_functions import (
-    model_pipeline,
-    parse_args,
-    get_data_dirs,
-    divide_train_test_sims,
-    nr_extra_input,
-)
+from general_functions import *
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -263,9 +257,8 @@ def train_model(
 
         print(f"Epoch {epoch}")
         # Log to W&B
-        train_log(loss_epoch / len(data_loader), epoch, config)
-        print(
-            f"\t Logging train Loss: {round(loss_epoch.item() / len(data_loader), 10)} ({loss_module}: {config.data_dir_train[5:]})"
+        train_log(
+            loss_epoch / len(data_loader), epoch, loss_module, config.data_dir_train[5:]
         )
 
         # Evaluate model
@@ -343,21 +336,14 @@ def eval_model(
                     total_loss += loss_module(preds, data_labels)
 
                 # Log loss to W&B
-                print(
-                    f"\t Logging test loss {wandb_total_convert_loss / len(data_loader)} ({loss_module}: {config.data_dirs_test[i][5:]})"
+                eval_log(
+                    config.data_dirs_test[i],
+                    config.data_dir_train,
+                    total_convert_loss / len(data_loader),
+                    current_epoch,
+                    loss_module,
                 )
-                if config.data_dirs_test[i] == config.data_dir_train[5:]:
-                    extra_wandb_string = ""
-                else:
-                    extra_wandb_string = " " + config.data_dirs_test[i][5:]
 
-                wandb.log(
-                    {
-                        f"Test loss{extra_wandb_string}": wandb_total_convert_loss
-                        / len(data_loader)
-                    },
-                    step=current_epoch,
-                )
     # Return the average loss
     return (
         total_loss.item() / len(data_loader),

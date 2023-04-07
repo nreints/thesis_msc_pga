@@ -4,6 +4,8 @@ import roma
 # import time
 
 
+
+
 def rotMat2pos(rot_mat, start_pos, xpos_start):
     """
     Transforms a batch of vectors by a rotation matrix and translation vector.
