@@ -11,7 +11,7 @@ from general_functions import (
     model_pipeline,
     parse_args,
     get_data_dirs,
-    check_number_sims,
+    divide_train_test_sims,
 )
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -418,14 +418,9 @@ if __name__ == "__main__":
     for i in range(args.iterations):
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
-        n_sims_train = len(os.listdir(data_dir_train))
-        n_sims_train = 20
-        sims_train = {i for i in range(n_sims_train)}
-        train_sims = set(random.sample(sims_train, int(0.8 * n_sims_train)))
-        test_sims = sims_train - train_sims
-        check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims)
-        print(f"Number of train simulations: {len(train_sims)}")
-        print(f"Number of test simulations: {len(test_sims)}")
+        n_sims_train_total, train_sims, test_sims = divide_train_test_sims(
+            data_dir_train, data_dirs_test
+        )
         # Set config
         config = dict(
             learning_rate=args.learning_rate,
@@ -439,7 +434,7 @@ if __name__ == "__main__":
             train_sims=list(train_sims),
             test_sims=list(test_sims),
             n_frames=20,
-            n_sims=n_sims_train,
+            n_sims=n_sims_train_total,
             hidden_sizes=[128, 256],
             activation_func=["Tanh", "ReLU"],
             dropout=[0, 0],
