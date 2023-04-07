@@ -364,7 +364,7 @@ def diff_pos_start2pos(true_preds, start_pos):
     return result.squeeze()
 
 
-def convert(true_preds, start_pos, data_type, xpos_start=None):
+def convert(true_preds, start_pos, data_type, xpos_start):
     """
     Converts true predictions given data type.
     Input:
@@ -374,6 +374,8 @@ def convert(true_preds, start_pos, data_type, xpos_start=None):
     Output:
         - Converted true predictions.
     """
+    if data_type[-3:] != "ori":
+        xpos_start = None
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type[:7] == "rot_mat":

@@ -30,10 +30,10 @@ def check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims):
         ), f"Not enough test simulations in {data_dir_test}."
 
 
-def divide_train_sims(data_dir_train, data_dirs_test):
+def divide_train_test_sims(data_dir_train, data_dirs_test):
     n_sims_train_total = len(os.listdir(data_dir_train))
     print("Total number of simulations in train dir: ", n_sims_train_total)
-    n_sims_train_total = 200
+    n_sims_train_total = 20
     sims_train = range(0, n_sims_train_total)
     train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
     test_sims = set(sims_train) - set(train_sims)

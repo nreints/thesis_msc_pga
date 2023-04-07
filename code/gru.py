@@ -241,19 +241,12 @@ def train_model(
             else:
                 _, _, preds = model(data_inputs)  # Shape: [batch, frames, n_data]
 
-            if config.data_type[-3:] != "ori":
-                alt_preds = convert(
-                    preds,
-                    start_pos,
-                    data_loader.dataset.data_type,
-                    xpos_start,
-                )
-            else:
-                alt_preds = convert(
-                    preds,
-                    start_pos,
-                    data_loader.dataset.data_type,
-                )
+            alt_preds = convert(
+                preds,
+                start_pos,
+                config.data_type,
+                xpos_start,
+            )
 
             assert not torch.any(
                 torch.isnan(alt_preds)
@@ -321,23 +314,14 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                         _, _, preds = model(
                             data_inputs
                         )  # Shape: [batch, frames, n_data]
-                    print(preds.shape)
 
                     # Convert predictions to xyz-data
-                    if config.data_type[-3:] != "ori":
-                        alt_preds = convert(
-                            preds.detach().cpu(),
-                            start_pos,
-                            data_loader.dataset.data_type,
-                            xpos_start,
-                        )
-
-                    else:
-                        alt_preds = convert(
-                            preds,
-                            start_pos,
-                            data_loader.dataset.data_type,
-                        )
+                    alt_preds = convert(
+                        preds.detach().cpu(),
+                        start_pos,
+                        config.data_type,
+                        xpos_start,
+                    )
 
                     total_loss += loss_module(preds, data_labels)
                     total_convert_loss += loss_module(alt_preds, data_labels_pos)
@@ -369,7 +353,6 @@ if __name__ == "__main__":
 
     if not os.path.exists(data_dir_train):
         raise IndexError(f"No directory for the train data {data_dir_train}")
-
 
     extra_input_n = nr_extra_input(args.extra_input)
 

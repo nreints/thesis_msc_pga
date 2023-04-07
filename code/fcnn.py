@@ -220,22 +220,13 @@ def train_model(
             # preds = preds * data_set_train.std + data_set_train.mean
 
             # Convert predictions to xyz-data
-            if config.data_type[-3:] != "ori":
-                alt_preds = convert(
-                    preds,
-                    start_pos,
-                    data_loader.dataset.data_type,
-                    xpos_start,
-                )
-            # print(alt_preds)
-
-            else:
-                alt_preds = convert(
-                    preds,
-                    start_pos,
-                    data_loader.dataset.data_type,
-                )
-                # print("alt_preds", alt_preds[0][0])
+            alt_preds = convert(
+                preds,
+                start_pos,
+                config.data_type,
+                xpos_start,
+            )
+            # print("alt_preds", alt_preds[0][0])
             # print("alt_preds:", alt_preds[0])
             # print("pos_targ", pos_target[0])
             if torch.any(torch.isnan(preds)):
@@ -324,19 +315,12 @@ def eval_model(
                     # print(data_labels[0][-3:])
 
                     # Convert predictions to xyz-data
-                    if config.data_type[-3:] != "ori":
-                        alt_preds = convert(
-                            preds.detach().cpu(),
-                            start_pos,
-                            data_loader.dataset.data_type,
-                            xpos_start,
-                        )
-                    else:
-                        alt_preds = convert(
-                            preds.detach().cpu(),
-                            start_pos,
-                            data_loader.dataset.data_type,
-                        )
+                    alt_preds = convert(
+                        preds.detach().cpu(),
+                        start_pos,
+                        config.data_type,
+                        xpos_start,
+                    )
 
                     # Determine norm penalty for quaternion data
                     if (
