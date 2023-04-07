@@ -8,6 +8,7 @@ import wandb
 import time
 import os
 from general_functions import *
+from dataset import NonRecurrentDataset
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -52,109 +53,6 @@ class fcnn(nn.Module):
     def forward(self, x):
         # Perform the calculation of the model to determine the prediction
         return self.linears(x)
-
-
-class MyDataset(data.Dataset):
-    def __init__(
-        self,
-        sims,
-        n_frames,
-        n_data,
-        data_type,
-        dir,
-        extra_input,
-    ):
-        """
-        Inputs:
-            - sims; simulation IDs to use in this dataset
-            - n_frames; number of input frames
-            - n_data; number of datapoints given the data_type
-            - data_type; type of the data
-            - dir; directory where the data is stored
-            - extra_input; tuple
-                - extra_input[0]; type of extra input
-                - extra_input[1]; number of extra input values
-        """
-        super().__init__()
-        self.n_frames_perentry = n_frames
-        self.n_datap_perframe = n_data
-        self.sims = sims
-        self.data_type = data_type
-        self.dir = dir
-        self.extra_input = extra_input
-        self.collect_data()
-
-    def collect_data(self):
-        start_time = time.time()
-        count = 0
-        # Loop through all simulations
-        for i in self.sims:
-            with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
-                data_all = pickle.load(f)["data"]
-                # Collect data from data_type
-                data = torch.FloatTensor(data_all[self.data_type])
-                pos_data = torch.FloatTensor(data_all["pos"])
-                # Add data and targets
-                if count == 0:
-                    data_per_sim = len(data) - (self.n_frames_perentry + 1)
-                    len_data = len(self.sims) * data_per_sim
-                    self.data = torch.zeros(
-                        len_data,
-                        self.n_frames_perentry * self.n_datap_perframe
-                        + self.extra_input[1],
-                    )
-                    self.target = torch.zeros((len_data, self.n_datap_perframe))
-                    self.target_pos = torch.zeros((len_data, 24))
-                    self.start_pos = torch.zeros_like(self.target_pos)
-                    self.xpos_start = torch.zeros((len_data, 3))
-                for frame in range(data_per_sim):
-                    # Always save the start position for converting
-                    self.start_pos[count] = torch.FloatTensor(pos_data[0].flatten())
-                    self.xpos_start[count] = torch.FloatTensor(
-                        data_all["xpos_start"].flatten()
-                    )
-                    train_end = frame + self.n_frames_perentry
-                    if self.extra_input[1] != 0:
-                        extra_input_values = torch.FloatTensor(
-                            data_all[self.extra_input[0]]
-                        )
-                        self.data[count, -self.extra_input[1] :] = extra_input_values
-                        self.data[count, : -self.extra_input[1]] = data[
-                            frame:train_end
-                        ].flatten()
-                    else:
-                        self.data[count] = data[frame:train_end].flatten()
-                    self.target[count] = data[train_end + 1].flatten()
-
-                    self.target_pos[count] = pos_data[train_end + 1].flatten()
-                    count += 1
-
-        # self.mean = torch.mean(self.data)
-        # self.std = torch.std(self.data)
-        # self.normalized_data = (self.data - self.mean) / self.std
-
-        self.normalize_extra_input = torch.mean(
-            torch.norm(self.data[:, -self.extra_input[1] :], dim=1)
-        )
-        assert (
-            self.normalize_extra_input != 0
-        ), f"The normalization of the extra input is zero. This leads to zero-division."
-        # print(self.xpos_start.shape)
-        # print("mean of norm extra_input", self.normalize_extra_input.item())
-        # self.data[:, -self.extra_input[1] :] = self.extra_input_data
-        print(f"The dataloader took {time.time() - start_time} seconds.")
-
-    def __len__(self):
-        return self.data.shape[0]
-
-    def __getitem__(self, idx):
-        # Return the idx-th data point of the dataset
-        data_point = self.data[idx]
-        data_target = self.target[idx]
-        data_start = self.start_pos[idx]
-        data_pos_target = self.target_pos[idx]
-        start_xpos = self.xpos_start[idx]
-        return data_point, data_target, data_start, data_pos_target, start_xpos
 
 
 def train_model(
@@ -397,7 +295,7 @@ if __name__ == "__main__":
             losses,
             train_model,
             device,
-            MyDataset,
+            NonRecurrentDataset,
             fcnn,
         )
         print(f"It took {time.time() - start_time} seconds to train & eval the model.")

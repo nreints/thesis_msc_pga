@@ -271,6 +271,7 @@ def eval_log(
     data_dir_test,
     data_dir_train,
     loss,
+    
     current_epoch,
     loss_module,
 ):
