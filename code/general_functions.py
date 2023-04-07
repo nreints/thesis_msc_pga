@@ -6,6 +6,20 @@ import random
 import argparse
 
 
+def nr_extra_input(extra_input_str):
+    n_extra_input = {
+        "inertia_body": 3,
+        "size": 3,
+        "size_squared": 3,
+        "size_mass": 4,
+        "size_squared_mass": 4,
+    }
+    if extra_input_str:
+        return n_extra_input[extra_input_str]
+    else:
+        return 0
+
+
 def check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims):
     assert len(os.listdir(data_dir_train)) >= max(
         train_sims
@@ -114,7 +128,6 @@ def save_model(config, ndata_dict, model, normalize_extra_input):
 
 def model_pipeline(
     hyperparameters,
-    ndata_dict,
     mode_wandb,
     losses,
     train_fn,
@@ -122,6 +135,17 @@ def model_pipeline(
     dataset_class,
     model_class,
 ):
+    ndata_dict = {
+        "pos": 24,
+        "rot_mat": 12,
+        "quat": 7,
+        "log_quat": 7,
+        "dual_quat": 8,
+        "pos_diff": 24,
+        "pos_diff_start": 24,
+        "pos_norm": 24,
+        "log_dualQ": 6,
+    }
     loss_dict = {"L1": torch.nn.L1Loss, "L2": torch.nn.MSELoss}
     optimizer_dict = {"Adam": torch.optim.Adam}
     # tell wandb to get started

@@ -12,6 +12,7 @@ from general_functions import (
     parse_args,
     get_data_dirs,
     divide_train_test_sims,
+    nr_extra_input,
 )
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -336,28 +337,7 @@ if __name__ == "__main__":
     if not os.path.exists(data_dir_train):
         raise IndexError("No directory for the train data {args.data_dir_train}")
 
-    ndata_dict = {
-        "pos": 24,
-        "rot_mat": 12,
-        "quat": 7,
-        "log_quat": 7,
-        "dual_quat": 8,
-        "pos_diff": 24,
-        "pos_diff_start": 24,
-        "log_dualQ": 6,
-    }
-    n_extra_input = {
-        "inertia_body": 3,
-        "size": 3,
-        "size_squared": 3,
-        "size_mass": 4,
-        "size_squared_mass": 4,
-    }
-
-    if args.extra_input:
-        extra_input_n = n_extra_input[args.extra_input]
-    else:
-        extra_input_n = 0
+    extra_input_n = nr_extra_input(args.extra_input)
 
     losses = [nn.MSELoss]
 
@@ -394,7 +374,6 @@ if __name__ == "__main__":
         start_time = time.time()
         model = model_pipeline(
             config,
-            ndata_dict,
             args.mode_wandb,
             losses,
             train_model,
