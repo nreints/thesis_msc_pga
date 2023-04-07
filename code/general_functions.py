@@ -262,7 +262,9 @@ def make(
 
 def train_log(loss, epoch, loss_module, data_dir_train):
     wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
-    print(f"\t Logging train Loss: {round(loss, 10)} ({loss_module}: {data_dir_train})")
+    print(
+        f"\t Logging train Loss: {round(loss.item(), 10)} [{loss_module}: {data_dir_train}]"
+    )
 
 
 def eval_log(
@@ -278,4 +280,6 @@ def eval_log(
         step=current_epoch,
     )
 
-    print(f"\t Logging test loss: {loss} ({loss_module}: {data_dir_test[5:]})")
+    print(
+        f"\t Logging test loss: {round(loss.item(), 10)} [{loss_module}: {data_dir_test[5:]}]"
+    )

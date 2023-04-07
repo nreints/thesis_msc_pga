@@ -157,13 +157,6 @@ class MyDataset(data.Dataset):
         return data_point, data_target, data_start, data_pos_target, start_xpos
 
 
-def train_log(loss, epoch, config):
-    """
-    Log the train loss to Weights and Biases
-    """
-    wandb.log({f"Train loss": loss}, step=epoch)
-
-
 def train_model(
     model,
     optimizer,

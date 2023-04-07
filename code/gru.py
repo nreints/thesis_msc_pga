@@ -183,10 +183,6 @@ class MyDataset(data.Dataset):
         )
 
 
-def train_log(loss, epoch):
-    wandb.log({"Epoch": epoch, "Train loss": loss}, step=epoch)
-
-
 def train_model(
     model,
     optimizer,
