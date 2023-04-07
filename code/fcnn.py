@@ -7,7 +7,7 @@ from convert import *
 import wandb
 import time
 import os
-from general_functions import *
+from utils import *
 from dataset import NonRecurrentDataset
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -272,8 +272,8 @@ if __name__ == "__main__":
             optimizer="Adam",
             data_type=args.data_type,
             architecture="fcnn",
-            train_sims=list(train_sims),
-            test_sims=list(test_sims),
+            train_sims=train_sims,
+            test_sims=test_sims,
             n_frames=20,
             n_sims=n_sims_train_total,
             hidden_sizes=[128, 256],

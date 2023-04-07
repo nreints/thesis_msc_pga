@@ -7,6 +7,13 @@ import argparse
 
 
 def wandb_eval_string(data_dir_test, data_dir_train):
+    """
+    Returns the extra string to log the evaluation loss in WandB.
+
+    Input:
+        - data_dir_test: directory of the test data.
+        - data_dir_train: directory of the train data.
+    """
     if data_dir_test == data_dir_train[5:]:
         return ""
     else:
@@ -14,6 +21,12 @@ def wandb_eval_string(data_dir_test, data_dir_train):
 
 
 def nr_extra_input(extra_input_str):
+    """
+    Returns the number of extra input given the type of extra input.
+
+    Input:
+        - extra_input_str: string with the type of extra input.
+    """
     n_extra_input = {
         "inertia_body": 3,
         "size": 3,
@@ -28,6 +41,16 @@ def nr_extra_input(extra_input_str):
 
 
 def check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims):
+    """
+    Asserts whether the number of sims present in the train and test directory is enough.
+
+    Input:
+        - data_dir_train: data directory for the train data.
+        - train_sims: IDs of the train simulations.
+        - data_dirs_test: data directories for the test data.
+        - test_sims: IDs of the test simulations.
+
+    """
     assert len(os.listdir(data_dir_train)) >= max(
         train_sims
     ), "Not enough train simulations."
@@ -38,12 +61,24 @@ def check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims):
 
 
 def divide_train_test_sims(data_dir_train, data_dirs_test):
+    """
+    Divides the train and test simulation IDs.
+
+    Input:
+        - data_dir_train: data directory for the train data.
+        - data_dirs_test: data directories for the test data.
+
+    Output:
+        - n_sims_train_total: total number of simulations in data_dir_train.
+        - train_sims: list of IDs of the simulations used for training the model.
+        - test_sims: list of IDs of the simulations used for testing the model.
+    """
     n_sims_train_total = len(os.listdir(data_dir_train))
     print("Total number of simulations in train dir: ", n_sims_train_total)
     n_sims_train_total = 20
     sims_train = range(0, n_sims_train_total)
     train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
-    test_sims = set(sims_train) - set(train_sims)
+    test_sims = list(set(sims_train) - set(train_sims))
     check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims)
     print("Number of train simulations: ", len(train_sims))
     print("Number of test simulations: ", len(test_sims))
@@ -51,9 +86,18 @@ def divide_train_test_sims(data_dir_train, data_dirs_test):
 
 
 def get_data_dirs(data_dir_train):
+    """
+    Returns the data directories for training and evaluating.
+
+    Input:
+        - data_dir_train: train directory (from command line arguments).
+
+    Output:
+        - data_train_dir: data directory for the train data.
+        - data_dirs_test: data directories for the test data.
+    """
     data_train_dir = " ".join(data_dir_train)
-    data_dir_train = "data/" + data_train_dir
-    print(f"Training on dataset: {data_dir_train}")
+    print(f"Training on dataset: {data_train_dir}")
 
     data_dirs_test = os.listdir("data")
     if ".DS_Store" in data_dirs_test:
@@ -64,6 +108,9 @@ def get_data_dirs(data_dir_train):
 
 
 def parse_args():
+    """
+    Parses the command line arguments.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-m",
@@ -105,6 +152,15 @@ def parse_args():
 
 
 def save_model(config, ndata_dict, model, normalize_extra_input):
+    """
+    Saves the model and other useful attributes.
+
+    Input:
+        - config: dictionary with (wandb) configuration.
+        - ndata_dict: dictionary with number of datapoints per data type.
+        - model: trained model.
+        - normalize_extra_input: normalization factor to apply to the extra input.
+    """
     model_dict = {
         "config": config,
         "data_dict": ndata_dict,
@@ -142,6 +198,21 @@ def model_pipeline(
     dataset_class,
     model_class,
 ):
+    """
+    Enables WandB, creates model, trains model, and saves model.
+
+    Input:
+        - hyperparameters: dictionary with configuration for the model.
+        - mode_wandb: mode of WandB.
+        - losses: list of losses to evaluate on.
+        - train_fn: specific train function of the model.
+        - device: current device.
+        - dataset_class: specific class with the dataset.
+        - model_class: specific class of the model.
+
+    Output:
+        - model: trained model.
+    """
     ndata_dict = {
         "pos": 24,
         "rot_mat": 12,
@@ -203,6 +274,26 @@ def model_pipeline(
 def make(
     config, ndata_dict, loss_dict, optimizer_dict, dataset_class, model_class, device
 ):
+    """
+    Makes dataloaders, model, criterion and optimizer.
+
+    Input:
+        - config:
+        - ndata_dict:
+        - loss_dict:
+        - optimizer_dict:
+        - dataset_class:
+        - model_class:
+        - device:
+
+    Output:
+        - model:
+        - train_data_loader:
+        - test_data_loaders:
+        - criterion:
+        - optimizer:
+        - data_set_train.normalize_extra_input:
+    """
     if config.data_type[-3:] == "ori":
         n_datapoints = ndata_dict[config.data_type[:-4]]
     else:
@@ -271,7 +362,6 @@ def eval_log(
     data_dir_test,
     data_dir_train,
     loss,
-    
     current_epoch,
     loss_module,
 ):
