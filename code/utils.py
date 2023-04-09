@@ -6,6 +6,50 @@ import random
 import argparse
 
 
+def parse_args():
+    """
+    Parses the command line arguments.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-m",
+        "--mode_wandb",
+        type=str,
+        choices=["online", "offline", "disabled"],
+        help="mode of wandb: online, offline, disabled",
+        default="online",
+    )
+    parser.add_argument(
+        "-train_dir",
+        "--data_dir_train",
+        type=str,
+        help="directory of the train data",
+        nargs="+",
+        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
+    )
+    parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
+    parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
+    parser.add_argument(
+        "-i", "--iterations", type=int, help="Number of iterations", default=1
+    )
+    parser.add_argument(
+        "-extra_input",
+        type=str,
+        choices=[
+            "inertia_body",
+            "size",
+            "size_squared",
+            "size_mass",
+            "size_squared_mass",
+        ],
+    )
+    parser.add_argument("--batch_size", type=int, default=1024, help="Batch size")
+    parser.add_argument(
+        "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
+    )
+    return parser.parse_args()
+
+
 def wandb_eval_string(data_dir_test, data_dir_train):
     """
     Returns the extra string to log the evaluation loss in WandB.
@@ -75,7 +119,6 @@ def divide_train_test_sims(data_dir_train, data_dirs_test):
     """
     n_sims_train_total = len(os.listdir(data_dir_train))
     print("Total number of simulations in train dir: ", n_sims_train_total)
-    n_sims_train_total = 20
     sims_train = range(0, n_sims_train_total)
     train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
     test_sims = list(set(sims_train) - set(train_sims))
@@ -102,53 +145,10 @@ def get_data_dirs(data_dir_train):
     data_dirs_test = os.listdir("data")
     if ".DS_Store" in data_dirs_test:
         data_dirs_test.remove(".DS_Store")
+    data_dirs_test = [data_train_dir]
 
     print(f"Testing on datasets: {data_dirs_test}")
     return data_train_dir, data_dirs_test
-
-
-def parse_args():
-    """
-    Parses the command line arguments.
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-m",
-        "--mode_wandb",
-        type=str,
-        choices=["online", "offline", "disabled"],
-        help="mode of wandb: online, offline, disabled",
-        default="online",
-    )
-    parser.add_argument(
-        "-train_dir",
-        "--data_dir_train",
-        type=str,
-        help="directory of the train data",
-        nargs="+",
-        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
-    )
-    parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
-    parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
-    parser.add_argument(
-        "-i", "--iterations", type=int, help="Number of iterations", default=1
-    )
-    parser.add_argument(
-        "-extra_input",
-        type=str,
-        choices=[
-            "inertia_body",
-            "size",
-            "size_squared",
-            "size_mass",
-            "size_squared_mass",
-        ],
-    )
-    parser.add_argument("--batch_size", type=int, default=1024, help="Batch size")
-    parser.add_argument(
-        "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
-    )
-    return parser.parse_args()
 
 
 def save_model(config, ndata_dict, model, normalize_extra_input):

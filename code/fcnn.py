@@ -195,6 +195,10 @@ def eval_model(
                     preds = model(data_inputs)
                     # preds = model(data_norm)
                     preds = preds.squeeze(dim=1)
+                    if current_epoch > 9:
+                        print(preds[:5])
+                        print(data_labels[:5])
+                        print("----------------")
                     # preds = preds * data_set_train.std + data_set_train.mean
                     # print(data_labels[0][-3:])
 
