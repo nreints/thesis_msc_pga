@@ -566,6 +566,8 @@ def write_data_nsim(
                 "sizes": sizes_list,
                 "gravity": gravity,
                 "n_steps": n_steps,
+                "symm": symmetry,
+                "tennis_effect": tennis_effect,
             },
             "data": dataset,
         }
