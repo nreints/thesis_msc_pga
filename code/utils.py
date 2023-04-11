@@ -27,6 +27,14 @@ def parse_args():
         nargs="+",
         default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
     )
+    parser.add_argument(
+        "-test_dirs",
+        "--data_dirs_test",
+        type=str,
+        help="directory/ies of the test data",
+        nargs="+",
+        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
+    )
     parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
     parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
     parser.add_argument(
