@@ -394,7 +394,12 @@ def get_sizes(symmetry):
         - String containing the lengths of hight, width, and depth.
     """
     if symmetry == "none":
-        return f"{np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)} {np.random.uniform(0.5, 5)}"
+        sizes = [
+            np.random.uniform(0.5, 5),
+            np.random.uniform(0.5, 5),
+            np.random.uniform(0.5, 5),
+        ]
+        return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
     elif symmetry == "full":
         ratio = np.array([1, 1, 1])
     elif symmetry == "semi":
@@ -581,8 +586,8 @@ def write_data_nsim(
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=500)
-    parser.add_argument("-n_frames", type=int, help="number of frames", default=1000)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=2250)
+    parser.add_argument("-n_frames", type=int, help="number of frames", default=750)
     parser.add_argument(
         "-s",
         "--symmetry",
