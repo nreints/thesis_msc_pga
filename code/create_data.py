@@ -1,15 +1,17 @@
+import argparse
+import copy
+import itertools
+import math
+import os
+import pickle
+import random
+import time
+
 import mujoco
 import numpy as np
-import itertools
-import pickle
-from convert import *
 from pyquaternion import Quaternion
-import os
-import argparse
-import time
-import copy
-import math
-import random
+
+from convert import *
 
 
 def get_mat(data, obj_id):

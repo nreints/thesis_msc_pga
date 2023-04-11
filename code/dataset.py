@@ -1,7 +1,8 @@
-import torch.utils.data as data
-import torch
 import pickle
 import time
+
+import torch
+import torch.utils.data as data
 
 
 class RecurrentDataset(data.Dataset):

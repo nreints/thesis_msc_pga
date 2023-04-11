@@ -5,19 +5,21 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+import argparse
+import os
+import pickle
+import random
+import time
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from quaternion import qmul
 import torch.utils.data as data
-import numpy as np
-from convert import *
-import random
-import pickle
+
 import wandb
-import time
-import os
-import argparse
+from convert import *
+from quaternion import qmul
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 

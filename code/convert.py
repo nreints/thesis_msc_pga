@@ -1,9 +1,7 @@
-import torch
 import roma
+import torch
 
 # import time
-
-
 
 
 def rotMat2pos(rot_mat, start_pos, xpos_start):

@@ -1,14 +1,16 @@
-import torch
-import torch.nn as nn
+import os
 import pickle
 import random
-import torch.utils.data as data
-from convert import *
-import wandb
 import time
-import os
-from utils import *
+
+import torch
+import torch.nn as nn
+import torch.utils.data as data
+
+import wandb
+from convert import *
 from dataset import NonRecurrentDataset
+from utils import *
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -249,8 +251,11 @@ def eval_model(
 
 if __name__ == "__main__":
     args = parse_args()
+    print(args.data_dirs_test)
 
-    data_train_dir, data_dirs_test = get_data_dirs(args.data_dir_train)
+    data_train_dir, data_dirs_test = get_data_dirs(
+        args.data_dir_train, args.data_dirs_test
+    )
     data_dir_train = "data/" + data_train_dir
 
     if not os.path.exists(data_dir_train):

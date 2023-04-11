@@ -1,9 +1,11 @@
-import os
-import torch
-import wandb
-import torch.utils.data as data
-import random
 import argparse
+import os
+import random
+
+import torch
+import torch.utils.data as data
+
+import wandb
 
 
 def parse_args():
@@ -136,7 +138,7 @@ def divide_train_test_sims(data_dir_train, data_dirs_test):
     return n_sims_train_total, train_sims, test_sims
 
 
-def get_data_dirs(data_dir_train):
+def get_data_dirs(data_dir_train, data_dirs_test):
     """
     Returns the data directories for training and evaluating.
 
@@ -150,11 +152,11 @@ def get_data_dirs(data_dir_train):
     data_train_dir = " ".join(data_dir_train)
     print(f"Training on dataset: {data_train_dir}")
 
-    data_dirs_test = os.listdir("data")
-    if ".DS_Store" in data_dirs_test:
-        data_dirs_test.remove(".DS_Store")
-    data_dirs_test = [data_train_dir]
-
+    # data_dirs_test = os.listdir("data")
+    # if ".DS_Store" in data_dirs_test:
+    #     data_dirs_test.remove(".DS_Store")
+    data_dirs_test.append(data_train_dir)
+    data_dirs_test = list(set(data_dirs_test))
     print(f"Testing on datasets: {data_dirs_test}")
     return data_train_dir, data_dirs_test
 

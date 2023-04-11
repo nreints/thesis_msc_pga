@@ -1,14 +1,16 @@
+import os
+import pickle
+import random
+import time
+
 import torch
 import torch.nn as nn
 import torch.utils.data as data
-from convert import *
-import pickle
-import random
+
 import wandb
-import time
-import os
-from utils import *
+from convert import *
 from dataset import RecurrentDataset
+from utils import *
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 

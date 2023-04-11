@@ -1,17 +1,18 @@
-import torch
-import matplotlib.pyplot as plt
-from fcnn import fcnn
-from lstm import LSTM
-from gru import GRU
-import pickle
-from random import randint
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from convert import *
 import argparse
 import os
+import pickle
+from random import randint
+
+import matplotlib.animation as animation
 import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+
+from convert import *
+from fcnn import fcnn
+from gru import GRU
+from lstm import LSTM
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
