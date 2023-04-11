@@ -1,4 +1,4 @@
-----> Genereer data zonder ori zonder pos
+----> Genereer data (kan zonder ori & zonder pos) &  tennis_effect
 -s=tennis -n_sims=2000 -l_min=5 -l_max=20 -a_min=0 -a_max=0
 -s=tennis -n_sims=2000 -l_min=0 -l_max=0 -a_min=5 -a_max=20
 
@@ -18,16 +18,36 @@
 
 -s=tennis -n_sims=2000 --tennis_effect
 
+---> Genereer combi data
+--> Combineer 3 soorten t(5,20)
+-d "data_t(5, 20)_r(0, 0)_full_pNone_gNone" "data_t(5, 20)_r(0, 0)_semi_pNone_gNone" "data_t(5, 20)_r(0, 0)_tennis_pNone_gNone"
+-n "data_t(5, 20)_r(0, 0)_combi_pNone_gNone"
+
+--> Combineer 3 soorten r(5,20)
+-d "data_t(0, 0)_r(5, 20)_full_pNone_gNone" "data_t(0, 0)_r(5, 20)_semi_pNone_gNone" "data_t(0, 0)_r(5, 20)_tennis_pNone_gNone"
+-n "data_t(0, 0)_r(5, 20)_combi_pNone_gNone"
+
+--> Combineer 3 soorten t(5,20) + r(5,20)
+-d "data_t(5, 20)_r(5, 20)_full_pNone_gNone" "data_t(5, 20)_r(5, 20)_semi_pNone_gNone" "data_t(5, 20)_r(5, 20)_tennis_pNone_gNone"
+-n "data_t(5, 20)_r(5, 20)_combi_pNone_gNone"
+
+--> Combineer 3 soorten t(5,20) + r(5,20) ++ tennis_effect
+-d "data_t(5, 20)_r(5, 20)_full_pNone_gNone" "data_t(5, 20)_r(5, 20)_semi_pNone_gNone" "data_t(5, 20)_r(5, 20)_tennis_pNone_gNone" "data_tennis_pNone_gNone_tennisEffect"
+-n "data_t(5, 20)_r(5, 20)_combi_pNone_gNone_tennisEffect"
+
+----> TESTEN
 
 --> Test 1 train op van alles en nog wat, en kijk hoe het presteert op individuele onderdelen
 Train grote dataset:
-t(5,20) + r(t,20) voor None
+t(5,20) + r(t,20) voor combi
 
 Eval:
 t(5,20) voor semi full tennis None
 r(5,20) voor semi full tennis None
 t(5,20) + r(t,20) voor semi full tennis None
 tenniseffect
+->
+
 
 --> Test 2: Train op specifiekere onderdelen, en kijk hoe het generaliseert.
 -> a)
@@ -38,7 +58,7 @@ Eval:
 
 -> b)
 Train:
-t(5,20) voor semi
+
 
 Eval:
 
