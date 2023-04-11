@@ -15,11 +15,11 @@ To generate 100 simulations each of 500 frames for a tennis-like cuboid (ratio [
 etc.
 
 #### 3. Train a network:
-1. FCNN: currently trained on 1 dataset, and evaluated on all other present datasets. Example on how to run: <br>
+1. FCNN: currently trained and evaluated on 1 dataset, and evaluated on specified other datasets. Example on how to run: <br>
 `python fcnn.py -data_dir_train="data_t(0, 0)_r(2, 5)_none_pNone_gNone" -iterations=1 -data_type="pos" -loss="L1"`
-2. LSTM: currently trained on 1 dataset, and evaluated on all other present datasets<br>
+2. LSTM: currently trained on and evaluated 1 dataset, and evaluated on specified other datasets.<br>
 `python lstm.py -data_dir_train="data_t(0, 0)_r(2, 5)_none_pNone_gNone" -iterations=1 -data_type="pos" -loss="L1"`
-3. GRU: currently trained on 1 dataset, and evaluated on all other present datasets<br>
+3. GRU: currently trained on and evaluated 1 dataset, and evaluated on specified other datasets.<br>
 `python gru.py -data_dir_train="data_t(0, 0)_r(2, 5)_none_pNone_gNone" -iterations=1 -data_type="pos" -loss="L1"`
 
 
