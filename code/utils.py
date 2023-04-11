@@ -182,13 +182,13 @@ def save_model(config, ndata_dict, model, normalize_extra_input):
             normalize_extra_input,
         ),
     }
-    os.makedirs("models", exist_ok=True)
-    os.makedirs("models/{config['architecture']}", exist_ok=True)
+    os.makedirs("trained_models", exist_ok=True)
+    os.makedirs(f"trained_models/{config['architecture']}", exist_ok=True)
     os.makedirs(
         f"models/{config['architecture']}/{config['data_dir_train']}", exist_ok=True
     )
 
-    path_dir = f"models/{config['architecture']}/{config['data_dir_train']}/'{config['data_type']}'_'{config['str_extra_input']}'.pth"
+    path_dir = f"trained_models/{config['architecture']}/{config['data_dir_train']}/'{config['data_type']}'_'{config['str_extra_input']}'.pth"
     torch.save(
         model_dict,
         path_dir,
