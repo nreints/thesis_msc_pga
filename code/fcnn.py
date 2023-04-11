@@ -117,7 +117,7 @@ def train_model(
             # print("alt_preds:", alt_preds[0])
             # print("pos_targ", pos_target[0])
             if torch.any(torch.isnan(preds)):
-                print("5")
+                print("FCNN, train, NaN")
                 exit()
 
             # Determine norm penalty for quaternion data
@@ -148,7 +148,7 @@ def train_model(
         #     print(preds[0])
         #     exit()
 
-        print(f"Epoch {epoch}")
+        print(f"Epoch {epoch}/{num_epochs-1}")
         # Log to W&B
         train_log(
             loss_epoch / len(data_loader), epoch, loss_module, config.data_dir_train[5:]
@@ -197,10 +197,10 @@ def eval_model(
                     preds = model(data_inputs)
                     # preds = model(data_norm)
                     preds = preds.squeeze(dim=1)
-                    if current_epoch > 9:
-                        print(preds[:5])
-                        print(data_labels[:5])
-                        print("----------------")
+                    # if current_epoch > 9:
+                    #     print(preds[:5])
+                    #     print(data_labels[:5])
+                    #     print("----------------")
                     # preds = preds * data_set_train.std + data_set_train.mean
                     # print(data_labels[0][-3:])
 
@@ -283,7 +283,7 @@ if __name__ == "__main__":
             architecture="fcnn",
             train_sims=train_sims,
             test_sims=test_sims,
-            n_frames=20,
+            n_frames=40,
             n_sims=n_sims_train_total,
             hidden_sizes=[128, 256],
             activation_func=["Tanh", "ReLU"],

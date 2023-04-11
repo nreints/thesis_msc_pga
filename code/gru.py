@@ -167,7 +167,7 @@ def train_model(
 
             loss_epoch += loss
 
-        print(f"Epoch {epoch}")
+        print(f"Epoch {epoch}/{num_epochs-1}")
         train_log(
             loss_epoch / len(data_loader), epoch, loss_module, config.data_dir_train[5:]
         )
@@ -239,7 +239,9 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
 if __name__ == "__main__":
     args = parse_args()
 
-    data_train_dir, data_dirs_test = get_data_dirs(args.data_dir_train)
+    data_train_dir, data_dirs_test = get_data_dirs(
+        args.data_dir_train, args.data_dirs_test
+    )
     data_dir_train = "data/" + data_train_dir
 
     if not os.path.exists(data_dir_train):

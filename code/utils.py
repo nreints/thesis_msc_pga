@@ -35,7 +35,7 @@ def parse_args():
         type=str,
         help="directory/ies of the test data",
         nargs="+",
-        default="data_t(0, 0)_r(5, 15)_full_pNone_gNone",
+        default=[],
     )
     parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
     parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
@@ -112,6 +112,7 @@ def check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims):
         assert len(os.listdir("data/" + data_dir_test)) >= max(
             test_sims
         ), f"Not enough test simulations in {data_dir_test}."
+    print("Checked number of simulations in each data directory.")
 
 
 def divide_train_test_sims(data_dir_train, data_dirs_test):
@@ -155,9 +156,9 @@ def get_data_dirs(data_dir_train, data_dirs_test):
     # data_dirs_test = os.listdir("data")
     # if ".DS_Store" in data_dirs_test:
     #     data_dirs_test.remove(".DS_Store")
-    data_dirs_test.append(data_train_dir)
+    data_dirs_test.insert(0, data_train_dir)
     data_dirs_test = list(set(data_dirs_test))
-    print(f"Testing on datasets: {data_dirs_test}")
+    print(f"Testing on {len(data_dirs_test)} datasets: {data_dirs_test}")
     return data_train_dir, data_dirs_test
 
 

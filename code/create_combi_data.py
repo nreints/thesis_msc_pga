@@ -1,12 +1,14 @@
 import argparse
 import os
 import pickle
+import shutil
 
 
 def get_nr_sims(dirs):
     nr_sims = []
     for dir in dirs:
         nr_sims.append(len(os.listdir("data/" + dir)))
+    print(nr_sims)
     if nr_sims.count(nr_sims[0]) != len(nr_sims):
         new_nr_sims = min(nr_sims) // len(nr_sims)
         print(
@@ -25,10 +27,11 @@ def create_combi(dir_list, new_dir):
     ), "At least 1 directory occurs more than once."
     print(f"Using {len(dir_list)} directories.")
     nr_sims = get_nr_sims(dir_list)
-    if os.path.exists(f"data/{new_dir}"):
-        assert (nr_sims * len(dir_list)) >= len(
-            os.listdir(f"data/{new_dir}")
-        ), "First delete directory."
+    # if os.path.exists(f"data/{new_dir}"):
+    #     assert (nr_sims * len(dir_list)) >= len(
+    #         os.listdir(f"data/{new_dir}")
+    #     ), "First delete directory."
+    shutil.rmtree(f"data/{new_dir}")
     os.makedirs(f"data/{new_dir}", exist_ok=True)
 
     sim_ids = range(0, nr_sims)
@@ -37,7 +40,7 @@ def create_combi(dir_list, new_dir):
         for id in sim_ids:
             with open(f"data/{dir}/sim_{id}.pickle", "rb") as f:
                 sim_data = pickle.load(f)
-                with open(f"data/{new_dir}/sim_{new_id}", "wb") as new_f:
+                with open(f"data/{new_dir}/sim_{new_id}.pickle", "wb") as new_f:
                     pickle.dump(sim_data, new_f)
             new_id += 1
 
@@ -52,3 +55,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     create_combi(args.dirs, args.new_dir)
+
+    print(f"-- Finished combining the datasets. Saved in {args.new_dir} --")

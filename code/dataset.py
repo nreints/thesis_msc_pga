@@ -1,3 +1,4 @@
+import os
 import pickle
 import time
 
@@ -28,6 +29,7 @@ class RecurrentDataset(data.Dataset):
         self.collect_data()
 
     def collect_data(self):
+        start_time = time.time()
         count = 0
         for i in self.sims:
             with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
@@ -76,6 +78,7 @@ class RecurrentDataset(data.Dataset):
         self.normalize_extra_input = torch.mean(
             torch.norm(self.extra_input_data, dim=1)
         )
+        print(f"The dataloader for {self.dir} took {time.time() - start_time} seconds.")
 
     def __len__(self):
         return self.data.shape[0]
@@ -186,7 +189,7 @@ class NonRecurrentDataset(data.Dataset):
         # print(self.xpos_start.shape)
         # print("mean of norm extra_input", self.normalize_extra_input.item())
         # self.data[:, -self.extra_input[1] :] = self.extra_input_data
-        print(f"The dataloader took {time.time() - start_time} seconds.")
+        print(f"The dataloader for {self.dir} took {time.time() - start_time} seconds.")
 
     def __len__(self):
         return self.data.shape[0]
