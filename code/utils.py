@@ -152,7 +152,8 @@ def get_data_dirs(data_dir_train, data_dirs_test):
     """
     data_train_dir = " ".join(data_dir_train)
     print(f"Training on dataset: {data_train_dir}")
-
+    print("test directories", data_dirs_test)
+    print("with join", [" ".join(data_dir_test) for data_dir_test in data_dirs_test])
     # data_dirs_test = os.listdir("data")
     # if ".DS_Store" in data_dirs_test:
     #     data_dirs_test.remove(".DS_Store")
