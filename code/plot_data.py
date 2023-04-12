@@ -124,14 +124,9 @@ def get_random_sim_data(
         # Load the data in correct data type
         original_data = torch.FloatTensor(file["data"][data_type]).flatten(start_dim=1)
         # Convert to xyz position data for plotting
-        if data_type[-3:] != "ori":
-            plot_data = convert(
-                original_data, start_pos, data_type, start_xpos
-            ).reshape(nr_frames, 8, 3)
-        else:
-            plot_data = convert(original_data, start_pos, data_type).reshape(
-                nr_frames, 8, 3
-            )
+        plot_data = convert(original_data, start_pos, data_type, start_xpos).reshape(
+            nr_frames, 8, 3
+        )
 
         # Load original xyz position data for validating plot_data
         plot_data_true_pos = torch.tensor(
@@ -680,7 +675,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(20, 40)_r(0, 0)_tennis_pNone_gNone",
+        default="data_t(0, 0)_r(5, 20)_combi_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     parser.add_argument(

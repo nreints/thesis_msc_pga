@@ -51,9 +51,14 @@ class RecurrentDataset(data.Dataset):
                     self.extra_input_data = torch.zeros((len_data, self.extra_input[1]))
                     self.xpos_start = torch.zeros((len_data, 3))
                 for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    self.start_pos[count] = torch.FloatTensor(
-                        data_all["pos"][0].flatten()
-                    )
+                    if self.data_type[-3:] != "ori":
+                        self.start_pos[count] = torch.FloatTensor(
+                            data_all["pos"][0].flatten()
+                        )
+                    else:
+                        self.start_pos[count] = torch.FloatTensor(
+                            data_all["start"].flatten()
+                        )
                     self.xpos_start[count] = torch.FloatTensor(
                         data_all["xpos_start"].flatten()
                     )
@@ -156,7 +161,14 @@ class NonRecurrentDataset(data.Dataset):
                     self.xpos_start = torch.zeros((len_data, 3))
                 for frame in range(data_per_sim):
                     # Always save the start position for converting
-                    self.start_pos[count] = torch.FloatTensor(pos_data[0].flatten())
+                    if self.data_type[-3:] != "ori":
+                        self.start_pos[count] = torch.FloatTensor(
+                            data_all["pos"][0].flatten()
+                        )
+                    else:
+                        self.start_pos[count] = torch.FloatTensor(
+                            data_all["start"].flatten()
+                        )
                     self.xpos_start[count] = torch.FloatTensor(
                         data_all["xpos_start"].flatten()
                     )

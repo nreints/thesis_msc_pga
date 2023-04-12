@@ -290,6 +290,7 @@ def generate_data(
 
             if i == 0:
                 start_xpos = copy.deepcopy(xpos)
+                prev_xpos = start_xpos
                 dataset["xpos_start"] = start_xpos
 
                 start_xyz = global_pos
@@ -301,7 +302,9 @@ def generate_data(
                 dataset["rot_mat"][i] = np.append(np.eye(3), np.zeros(3))
 
                 start_quat = copy.deepcopy(get_quat(data, body_id))
+                prev_quat = start_quat
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
+                dataset["quat1"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
 
                 dualQ_start = get_dualQ([1, 0, 0, 0], np.zeros(3))
@@ -314,17 +317,23 @@ def generate_data(
             else:
                 # Collect rotation matrix
                 rel_trans = xpos - start_xpos
+                rel_trans1 = xpos - prev_xpos
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
                 dataset["rot_mat"][i][:, :9] = rel_rot.flatten()
                 dataset["rot_mat"][i][:, 9:] = rel_trans
                 rel_quaternion_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse
                 )
+                rel_quaternion1_pyquat = (
+                    Quaternion(get_quat(data, body_id)) * Quaternion(prev_quat).inverse
+                )
                 # TODO Steven van Leo
                 # if quaternion_pyquat.elements[0] < 0:
                 #     quaternion_pyquat *= -1
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
                 rel_quaternion = rel_quaternion_pyquat.elements
+                rel_quaternion1 = rel_quaternion1_pyquat.elements
+                prev_quat = get_quat(data, body_id)
 
                 rotation_axis = rel_quaternion_pyquat.axis
                 dataset["rotation_axis_trans"][i][:3] = rotation_axis
@@ -332,6 +341,8 @@ def generate_data(
 
                 dataset["quat"][i][:, :4] = rel_quaternion
                 dataset["quat"][i][:, 4:] = rel_trans
+                dataset["quat1"][i][:, :4] = rel_quaternion1
+                dataset["quat1"][i][:, 4:] = rel_trans1
 
                 # Collect Log Quaternion data
                 dataset["log_quat"][i][:, :4] = calculate_log_quat(rel_quaternion)

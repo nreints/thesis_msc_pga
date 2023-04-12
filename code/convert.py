@@ -374,7 +374,7 @@ def convert(true_preds, start_pos, data_type, xpos_start):
     Output:
         - Converted true predictions.
     """
-    if data_type[-3:] != "ori":
+    if data_type[-3:] == "ori":
         xpos_start = None
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
