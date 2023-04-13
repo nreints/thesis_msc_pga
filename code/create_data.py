@@ -442,16 +442,13 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav, tennis_ef
         - Directory with corresponding name.
     """
     dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}"
-    if not os.path.exists("data"):
-        print(f"Creating directory 'data'")
-        os.mkdir("data")
+    os.makedirs("data", exist_ok=True)
     if tennis_effect:
         dir = f"data/data_{symmetry}_p{plane}_g{grav}_tennisEffect"
-    if not os.path.exists(dir):
-        print(f"Creating directory '{dir}'")
-        os.mkdir(dir)
+
+    os.makedirs(dir, exist_ok=True)
     # Warn if directory already exists with more simulations.
-    elif len(os.listdir(dir)) > num_sims:
+    if len(os.listdir(dir)) > num_sims:
         print(
             f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory {dir}."
         )
