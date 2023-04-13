@@ -94,6 +94,20 @@ def nr_extra_input(extra_input_str):
         return 0
 
 
+def get_reference(data_type):
+    """
+    Returns string of how the data type is measured.
+    With respect to the origin or with respect to the start frame.
+
+    Input:
+        - data_type: type of data (str).
+    """
+    if data_type[-3:] == "ori" or data_type == "pos":
+        return "origin"
+    else:
+        return "start_frame"
+
+
 def check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims):
     """
     Asserts whether the number of sims present in the train and test directory is enough.

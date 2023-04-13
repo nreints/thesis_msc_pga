@@ -248,6 +248,7 @@ if __name__ == "__main__":
         raise IndexError(f"No directory for the train data {data_dir_train}")
 
     extra_input_n = nr_extra_input(args.extra_input)
+    reference = get_reference(args.data_type)
 
     losses = [nn.MSELoss]
     for i in range(args.iterations):
@@ -278,6 +279,7 @@ if __name__ == "__main__":
             iter=i,
             str_extra_input=args.extra_input,
             extra_input_n=extra_input_n,
+            wrt=reference,
         )
 
         start_time = time.time()
