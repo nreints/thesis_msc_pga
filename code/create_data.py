@@ -304,7 +304,7 @@ def generate_data(
                 start_quat = copy.deepcopy(get_quat(data, body_id))
                 prev_quat = start_quat
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
-                dataset["quat1"][i] = np.append([1, 0, 0, 0], np.zeros(3))
+                # dataset["quat1"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
 
                 dualQ_start = get_dualQ([1, 0, 0, 0], np.zeros(3))
@@ -341,8 +341,8 @@ def generate_data(
 
                 dataset["quat"][i][:, :4] = rel_quaternion
                 dataset["quat"][i][:, 4:] = rel_trans
-                dataset["quat1"][i][:, :4] = rel_quaternion1
-                dataset["quat1"][i][:, 4:] = rel_trans1
+                # dataset["quat1"][i][:, :4] = rel_quaternion1
+                # dataset["quat1"][i][:, 4:] = rel_trans1
 
                 # Collect Log Quaternion data
                 dataset["log_quat"][i][:, :4] = calculate_log_quat(rel_quaternion)
