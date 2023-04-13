@@ -59,12 +59,15 @@ def create_combi(dir_list, new_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--dirs", nargs="*")
-    parser.add_argument(
-        "-n",
-        "--new_dir",
-    )
+    parser.add_argument("-n", "--new_dir", nargs="+")
+
     args = parser.parse_args()
 
-    create_combi(args.dirs, args.new_dir)
+    new_data_dir = " ".join(args.new_dir)
+    print(args.dirs)
 
-    print(f"-- Finished combining the datasets. Saved in {args.new_dir} --")
+    print(args.new_dir)
+    print(new_data_dir)
+    create_combi(args.dirs, new_data_dir)
+
+    print(f"-- Finished combining the datasets. Saved in {new_data_dir} --")
