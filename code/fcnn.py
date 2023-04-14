@@ -212,22 +212,22 @@ def eval_model(
                         xpos_start,
                     )
 
-                    # # Determine norm penalty for quaternion data
-                    # if (
-                    #     config["data_type"] == "quat"
-                    #     or config["data_type"] == "dual_quat"
-                    # ):
-                    #     norm_penalty = (
-                    #         config["lam"]
-                    #         * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1))) ** 2
-                    #     )
-                    # else:
-                    #     norm_penalty = 0
+                    # Determine norm penalty for quaternion data
+                    if (
+                        config["data_type"] == "quat"
+                        or config["data_type"] == "dual_quat"
+                    ):
+                        norm_penalty = (
+                            config["lam"]
+                            * (1 - torch.mean(torch.norm(preds[:, :4], dim=-1))) ** 2
+                        )
+                    else:
+                        norm_penalty = 0
 
                     position_loss = loss_module(alt_preds, pos_target)
 
                     # Calculate the total xyz-loss
-                    total_convert_loss += position_loss  # + norm_penalty
+                    total_convert_loss += position_loss + norm_penalty
                     wandb_total_convert_loss += position_loss
 
                     total_loss += loss_module(preds, data_labels)

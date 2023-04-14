@@ -34,7 +34,7 @@ class RecurrentDataset(data.Dataset):
         for i in self.sims:
             with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
                 data_all = pickle.load(f)["data"]
-                data = torch.FloatTensor(data_all[self.data_type][:500])
+                data = torch.FloatTensor(data_all[self.data_type])
                 if count == 0:
                     data_per_sim = len(data) - (self.n_frames_perentry + 1)
                     len_data = len(self.sims) * data_per_sim

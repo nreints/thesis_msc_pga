@@ -143,6 +143,7 @@ def divide_train_test_sims(data_dir_train, data_dirs_test):
         - test_sims: list of IDs of the simulations used for testing the model.
     """
     n_sims_train_total = len(os.listdir(data_dir_train))
+    # n_sims_train_total = 20
     print("Total number of simulations in train dir: ", n_sims_train_total)
     sims_train = range(0, n_sims_train_total)
     train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
