@@ -63,13 +63,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # if isinstance(args.dirs, str):
-    #     args.dirs = args.dirs.split(';')
-    #     args.dirs = [s.replace('\\', '').replace('\ ', '') for s in args.dirs]
+    if isinstance(args.dirs, str):
+        args.dirs = args.dirs.split(";")
+        args.dirs = [
+            s.replace('"', "").replace("'", "").replace("\\", "").replace("\ ", "")
+            for s in args.dirs
+        ]
 
-    # print(args.dirs)
-    # print(args.new_dir)
-
+    print(args.dirs)
+    print(args.new_dir)
 
     # new_data_dir = " ".join(args.new_dir)
     print("good?", args.dirs.split(";"))
