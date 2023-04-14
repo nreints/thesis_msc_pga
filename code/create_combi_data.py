@@ -62,6 +62,7 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--new_dir")
 
     args = parser.parse_args()
+    print(args.dirs)
 
     if isinstance(args.dirs, str):
         args.dirs = args.dirs.split(";")
