@@ -65,22 +65,22 @@ if __name__ == "__main__":
     print("pre", args.dirs)
     print("pre", args.new_dir)
 
-    if isinstance(args.dirs, str):
-        args.dirs = args.dirs.split(";")
-        args.dirs = [
-            s.replace('"', "").replace("'", "").replace("\\", "").replace("\ ", "")
-            for s in args.dirs
-        ]
+    # if isinstance(args.dirs, str):
+    #     args.dirs = args.dirs.split(";")
+    #     args.dirs = [
+    #         s.replace('"', "").replace("'", "").replace("\\", "").replace("\ ", "")
+    #         for s in args.dirs
+    #     ]
 
-    print(args.dirs)
-    print(args.new_dir)
+    # print(args.dirs)
+    # print(args.new_dir)
 
-    # new_data_dir = " ".join(args.new_dir)
-    print("good?", args.dirs.split(";"))
-    print(args.dirs)
+    # # new_data_dir = " ".join(args.new_dir)
+    # print("good?", args.dirs.split(";"))
+    # print(args.dirs)
 
-    print(args.new_dir)
-    # print(new_data_dir)
-    # create_combi(args.dirs, new_data_dir)
+    # print(args.new_dir)
+    # # print(new_data_dir)
+    # # create_combi(args.dirs, new_data_dir)
 
     # print(f"-- Finished combining the datasets. Saved in {new_data_dir} --")
