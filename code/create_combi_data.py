@@ -43,7 +43,8 @@ def create_combi(dir_list, new_dir):
     ), "At least 1 directory occurs more than once."
     print(f"Using {len(dir_list)} directories.")
     nr_sims = get_nr_sims(dir_list)
-    shutil.rmtree(f"data/{new_dir}")
+    if os.path.exists(f"data/{new_dir}"):
+        shutil.rmtree(f"data/{new_dir}")
     os.makedirs(f"data/{new_dir}", exist_ok=True)
 
     new_id = 0
