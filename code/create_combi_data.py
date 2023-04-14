@@ -58,11 +58,12 @@ def create_combi(dir_list, new_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--dirs", nargs="*", default=[])
-    parser.add_argument("-n", "--new_dir")
+    parser.add_argument("-d", "--dirs", type=str)
+    parser.add_argument("-n", "--new_dir", type=str)
 
     args = parser.parse_args()
-    print(args.dirs)
+    print("pre", args.dirs)
+    print("pre", args.new_dir)
 
     if isinstance(args.dirs, str):
         args.dirs = args.dirs.split(";")
