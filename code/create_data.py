@@ -441,7 +441,7 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav, tennis_ef
     Output:
         - Directory with corresponding name.
     """
-    dir = f"data/data_t{vel_range_l}_r{vel_range_a}_{symmetry}_p{plane}_g{grav}"
+    dir = f"data/data_t{str(vel_range_l).replace(' ', '')}_r{str(vel_range_a).replace(' ', '')}_{symmetry}_p{plane}_g{grav}"
     os.makedirs("data", exist_ok=True)
     if tennis_effect:
         dir = f"data/data_{symmetry}_p{plane}_g{grav}_tennisEffect"
@@ -594,7 +594,7 @@ def write_data_nsim(
 if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n_sims", type=int, help="number of simulations", default=2250)
+    parser.add_argument("-n_sims", type=int, help="number of simulations", default=2400)
     parser.add_argument("-n_frames", type=int, help="number of frames", default=750)
     parser.add_argument(
         "-s",
@@ -605,7 +605,7 @@ if __name__ == "__main__":
         default="tennis",
     )
     parser.add_argument("-l_min", type=int, help="linear qvel min", default=7)
-    parser.add_argument("-l_max", type=int, help="linear qvel max", default=40)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=8)
     parser.add_argument("-a_min", type=int, help="angular qvel min", default=0)
     parser.add_argument("-a_max", type=int, help="angular qvel max", default=0)
     parser.add_argument(
