@@ -250,12 +250,9 @@ def dualQ2pos(dualQ, start_pos, start_xpos):
     qr_dim = dualQ[..., :4].shape
 
     qr = dualQ[..., :4].flatten(0, -2)
-    # print("--------------")
-    # print(torch.norm(qr, dim=-1).shape)
-    # print()
+
     norm_qr = torch.norm(qr, dim=-1).reshape(-1, 1)
     qr = torch.div(qr, norm_qr)
-    # print(torch.norm(qr, dim=-1))
 
     qd = dualQ[..., 4:].flatten(0, -2)
     qd = torch.div(qd, norm_qr)
