@@ -237,7 +237,7 @@ if __name__ == "__main__":
             architecture="lstm",
             train_sims=train_sims,
             test_sims=test_sims,
-            n_frames=20,
+            n_frames=args.input_frames,
             n_sims=n_sims_train_total,
             n_layers=1,
             hidden_size=96,

@@ -30,7 +30,6 @@ class fcnn(nn.Module):
         # Add consecuative layers with batch_norm / activation funct / dropout
         # as defined in config
         for i in range(len(config["hidden_sizes"])):
-
             if config["batch_norm"][i]:
                 self.layers += [nn.BatchNorm1d(config["hidden_sizes"][i])]
 
@@ -84,7 +83,6 @@ def train_model(
             pos_target,
             xpos_start,
         ) in data_loader:
-
             # Set data to current device
             data_inputs = data_inputs.to(
                 device
@@ -167,7 +165,6 @@ def train_model(
 def eval_model(
     model, data_loaders, loss_module, config, current_epoch, losses, normalization
 ):
-
     model.eval()  # Set model to eval mode
 
     with torch.no_grad():  # Deactivate gradients for the following code
@@ -279,7 +276,7 @@ if __name__ == "__main__":
             architecture="fcnn",
             train_sims=train_sims,
             test_sims=test_sims,
-            n_frames=40,
+            n_frames=args.input_frames,
             n_sims=n_sims_train_total,
             hidden_sizes=[128, 256],
             activation_func=["Tanh", "ReLU"],

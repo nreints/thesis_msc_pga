@@ -43,6 +43,13 @@ def parse_args():
         "-i", "--iterations", type=int, help="Number of iterations", default=1
     )
     parser.add_argument(
+        "-in_frames",
+        "--input_frames",
+        type=int,
+        help="Number of input frames",
+        default=10,
+    )
+    parser.add_argument(
         "-extra_input",
         type=str,
         choices=[

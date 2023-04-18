@@ -54,6 +54,7 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
             rot_mat.shape[0], rot_mat.shape[1], 3, 3
         )  # [Batch_size, frames, 3, 3]
         flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
+        # Ensure prediction represents rotation matrix
         u, _, vT = torch.linalg.svd(flat_rotations)
         true_rotations = torch.bmm(u, vT)
 
@@ -89,6 +90,7 @@ def fast_rotVecQuat(v, q):
 
     device = v.device
 
+    # Ensure prediction represents pure rotation
     q_norm = torch.div(q.T, torch.norm(q, dim=-1)).T
 
     # Swap columns for roma calculations (bi, cj, dk, a)
@@ -286,6 +288,7 @@ def dualQ2pos(dualQ, start_pos, start_xpos):
     """
     device = dualQ.device
 
+    # Ensure prediction represents pure rotation
     dualQ = dualQ_normalize(dualQ)
 
     qr_dim = dualQ[..., :4].shape
