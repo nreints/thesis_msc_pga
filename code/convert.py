@@ -30,10 +30,14 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
         else:
             xpos_start = xpos_start.reshape(-1, 1, 3)
         rotations = rot_mat[:, :9].reshape(-1, 3, 3)  # [Batch_size, 3, 3]
+        # Ensure prediction represents rotation matrix
+        u, _, vT = torch.linalg.svd(rotations)
+        true_rotations = torch.bmm(u, vT)
+
         start_origin = (
             start_pos.reshape(-1, 8, 3) - xpos_start
         ).mT  # [batch_size, 3, 8]
-        mult = torch.bmm(rotations, start_origin).mT  # [batch_size, 8, 3]
+        mult = torch.bmm(true_rotations, start_origin).mT  # [batch_size, 8, 3]
         out = mult + rot_mat[:, 9:].reshape(-1, 1, 3) + xpos_start  # [batch_size, 8, 3]
         return out.flatten(start_dim=1)  # [batch_size, 24]
     # In case of LSTM/GRU
@@ -50,6 +54,9 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
             rot_mat.shape[0], rot_mat.shape[1], 3, 3
         )  # [Batch_size, frames, 3, 3]
         flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
+        u, _, vT = torch.linalg.svd(flat_rotations)
+        true_rotations = torch.bmm(u, vT)
+
         start_origin = (
             start_pos.reshape(-1, 8, 3)[:, None, :]
             .repeat(1, rot_mat.shape[1], 1, 1)
@@ -57,7 +64,7 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
             - xpos_start
         ).mT  # [Batch_size x frames, 3, 8]
 
-        mult = torch.bmm(flat_rotations, start_origin).mT  # [Batch_size x frames, 8, 3]
+        mult = torch.bmm(true_rotations, start_origin).mT  # [Batch_size x frames, 8, 3]
         out = (
             mult + xpos_start + rot_mat.flatten(end_dim=1)[:, 9:][:, None, :]
         ).flatten(
@@ -227,6 +234,38 @@ def log_quat2pos(log_quat, start_pos, start_xpos):
         return quat2pos(full_quat, start_pos, start_xpos)
 
 
+def dualQ_normalize(dualQ):
+    A = 1 / torch.sqrt(
+        dualQ[..., 0] ** 2
+        + dualQ[..., 3] ** 2
+        + dualQ[..., 2] ** 2
+        + dualQ[..., 1] ** 2
+    )
+    B = (
+        (
+            dualQ[..., 4] * dualQ[..., 0]
+            - (
+                -dualQ[..., 5] * dualQ[..., 1]
+                - dualQ[..., 6] * dualQ[..., 2]
+                - dualQ[..., 7] * dualQ[..., 3]
+            )
+        )
+        * A
+        * A
+        * A
+    )
+    res = torch.zeros_like(dualQ)
+    res[..., 0] = A * dualQ[..., 0]
+    res[..., 5] = -(A * -dualQ[..., 5] + B * dualQ[..., 1])
+    res[..., 6] = -(A * -dualQ[..., 6] + B * dualQ[..., 2])
+    res[..., 7] = -(A * -dualQ[..., 7] + B * dualQ[..., 3])
+    res[..., 3] = A * dualQ[..., 3]
+    res[..., 2] = A * dualQ[..., 2]
+    res[..., 1] = A * dualQ[..., 1]
+    res[..., 4] = A * dualQ[..., 4] - B * dualQ[..., 0]
+    return res
+
+
 def dualQ2pos(dualQ, start_pos, start_xpos):
     """
     Input:
@@ -247,15 +286,17 @@ def dualQ2pos(dualQ, start_pos, start_xpos):
     """
     device = dualQ.device
 
+    dualQ = dualQ_normalize(dualQ)
+
     qr_dim = dualQ[..., :4].shape
 
     qr = dualQ[..., :4].flatten(0, -2)
 
-    norm_qr = torch.norm(qr, dim=-1).reshape(-1, 1)
-    qr = torch.div(qr, norm_qr)
+    # norm_qr = torch.norm(qr, dim=-1).reshape(-1, 1)
+    # qr = torch.div(qr, norm_qr)
 
     qd = dualQ[..., 4:].flatten(0, -2)
-    qd = torch.div(qd, norm_qr)
+    # qd = torch.div(qd, norm_qr)
 
     swapped_ind = torch.tensor([1, 2, 3, 0], device=device)
     qr_roma = torch.index_select(qr, 1, swapped_ind)
