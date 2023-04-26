@@ -102,6 +102,8 @@ def get_random_sim_data(
         if data_type[-1] == "1":
             start_pos = torch.FloatTensor(file["data"]["pos"]).flatten(start_dim=1)
             start_xpos = torch.FloatTensor(file["data"]["xpos"]).flatten(start_dim=1)
+            start_pos = torch.cat((start_pos[0][None, :], start_pos[:-1]))
+            start_xpos = torch.cat((start_xpos[0][None, :], start_xpos[:-1]))
         else:
             if data_type[-3:] == "ori":
                 print("using old way")

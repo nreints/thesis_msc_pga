@@ -432,8 +432,8 @@ def convert(true_preds, start_pos, data_type, xpos_start):
     """
     if data_type[-3:] == "ori":
         xpos_start = None
-    if data_type[-1] == "1":
-        xpos_start, start_pos = add_extra_input(start_pos, xpos_start)
+    # if data_type[-1] == "1":
+    #     xpos_start, start_pos = add_extra_input(start_pos, xpos_start)
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type[:7] == "rot_mat":
@@ -449,93 +449,3 @@ def convert(true_preds, start_pos, data_type, xpos_start):
     elif data_type == "pos_diff_start":
         return diff_pos_start2pos(true_preds, start_pos)
     raise Exception(f"No function to convert {data_type}")
-
-
-def transform(pos_prev, log_dualQ):
-    l = (
-        log_dualQ[3] * log_dualQ[3]
-        + log_dualQ[4] * log_dualQ[4]
-        + log_dualQ[5] * log_dualQ[5]
-    )
-    mask = (l == 0)[None]
-    print(mask)
-    ones_tensor = torch.ones_like(l)
-    zeros_tensor = torch.zeros_like(l)
-    alternative = torch.stack(
-        [
-            ones_tensor,
-            zeros_tensor,
-            zeros_tensor,
-            zeros_tensor,
-            zeros_tensor,
-            -log_dualQ[0],
-            -log_dualQ[1],
-            -log_dualQ[2],
-        ]
-    ).T
-    print(alternative)
-    m = (
-        log_dualQ[0] * log_dualQ[5]
-        + log_dualQ[1] * log_dualQ[4]
-        + log_dualQ[2] * log_dualQ[3]
-    )
-    a = torch.sqrt(l)
-    c = torch.cos(a)
-    s = torch.sin(a) / a
-    t = m / l * (c - s)
-    dualQ = torch.stack(
-        [
-            c,
-            s * log_dualQ[5],
-            s * log_dualQ[4],
-            s * log_dualQ[3],
-            m * s,
-            -s * log_dualQ[0] - t * log_dualQ[5],
-            -s * log_dualQ[1] - t * log_dualQ[4],
-            -s * log_dualQ[2] - t * log_dualQ[3],
-        ]
-    ).T
-    print("final", mask * alternative)
-    print("final2", (~mask) * dualQ)
-    if mask:
-        dualQ = mask * alternative
-    else:
-        dualQ = dualQ
-    # dualQ = mask * alternative + (~mask) * dualQ
-    print(dualQ)
-    if torch.any(torch.isnan(dualQ)):
-        print("posop")
-        exit()
-
-    # dualQ = dualQ_normalize(dualQ)
-
-    qr_dim = dualQ[:4].shape
-
-    qr = dualQ[:4]
-
-    qd = dualQ[4:]
-
-    swapped_ind = torch.tensor([1, 2, 3, 0])
-    qr_roma = torch.index_select(qr, 0, swapped_ind)
-    conj_qr = roma.quat_conjugation(qr_roma)
-
-    qd_roma = torch.index_select(qd, 0, swapped_ind)
-
-    t = 2 * roma.quat_product(qd_roma, conj_qr)
-
-    qr = qr.reshape(qr_dim)
-    t = t.reshape(qr_dim)
-
-    # Concatenate and delete zeros column
-    quaternion = torch.cat((qr, t[:-1]), dim=-1)
-    print(quaternion)
-    quat = qr[None, :]
-    trans = t[:-1][None, :]
-    return (fast_rotVecQuat(pos_prev.flatten()[None, :], quat) + trans).squeeze()
-
-
-def add_extra_input(pos_data, xpos):
-    pos_data = pos_data.flatten(start_dim=1)
-    pos_data_extra = torch.cat((pos_data[0][None, :], pos_data[:-1]))
-    xpos_extra = torch.cat((xpos[0][None, :], xpos[:-1]))
-    return xpos_extra, pos_data_extra
