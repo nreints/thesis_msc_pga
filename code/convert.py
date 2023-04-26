@@ -45,11 +45,7 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
         if xpos_start is None:
             xpos_start = 0
         else:
-            xpos_start = (
-                xpos_start[:, None, :]
-                .repeat(1, rot_mat.shape[1], 1)
-                .flatten(end_dim=1)[:, None, :]
-            )
+            xpos_start = xpos_start.flatten(end_dim=1)[:, None, :]
         rotations = rot_mat[..., :9].reshape(
             rot_mat.shape[0], rot_mat.shape[1], 3, 3
         )  # [Batch_size, frames, 3, 3]
@@ -141,16 +137,12 @@ def quat2pos(quat, start_pos, xpos_start):
         else:
             # For visualisation
             if len(xpos_start.shape) != 3:
-                xpos_start = xpos_start[:, None, :]
-            xpos_start = xpos_start.repeat(1, quat.shape[1], 1).flatten(end_dim=1)[
-                :, None, :
-            ]
+                xpos_start = xpos_start
+            xpos_start = xpos_start.flatten(end_dim=1)[:, None, :]
         quat_flat = quat.flatten(end_dim=1)
         # For visualisation
-        if len(start_pos.shape) != 3:
-            start_pos = start_pos[:, None, :]
         repeated_start_pos = (
-            start_pos.repeat(1, quat.shape[1], 1).flatten(end_dim=1).reshape(-1, 8, 3)
+            start_pos.flatten(end_dim=1).reshape(-1, 8, 3)
         )
         start_origin = (repeated_start_pos - xpos_start).flatten(start_dim=1)
 
