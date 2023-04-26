@@ -56,8 +56,14 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
         flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
         # Ensure prediction represents rotation matrix
         u, _, vT = torch.linalg.svd(flat_rotations)
+        # print(u.shape, vT.shape)
         true_rotations = torch.bmm(u, vT)
-
+        # print(torch.norm(true_rotations[0] @ torch.FloatTensor([[1], [0], [0]])).T)
+        # vec1 = (true_rotations[0] @ torch.FloatTensor([[1], [0], [0]])).squeeze()
+        # vec2 = (true_rotations[0] @ torch.FloatTensor([[0], [1], [0]])).squeeze()
+        # print("vec1", vec1)
+        # print("vec2", vec2)
+        # print(torch.dot(vec1, vec2).item())
         start_origin = (
             start_pos.reshape(-1, 8, 3)[:, None, :]
             .repeat(1, rot_mat.shape[1], 1, 1)
@@ -345,12 +351,13 @@ def log_dualQ2pos(logDualQ_in, start_pos, start_xpos):
     out_shape[-1] = 8
 
     logDualQ = logDualQ_in.flatten(start_dim=0, end_dim=-2)
+    print(logDualQ_in)
     l = (
         logDualQ[:, 3] * logDualQ[:, 3]
         + logDualQ[:, 4] * logDualQ[:, 4]
         + logDualQ[:, 5] * logDualQ[:, 5]
     )
-    mask = (l == 0)[:, None]
+    mask = l == 0
     ones_tensor = torch.ones_like(l)
     zeros_tensor = torch.zeros_like(l)
     alternative = torch.stack(
@@ -365,6 +372,7 @@ def log_dualQ2pos(logDualQ_in, start_pos, start_xpos):
             -logDualQ[:, 2],
         ]
     ).T
+
     m = (
         logDualQ[:, 0] * logDualQ[:, 5]
         + logDualQ[:, 1] * logDualQ[:, 4]
@@ -386,7 +394,10 @@ def log_dualQ2pos(logDualQ_in, start_pos, start_xpos):
             -s * logDualQ[:, 2] - t * logDualQ[:, 3],
         ]
     ).T
-    dualQ = mask * alternative + (~mask) * dualQ
+    # print(mask * alternative)
+    # print(dualQ.shape)
+    dualQ[mask, :] = alternative[mask, :]
+    # dualQ = mask * alternative + (~mask) * dualQ
 
     return dualQ2pos(dualQ.reshape(out_shape), start_pos, start_xpos)
 
@@ -440,3 +451,135 @@ def convert(true_preds, start_pos, data_type, xpos_start):
     elif data_type == "pos_diff_start":
         return diff_pos_start2pos(true_preds, start_pos)
     raise Exception(f"No function to convert {data_type}")
+
+
+def transform(pos_prev, log_dualQ):
+    l = (
+        log_dualQ[3] * log_dualQ[3]
+        + log_dualQ[4] * log_dualQ[4]
+        + log_dualQ[5] * log_dualQ[5]
+    )
+    mask = (l == 0)[None]
+    print(mask)
+    ones_tensor = torch.ones_like(l)
+    zeros_tensor = torch.zeros_like(l)
+    alternative = torch.stack(
+        [
+            ones_tensor,
+            zeros_tensor,
+            zeros_tensor,
+            zeros_tensor,
+            zeros_tensor,
+            -log_dualQ[0],
+            -log_dualQ[1],
+            -log_dualQ[2],
+        ]
+    ).T
+    print(alternative)
+    m = (
+        log_dualQ[0] * log_dualQ[5]
+        + log_dualQ[1] * log_dualQ[4]
+        + log_dualQ[2] * log_dualQ[3]
+    )
+    a = torch.sqrt(l)
+    c = torch.cos(a)
+    s = torch.sin(a) / a
+    t = m / l * (c - s)
+    dualQ = torch.stack(
+        [
+            c,
+            s * log_dualQ[5],
+            s * log_dualQ[4],
+            s * log_dualQ[3],
+            m * s,
+            -s * log_dualQ[0] - t * log_dualQ[5],
+            -s * log_dualQ[1] - t * log_dualQ[4],
+            -s * log_dualQ[2] - t * log_dualQ[3],
+        ]
+    ).T
+    print("final", mask * alternative)
+    print("final2", (~mask) * dualQ)
+    if mask:
+        dualQ = mask * alternative
+    else:
+        dualQ = dualQ
+    # dualQ = mask * alternative + (~mask) * dualQ
+    print(dualQ)
+    if torch.any(torch.isnan(dualQ)):
+        print("posop")
+        exit()
+
+    # dualQ = dualQ_normalize(dualQ)
+
+    qr_dim = dualQ[:4].shape
+
+    qr = dualQ[:4]
+
+    qd = dualQ[4:]
+
+    swapped_ind = torch.tensor([1, 2, 3, 0])
+    qr_roma = torch.index_select(qr, 0, swapped_ind)
+    conj_qr = roma.quat_conjugation(qr_roma)
+
+    qd_roma = torch.index_select(qd, 0, swapped_ind)
+
+    t = 2 * roma.quat_product(qd_roma, conj_qr)
+
+    qr = qr.reshape(qr_dim)
+    t = t.reshape(qr_dim)
+
+    # Concatenate and delete zeros column
+    quaternion = torch.cat((qr, t[:-1]), dim=-1)
+    print(quaternion)
+    quat = qr[None, :]
+    trans = t[:-1][None, :]
+    return (fast_rotVecQuat(pos_prev.flatten()[None, :], quat) + trans).squeeze()
+
+
+def convert2(
+    true_preds, pos_data, log_dualQ_start, start_pos, data_type, start_xpos, xpos
+):
+    pos_data = pos_data.flatten(start_dim=1)
+    pos_data_extra = torch.cat((pos_data[0][None, :], pos_data[:-1]))
+    xpos_extra = torch.cat((xpos[0][None, :], xpos[:-1]))
+    result = log_dualQ2pos(true_preds, pos_data_extra, xpos_extra)
+    # print(true_preds[:4])
+    # exit()
+    # result_2 = log_dualQ2pos(log_dualQ_start, start_pos, start_xpos)
+    # res_2 = log_dualQ2pos(true_preds, result_2, xpos)
+    print(torch.isclose(pos_data, result))
+    for i in range(len(pos_data)):
+        print("-------")
+        # if not torch.all(torch.isclose(pos_data[i], res_2[i])):
+        #     print("poep", i)
+        #     print(pos_data.reshape(-1, 8, 3)[i])
+        #     print(res_2.reshape(-1, 8, 3)[i])
+        #     print(result.reshape(-1, 8, 3)[i])
+
+        #     exit()
+        # else:
+        #     print(pos_data.reshape(-1, 8, 3)[i][:4])
+        #     print(res_2.reshape(-1, 8, 3)[i][:4])
+        if not torch.all(torch.isclose(pos_data[i], result[i], atol=1e-5)):
+            print("poep", i)
+            print(pos_data.reshape(-1, 8, 3)[i])
+            print(result.reshape(-1, 8, 3)[i])
+            exit()
+        else:
+            print(pos_data.reshape(-1, 8, 3)[i][:4])
+            print(result.reshape(-1, 8, 3)[i][:4])
+    return result
+    print(start_xpos.shape)
+
+    shifted_start = log_dualQ2pos(log_dualQ_start, start_pos, start_xpos)
+    print(start_pos[:10])
+    print(shifted_start[:10])
+    print(log_dualQ2pos(true_preds, shifted_start, start_xpos).shape)
+    exit()
+    result = torch.zeros_like(pos_data)
+
+    result[0] = pos_data[0]
+    for idx in range(1, result.shape[0]):
+        result[idx] = transform(pos_data[idx - 1], true_preds[idx])
+
+    return result

@@ -132,6 +132,20 @@ def get_random_sim_data(
         plot_data_true_pos = torch.tensor(
             file["data"]["pos"], dtype=torch.float32
         ).reshape(nr_frames, 8, 3)
+        print(plot_data_true_pos[0])
+        print(file["data"]["quat_1"][:3])
+        if data_type == "log_dualQ_1":
+            print("here")
+            plot_data = convert2(
+                original_data,
+                plot_data_true_pos,
+                torch.FloatTensor(file["data"]["log_dualQ"]).flatten(start_dim=1),
+                start_pos,
+                data_type,
+                start_xpos,
+                torch.FloatTensor(file["data"]["xpos"]).flatten(start_dim=1),
+            ).reshape(nr_frames, 8, 3)
+        # exit()
 
         ranges = [
             (torch.min(plot_data_true_pos), torch.max(plot_data_true_pos))
@@ -513,7 +527,6 @@ def plot_3D_animation(
 def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     colors = ["b", "g", "r", "m", "k", "c", "b", "b", "g", "r", "m", "k", "c", "b"]
     for i in range(len(data_types)):
-
         # Get cube vertice data
         converted_cube = np.array(plot_data[i][idx])
 
@@ -638,7 +651,6 @@ def plot_datatypes(
     set_ax_properties(ax, 0, sim_id, data_dir, range_plot)
 
     def update(idx):
-
         # Remove the previous scatter plot
         if idx != 0:
             ax.cla()
@@ -675,7 +687,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(0, 0)_r(5, 20)_combi_pNone_gNone",
+        default="data_t(7,8)_r(2,20)_tennis_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     parser.add_argument(
@@ -706,7 +718,6 @@ if __name__ == "__main__":
 
     # -----------------------------------
     if args.prediction:
-
         data_type = args.data_type
         architecture = args.architecture
         print(f"Visualizing {architecture} trained on {data_type}")
@@ -792,31 +803,18 @@ if __name__ == "__main__":
         data_types = [
             "pos",
             # "rot_mat",
-            "rot_mat_ori",
+            # "rot_mat_ori",
             # "quat",
-            "quat_ori",
+            # "quat_ori",
             # "log_quat",
-            "log_quat_ori",
+            # "log_quat_ori",
             # "dual_quat",
-            "dual_quat_ori",
+            # "dual_quat_ori",
             # "log_dualQ",
-            "log_dualQ_ori",
+            # "log_dualQ_ori",
             # "pos_diff_start",
+            "log_dualQ_1",
         ]
-        # data_types = [
-        #     "pos",
-        #     "rot_mat",
-        #     # "rot_mat_ori",
-        #     "quat",
-        #     # "quat_ori",
-        #     "log_quat",
-        #     # "log_quat_ori",
-        #     "dual_quat",
-        #     # "dual_quat_ori",
-        #     "log_dualQ",
-        #     # "log_dualQ_ori",
-        #     "pos_diff_start",
-        # ]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 
         for data_thing in data_types:

@@ -112,6 +112,29 @@ def calculate_log_quat(quat):
     return logQuat
 
 
+def dualQ_normalize(dualQ):
+    A = 1 / np.sqrt(dualQ[0] ** 2 + dualQ[3] ** 2 + dualQ[2] ** 2 + dualQ[1] ** 2)
+    B = (
+        (
+            dualQ[4] * dualQ[0]
+            - (-dualQ[5] * dualQ[1] - dualQ[6] * dualQ[2] - dualQ[7] * dualQ[3])
+        )
+        * A
+        * A
+        * A
+    )
+    res = np.zeros_like(dualQ)
+    res[0] = A * dualQ[0]
+    res[5] = -(A * -dualQ[5] + B * dualQ[1])
+    res[6] = -(A * -dualQ[6] + B * dualQ[2])
+    res[7] = -(A * -dualQ[7] + B * dualQ[3])
+    res[3] = A * dualQ[3]
+    res[2] = A * dualQ[2]
+    res[1] = A * dualQ[1]
+    res[4] = A * dualQ[4] - B * dualQ[0]
+    return res
+
+
 def get_dualQ(quat, translation):
     """
     Returns the dualquaternion of an object.
@@ -132,8 +155,8 @@ def get_dualQ(quat, translation):
 
     qd = (0.5 * Quaternion(t) * Quaternion(quat)).elements
 
-    dual = np.append(qr, qd)
-    return dual
+    dualQ = np.append(qr, qd)
+    return dualQ_normalize(dualQ)
 
 
 def logDual(r):
@@ -192,6 +215,8 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
         "dual_quat": np.empty((n_steps, 1, 8)),
         "log_dualQ": np.empty((n_steps, 6)),
         "pos_diff_start": np.empty((n_steps, 8, 3)),
+        "quat_1": np.empty((n_steps, 1, 7)),
+        "log_dualQ_1": np.empty((n_steps, 6)),
         "rot_mat_ori": np.empty((n_steps, 1, 12)),
         "quat_ori": np.empty((n_steps, 1, 7)),
         "log_quat_ori": np.empty((n_steps, 1, 7)),
@@ -209,6 +234,7 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
         # "size_squared_massCentroid": np.empty((n_steps, 2, 3)),
         "start": np.empty((8, 3)),
         "xpos_start": np.empty((1, 3)),
+        "xpos": np.empty((n_steps, 3)),
     }
 
 
@@ -281,7 +307,8 @@ def generate_data(
             if visualize:
                 viewer.render()
 
-            xpos = data.geom_xpos[geom_id]
+            current_xpos = copy.deepcopy(data.geom_xpos[geom_id])
+            dataset["xpos"][i] = current_xpos
             global_pos = get_vert_coords(data, geom_id, xyz_local).T
             current_rotMat = get_mat(data, geom_id)
 
@@ -289,7 +316,7 @@ def generate_data(
             dataset["pos"][i] = global_pos
 
             if i == 0:
-                start_xpos = copy.deepcopy(xpos)
+                start_xpos = copy.deepcopy(current_xpos)
                 prev_xpos = start_xpos
                 dataset["xpos_start"] = start_xpos
 
@@ -304,45 +331,46 @@ def generate_data(
                 start_quat = copy.deepcopy(get_quat(data, body_id))
                 prev_quat = start_quat
                 dataset["quat"][i] = np.append([1, 0, 0, 0], np.zeros(3))
-                # dataset["quat1"][i] = np.append([1, 0, 0, 0], np.zeros(3))
                 dataset["log_quat"][i] = np.append([0, 0, 0, 0], np.zeros(3))
 
                 dualQ_start = get_dualQ([1, 0, 0, 0], np.zeros(3))
                 dataset["dual_quat"][i] = dualQ_start
                 dataset["log_dualQ"][i] = logDual(dualQ_start)
+                dataset["log_dualQ_1"][i] = logDual(dualQ_start)
 
                 rotation_axis = Quaternion([1, 0, 0, 0]).axis
-                dataset["rotation_axis_trans"][i] = np.append(rotation_axis, xpos)
+                dataset["rotation_axis_trans"][i] = np.append(rotation_axis, start_xpos)
 
             else:
                 # Collect rotation matrix
-                rel_trans = xpos - start_xpos
-                rel_trans1 = xpos - prev_xpos
+                rel_trans = current_xpos - start_xpos
+                rel_trans1 = current_xpos - prev_xpos
+                prev_xpos = current_xpos
                 rel_rot = current_rotMat @ np.linalg.inv(start_rotMat)
                 dataset["rot_mat"][i][:, :9] = rel_rot.flatten()
                 dataset["rot_mat"][i][:, 9:] = rel_trans
                 rel_quaternion_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(start_quat).inverse
-                )
+                ).normalised
                 rel_quaternion1_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(prev_quat).inverse
-                )
+                ).normalised
                 # TODO Steven van Leo
                 # if quaternion_pyquat.elements[0] < 0:
                 #     quaternion_pyquat *= -1
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
                 rel_quaternion = rel_quaternion_pyquat.elements
                 rel_quaternion1 = rel_quaternion1_pyquat.elements
-                prev_quat = get_quat(data, body_id)
+                prev_quat = copy.deepcopy(get_quat(data, body_id))
 
                 rotation_axis = rel_quaternion_pyquat.axis
                 dataset["rotation_axis_trans"][i][:3] = rotation_axis
-                dataset["rotation_axis_trans"][i][3:] = xpos
+                dataset["rotation_axis_trans"][i][3:] = current_xpos
 
                 dataset["quat"][i][:, :4] = rel_quaternion
                 dataset["quat"][i][:, 4:] = rel_trans
-                # dataset["quat1"][i][:, :4] = rel_quaternion1
-                # dataset["quat1"][i][:, 4:] = rel_trans1
+                dataset["quat_1"][i][:, :4] = rel_quaternion1
+                dataset["quat_1"][i][:, 4:] = rel_trans1
 
                 # Collect Log Quaternion data
                 dataset["log_quat"][i][:, :4] = calculate_log_quat(rel_quaternion)
@@ -350,10 +378,12 @@ def generate_data(
 
                 # Collect Dual-Quaternion data
                 dualQuaternion = get_dualQ(rel_quaternion, rel_trans)
+                dualQuat_1 = get_dualQ(rel_quaternion1, rel_trans1)
                 dataset["dual_quat"][i] = dualQuaternion
 
                 # Collect log_dualQ data (= bivector = rotation axis)
                 dataset["log_dualQ"][i] = logDual(dualQuaternion)
+                dataset["log_dualQ_1"][i] = logDual(dualQuat_1)
 
                 dataset["pos_diff_start"][i] = (
                     get_vert_coords(data, geom_id, xyz_local).T - start_xyz
@@ -361,16 +391,16 @@ def generate_data(
 
             # Relative to origin centered cube.
             dataset["rot_mat_ori"][i][:, :9] = current_rotMat.flatten()
-            dataset["rot_mat_ori"][i][:, 9:] = xpos
+            dataset["rot_mat_ori"][i][:, 9:] = current_xpos
 
             quat = get_quat(data, body_id)
             dataset["quat_ori"][i][:, :4] = quat
-            dataset["quat_ori"][i][:, 4:] = xpos
+            dataset["quat_ori"][i][:, 4:] = current_xpos
 
             dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
-            dataset["log_quat_ori"][i][:, 4:] = xpos
+            dataset["log_quat_ori"][i][:, 4:] = current_xpos
 
-            dual_quat = get_dualQ(quat, xpos)
+            dual_quat = get_dualQ(quat, current_xpos)
             dataset["dual_quat_ori"][i] = dual_quat
             dataset["log_dualQ_ori"][i] = logDual(dual_quat)
 

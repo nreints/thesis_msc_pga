@@ -267,7 +267,7 @@ if __name__ == "__main__":
         # Set config
         config = dict(
             learning_rate=args.learning_rate,
-            epochs=20,
+            epochs=10,
             batch_size=args.batch_size,
             loss_type=args.loss,
             loss_reduction_type="mean",
