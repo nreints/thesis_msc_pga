@@ -215,7 +215,7 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
         "dual_quat": np.empty((n_steps, 1, 8)),
         "log_dualQ": np.empty((n_steps, 6)),
         "pos_diff_start": np.empty((n_steps, 8, 3)),
-        "quat_1": np.empty((n_steps, 1, 7)),
+        # "quat_1": np.empty((n_steps, 1, 7)),
         "log_dualQ_1": np.empty((n_steps, 6)),
         "rot_mat_ori": np.empty((n_steps, 1, 12)),
         "quat_ori": np.empty((n_steps, 1, 7)),
@@ -369,8 +369,8 @@ def generate_data(
 
                 dataset["quat"][i][:, :4] = rel_quaternion
                 dataset["quat"][i][:, 4:] = rel_trans
-                dataset["quat_1"][i][:, :4] = rel_quaternion1
-                dataset["quat_1"][i][:, 4:] = rel_trans1
+                # dataset["quat_1"][i][:, :4] = rel_quaternion1
+                # dataset["quat_1"][i][:, 4:] = rel_trans1
 
                 # Collect Log Quaternion data
                 dataset["log_quat"][i][:, :4] = calculate_log_quat(rel_quaternion)

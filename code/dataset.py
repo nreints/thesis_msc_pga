@@ -50,18 +50,7 @@ class RecurrentDataset(data.Dataset):
                     )
                     self.extra_input_data = torch.zeros((len_data, self.extra_input[1]))
                     self.xpos_start = torch.zeros((len_data, 3))
-                for frame in range(len(data) - (self.n_frames_perentry + 1)):
-                    if self.data_type[-3:] != "ori":
-                        self.start_pos[count] = torch.FloatTensor(
-                            data_all["pos"][0].flatten()
-                        )
-                    else:
-                        self.start_pos[count] = torch.FloatTensor(
-                            data_all["start"].flatten()
-                        )
-                    self.xpos_start[count] = torch.FloatTensor(
-                        data_all["xpos_start"].flatten()
-                    )
+                for frame in range(data_per_sim):
                     train_end = frame + self.n_frames_perentry
                     self.data[count] = data[frame:train_end].reshape(
                         -1, self.n_datap_perframe
@@ -69,6 +58,25 @@ class RecurrentDataset(data.Dataset):
                     self.target[count] = data[frame + 1 : train_end + 1].reshape(
                         -1, self.n_datap_perframe
                     )
+                    if False:  # self.data_type[-1] == "1":
+                        self.start_pos[count] = torch.FloatTensor(
+                            data_all["pos"][frame:train_end].flatten()
+                        )
+                        self.xpos_start[count] = torch.FloatTensor(
+                            data_all["xpos"][frame:train_end].flatten()
+                        )
+                    else:
+                        if self.data_type[-3:] != "ori":
+                            self.start_pos[count] = torch.FloatTensor(
+                                data_all["pos"][0].flatten()
+                            )
+                        else:
+                            self.start_pos[count] = torch.FloatTensor(
+                                data_all["start"].flatten()
+                            )
+                        self.xpos_start[count] = torch.FloatTensor(
+                            data_all["xpos_start"].flatten()
+                        )
 
                     if self.extra_input[1] != 0:
                         extra_input_values = torch.FloatTensor(

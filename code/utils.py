@@ -151,7 +151,7 @@ def divide_train_test_sims(data_dir_train, data_dirs_test):
     """
     n_sims_train_total = len(os.listdir(data_dir_train))
     print("Total number of simulations in train dir: ", n_sims_train_total)
-    n_sims_train_total = 1750
+    # n_sims_train_total = 1750
     sims_train = range(0, n_sims_train_total)
     train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
     test_sims = list(set(sims_train) - set(train_sims))
@@ -331,6 +331,8 @@ def make(
     """
     if config.data_type[-3:] == "ori":
         n_datapoints = ndata_dict[config.data_type[:-4]]
+    elif config.data_type[-2:] == "_1":
+        n_datapoints = ndata_dict[config.data_type[:-2]]
     else:
         n_datapoints = ndata_dict[config.data_type]
     # Make the data

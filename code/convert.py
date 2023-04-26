@@ -56,14 +56,7 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
         flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
         # Ensure prediction represents rotation matrix
         u, _, vT = torch.linalg.svd(flat_rotations)
-        # print(u.shape, vT.shape)
         true_rotations = torch.bmm(u, vT)
-        # print(torch.norm(true_rotations[0] @ torch.FloatTensor([[1], [0], [0]])).T)
-        # vec1 = (true_rotations[0] @ torch.FloatTensor([[1], [0], [0]])).squeeze()
-        # vec2 = (true_rotations[0] @ torch.FloatTensor([[0], [1], [0]])).squeeze()
-        # print("vec1", vec1)
-        # print("vec2", vec2)
-        # print(torch.dot(vec1, vec2).item())
         start_origin = (
             start_pos.reshape(-1, 8, 3)[:, None, :]
             .repeat(1, rot_mat.shape[1], 1, 1)
