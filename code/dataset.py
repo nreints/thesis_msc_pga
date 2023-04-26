@@ -58,6 +58,9 @@ class RecurrentDataset(data.Dataset):
                     self.target[count] = data[frame + 1 : train_end + 1].reshape(
                         -1, self.n_datap_perframe
                     )
+                    self.target_pos[count] = torch.FloatTensor(
+                        data_all["pos"][frame + 1 : train_end + 1]
+                    ).flatten(start_dim=1)
                     if self.data_type[-1] == "1":
                         self.start_pos[count] = torch.FloatTensor(
                             data_all["pos"][frame:train_end]
@@ -68,8 +71,8 @@ class RecurrentDataset(data.Dataset):
                     else:
                         if self.data_type[-3:] != "ori":
                             self.start_pos[count] = (
-                                torch.FloatTensor(data_all["pos"][0])
-                                .flatten(start_dim=1)[:, None, :]
+                                torch.FloatTensor(data_all["pos"][0])[None, :, :]
+                                .flatten(start_dim=1)
                                 .repeat(1, self.n_frames_perentry, 1)
                             )
                         else:
@@ -78,20 +81,15 @@ class RecurrentDataset(data.Dataset):
                                 .flatten(start_dim=1)[:, None, :]
                                 .repeat(1, self.n_frames_perentry, 1)
                             )
-                        self.xpos_start[count] = (
-                            torch.FloatTensor(data_all["xpos_start"])
-                            .flatten(start_dim=1)[:, None, :]
-                            .repeat(1, self.n_frames_perentry, 1)
-                        )
+                        self.xpos_start[count] = torch.FloatTensor(
+                            data_all["xpos_start"]
+                        )[None, None, :].repeat(1, self.n_frames_perentry, 1)
 
                     if self.extra_input[1] != 0:
                         extra_input_values = torch.FloatTensor(
                             data_all[self.extra_input[0]]
                         )
                         self.extra_input_data[count] = extra_input_values
-                    self.target_pos[count] = torch.FloatTensor(
-                        data_all["pos"][frame + 1 : train_end + 1]
-                    ).flatten(start_dim=1)
                     count += 1
 
         self.normalize_extra_input = torch.mean(

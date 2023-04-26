@@ -47,7 +47,7 @@ def parse_args():
         "--input_frames",
         type=int,
         help="Number of input frames",
-        default=20,
+        default=10,
     )
     parser.add_argument(
         "-extra_input",
