@@ -99,21 +99,25 @@ def get_random_sim_data(
             extra_input = None
         nr_frames = file["vars"]["n_steps"]
         # Load the correct start position repeat for converting
-        if data_type[-3:] == "ori":
-            print("using old way")
-            start_pos = torch.tensor(
-                file["data"]["start"], dtype=torch.float32
-            ).flatten()
-            start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
+        if data_type[-1] == "1":
+            start_pos = torch.FloatTensor(file["data"]["pos"]).flatten(start_dim=1)
+            start_xpos = torch.FloatTensor(file["data"]["xpos"]).flatten(start_dim=1)
         else:
-            start_pos = torch.tensor(
-                file["data"]["pos"][0], dtype=torch.float32
+            if data_type[-3:] == "ori":
+                print("using old way")
+                start_pos = torch.tensor(
+                    file["data"]["start"], dtype=torch.float32
+                ).flatten()
+                start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
+            else:
+                start_pos = torch.tensor(
+                    file["data"]["pos"][0], dtype=torch.float32
+                ).flatten()
+                start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
+            start_xpos = torch.tensor(
+                file["data"]["xpos_start"], dtype=torch.float32
             ).flatten()
-            start_pos = start_pos[None, :].repeat(nr_frames, 1, 1)
-        start_xpos = torch.tensor(
-            file["data"]["xpos_start"], dtype=torch.float32
-        ).flatten()
-        start_xpos = start_xpos[None, :].repeat(nr_frames, 1, 1)
+            start_xpos = start_xpos[None, :].repeat(nr_frames, 1, 1)
 
         if "rotation_axis_trans" in file["data"].keys():
             rot_axis_trans = file["data"]["rotation_axis_trans"]
@@ -132,20 +136,6 @@ def get_random_sim_data(
         plot_data_true_pos = torch.tensor(
             file["data"]["pos"], dtype=torch.float32
         ).reshape(nr_frames, 8, 3)
-        print(plot_data_true_pos[0])
-        print(file["data"]["quat_1"][:3])
-        if data_type == "log_dualQ_1":
-            print("here")
-            plot_data = convert2(
-                original_data,
-                plot_data_true_pos,
-                torch.FloatTensor(file["data"]["log_dualQ"]).flatten(start_dim=1),
-                start_pos,
-                data_type,
-                start_xpos,
-                torch.FloatTensor(file["data"]["xpos"]).flatten(start_dim=1),
-            ).reshape(nr_frames, 8, 3)
-        # exit()
 
         ranges = [
             (torch.min(plot_data_true_pos), torch.max(plot_data_true_pos))

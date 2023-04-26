@@ -351,7 +351,6 @@ def log_dualQ2pos(logDualQ_in, start_pos, start_xpos):
     out_shape[-1] = 8
 
     logDualQ = logDualQ_in.flatten(start_dim=0, end_dim=-2)
-    print(logDualQ_in)
     l = (
         logDualQ[:, 3] * logDualQ[:, 3]
         + logDualQ[:, 4] * logDualQ[:, 4]
@@ -394,10 +393,7 @@ def log_dualQ2pos(logDualQ_in, start_pos, start_xpos):
             -s * logDualQ[:, 2] - t * logDualQ[:, 3],
         ]
     ).T
-    # print(mask * alternative)
-    # print(dualQ.shape)
     dualQ[mask, :] = alternative[mask, :]
-    # dualQ = mask * alternative + (~mask) * dualQ
 
     return dualQ2pos(dualQ.reshape(out_shape), start_pos, start_xpos)
 
@@ -436,6 +432,8 @@ def convert(true_preds, start_pos, data_type, xpos_start):
     """
     if data_type[-3:] == "ori":
         xpos_start = None
+    if data_type[-1] == "1":
+        xpos_start, start_pos = add_extra_input(start_pos, xpos_start)
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type[:7] == "rot_mat":
@@ -536,50 +534,8 @@ def transform(pos_prev, log_dualQ):
     return (fast_rotVecQuat(pos_prev.flatten()[None, :], quat) + trans).squeeze()
 
 
-def convert2(
-    true_preds, pos_data, log_dualQ_start, start_pos, data_type, start_xpos, xpos
-):
+def add_extra_input(pos_data, xpos):
     pos_data = pos_data.flatten(start_dim=1)
     pos_data_extra = torch.cat((pos_data[0][None, :], pos_data[:-1]))
     xpos_extra = torch.cat((xpos[0][None, :], xpos[:-1]))
-    result = log_dualQ2pos(true_preds, pos_data_extra, xpos_extra)
-    # print(true_preds[:4])
-    # exit()
-    # result_2 = log_dualQ2pos(log_dualQ_start, start_pos, start_xpos)
-    # res_2 = log_dualQ2pos(true_preds, result_2, xpos)
-    print(torch.isclose(pos_data, result))
-    for i in range(len(pos_data)):
-        print("-------")
-        # if not torch.all(torch.isclose(pos_data[i], res_2[i])):
-        #     print("poep", i)
-        #     print(pos_data.reshape(-1, 8, 3)[i])
-        #     print(res_2.reshape(-1, 8, 3)[i])
-        #     print(result.reshape(-1, 8, 3)[i])
-
-        #     exit()
-        # else:
-        #     print(pos_data.reshape(-1, 8, 3)[i][:4])
-        #     print(res_2.reshape(-1, 8, 3)[i][:4])
-        if not torch.all(torch.isclose(pos_data[i], result[i], atol=1e-5)):
-            print("poep", i)
-            print(pos_data.reshape(-1, 8, 3)[i])
-            print(result.reshape(-1, 8, 3)[i])
-            exit()
-        else:
-            print(pos_data.reshape(-1, 8, 3)[i][:4])
-            print(result.reshape(-1, 8, 3)[i][:4])
-    return result
-    print(start_xpos.shape)
-
-    shifted_start = log_dualQ2pos(log_dualQ_start, start_pos, start_xpos)
-    print(start_pos[:10])
-    print(shifted_start[:10])
-    print(log_dualQ2pos(true_preds, shifted_start, start_xpos).shape)
-    exit()
-    result = torch.zeros_like(pos_data)
-
-    result[0] = pos_data[0]
-    for idx in range(1, result.shape[0]):
-        result[idx] = transform(pos_data[idx - 1], true_preds[idx])
-
-    return result
+    return xpos_extra, pos_data_extra
