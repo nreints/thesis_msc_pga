@@ -314,6 +314,7 @@ def generate_data(
             current_xpos = copy.deepcopy(data.geom_xpos[geom_id])
             dataset["xpos"][i] = current_xpos
             global_pos = copy.deepcopy(get_vert_coords(data, geom_id, xyz_local).T)
+            # prev_pos = global_pos
             current_rotMat = copy.deepcopy(get_mat(data, geom_id))
 
             # Collect position data after rotation and translation.
@@ -325,6 +326,7 @@ def generate_data(
                 dataset["xpos_start"] = start_xpos
 
                 start_xyz = global_pos
+                prev_pos = global_pos
 
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
@@ -361,7 +363,7 @@ def generate_data(
                 prev_rotMat = current_rotMat
                 dataset["rot_mat"][i][:, :9] = rel_rot.flatten()
                 dataset["rot_mat"][i][:, 9:] = rel_trans
-                dataset["rot_mat_1"][i][:, :9] = rel_rot.flatten()
+                dataset["rot_mat_1"][i][:, :9] = rel_rot_1.flatten()
                 dataset["rot_mat_1"][i][:, 9:] = rel_trans1
 
                 rel_quaternion_pyquat = (
@@ -403,12 +405,9 @@ def generate_data(
                 dataset["log_dualQ"][i] = logDual(dualQuaternion)
                 dataset["log_dualQ_1"][i] = logDual(dualQuat_1)
 
-                dataset["pos_diff_start"][i] = (
-                    get_vert_coords(data, geom_id, xyz_local).T - start_xyz
-                )
-                dataset["pos_diff_prev"][i] = (
-                    get_vert_coords(data, geom_id, xyz_local).T - global_pos
-                )
+                dataset["pos_diff_start"][i] = global_pos - start_xyz
+                dataset["pos_diff_prev"][i] = global_pos - prev_pos
+                prev_pos = global_pos
 
             # Relative to origin centered cube.
             dataset["rot_mat_ori"][i][:, :9] = current_rotMat.flatten()
