@@ -313,20 +313,19 @@ def generate_data(
 
             current_xpos = copy.deepcopy(data.geom_xpos[geom_id])
             dataset["xpos"][i] = current_xpos
-            global_pos = copy.deepcopy(get_vert_coords(data, geom_id, xyz_local).T)
-            # prev_pos = global_pos
+            current_pos = copy.deepcopy(get_vert_coords(data, geom_id, xyz_local).T)
             current_rotMat = copy.deepcopy(get_mat(data, geom_id))
 
             # Collect position data after rotation and translation.
-            dataset["pos"][i] = global_pos
+            dataset["pos"][i] = current_pos
 
             if i == 0:
                 start_xpos = copy.deepcopy(current_xpos)
                 prev_xpos = start_xpos
                 dataset["xpos_start"] = start_xpos
 
-                start_xyz = global_pos
-                prev_pos = global_pos
+                start_xyz = current_pos
+                prev_pos = current_pos
 
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
@@ -405,9 +404,9 @@ def generate_data(
                 dataset["log_dualQ"][i] = logDual(dualQuaternion)
                 dataset["log_dualQ_1"][i] = logDual(dualQuat_1)
 
-                dataset["pos_diff_start"][i] = global_pos - start_xyz
-                dataset["pos_diff_prev"][i] = global_pos - prev_pos
-                prev_pos = global_pos
+                dataset["pos_diff_start"][i] = current_pos - start_xyz
+                dataset["pos_diff_prev"][i] = current_pos - prev_pos
+                prev_pos = current_pos
 
             # Relative to origin centered cube.
             dataset["rot_mat_ori"][i][:, :9] = current_rotMat.flatten()

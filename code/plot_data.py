@@ -99,7 +99,7 @@ def get_random_sim_data(
             extra_input = None
         nr_frames = file["vars"]["n_steps"]
         # Load the correct start position repeat for converting
-        if data_type[-1] == "1":
+        if data_type[-1] == "1" or data_type[-4:] == "prev":
             start_pos = torch.FloatTensor(file["data"]["pos"]).flatten(start_dim=1)
             start_xpos = torch.FloatTensor(file["data"]["xpos"]).flatten(start_dim=1)
             start_pos = torch.cat((start_pos[0][None, :], start_pos[:-1]))
