@@ -805,7 +805,12 @@ if __name__ == "__main__":
             # "log_dualQ",
             # "log_dualQ_ori",
             # "pos_diff_start",
+            # "rot_mat_1",
+            "quat_1",
+            "log_quat_1",
+            "dual_quat_1",
             "log_dualQ_1",
+            # "pos_diff_prev",
         ]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 

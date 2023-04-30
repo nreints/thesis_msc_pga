@@ -141,9 +141,7 @@ def quat2pos(quat, start_pos, xpos_start):
             xpos_start = xpos_start.flatten(end_dim=1)[:, None, :]
         quat_flat = quat.flatten(end_dim=1)
         # For visualisation
-        repeated_start_pos = (
-            start_pos.flatten(end_dim=1).reshape(-1, 8, 3)
-        )
+        repeated_start_pos = start_pos.flatten(end_dim=1).reshape(-1, 8, 3)
         start_origin = (repeated_start_pos - xpos_start).flatten(start_dim=1)
 
         # Rotate start by quaternion
@@ -431,6 +429,6 @@ def convert(true_preds, start_pos, data_type, xpos_start):
         return dualQ2pos(true_preds, start_pos, xpos_start)
     elif data_type[:9] == "log_dualQ":
         return log_dualQ2pos(true_preds, start_pos, xpos_start)
-    elif data_type == "pos_diff_start":
+    elif data_type[:8] == "pos_diff":
         return diff_pos_start2pos(true_preds, start_pos)
     raise Exception(f"No function to convert {data_type}")
