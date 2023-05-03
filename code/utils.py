@@ -175,6 +175,12 @@ def get_data_dirs(data_dir_train, data_dirs_test):
         - data_dirs_test: data directories for the test data.
     """
     data_train_dir = " ".join(data_dir_train)
+    print(isinstance(data_dirs_test[0], str))
+    print(
+        "with replace",
+        [data_dir_test.replace('"', "") for data_dir_test in data_dirs_test],
+    )
+    print(data_dirs_test[0].type)
     print(f"Training on dataset: {data_train_dir}")
     print("test directories", data_dirs_test)
     print("with join", [" ".join(data_dir_test) for data_dir_test in data_dirs_test])
