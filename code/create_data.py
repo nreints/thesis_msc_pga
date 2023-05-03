@@ -220,12 +220,12 @@ def create_empty_dataset(n_steps, half_size, mass, body_inertia):
         "log_quat_1": np.empty((n_steps, 1, 7)),
         "dual_quat_1": np.empty((n_steps, 1, 8)),
         "log_dualQ_1": np.empty((n_steps, 6)),
-        "pos_diff_prev": np.empty((n_steps, 8, 3)),
-        "rot_mat_ori": np.empty((n_steps, 1, 12)),
-        "quat_ori": np.empty((n_steps, 1, 7)),
-        "log_quat_ori": np.empty((n_steps, 1, 7)),
-        "dual_quat_ori": np.empty((n_steps, 1, 8)),
-        "log_dualQ_ori": np.empty((n_steps, 6)),
+        "pos_diff_1": np.empty((n_steps, 8, 3)),
+        # "rot_mat_ori": np.empty((n_steps, 1, 12)),
+        # "quat_ori": np.empty((n_steps, 1, 7)),
+        # "log_quat_ori": np.empty((n_steps, 1, 7)),
+        # "dual_quat_ori": np.empty((n_steps, 1, 8)),
+        # "log_dualQ_ori": np.empty((n_steps, 6)),
         "rotation_axis_trans": np.empty((n_steps, 6)),
         "inertia_body": body_inertia,
         "size": size,
@@ -329,7 +329,7 @@ def generate_data(
 
                 # First difference should be zero
                 dataset["pos_diff_start"][i] = np.zeros((8, 3))
-                dataset["pos_diff_prev"][i] = np.zeros((8, 3))
+                dataset["pos_diff_1"][i] = np.zeros((8, 3))
 
                 start_rotMat = copy.deepcopy(get_mat(data, geom_id))
                 prev_rotMat = start_rotMat
@@ -405,23 +405,23 @@ def generate_data(
                 dataset["log_dualQ_1"][i] = logDual(dualQuat_1)
 
                 dataset["pos_diff_start"][i] = current_pos - start_xyz
-                dataset["pos_diff_prev"][i] = current_pos - prev_pos
+                dataset["pos_diff_1"][i] = current_pos - prev_pos
                 prev_pos = current_pos
 
-            # Relative to origin centered cube.
-            dataset["rot_mat_ori"][i][:, :9] = current_rotMat.flatten()
-            dataset["rot_mat_ori"][i][:, 9:] = current_xpos
+            # # Relative to origin centered cube.
+            # dataset["rot_mat_ori"][i][:, :9] = current_rotMat.flatten()
+            # dataset["rot_mat_ori"][i][:, 9:] = current_xpos
 
-            quat = get_quat(data, body_id)
-            dataset["quat_ori"][i][:, :4] = quat
-            dataset["quat_ori"][i][:, 4:] = current_xpos
+            # quat = get_quat(data, body_id)
+            # dataset["quat_ori"][i][:, :4] = quat
+            # dataset["quat_ori"][i][:, 4:] = current_xpos
 
-            dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
-            dataset["log_quat_ori"][i][:, 4:] = current_xpos
+            # dataset["log_quat_ori"][i][:, :4] = calculate_log_quat(quat)
+            # dataset["log_quat_ori"][i][:, 4:] = current_xpos
 
-            dual_quat = get_dualQ(quat, current_xpos)
-            dataset["dual_quat_ori"][i] = dual_quat
-            dataset["log_dualQ_ori"][i] = logDual(dual_quat)
+            # dual_quat = get_dualQ(quat, current_xpos)
+            # dataset["dual_quat_ori"][i] = dual_quat
+            # dataset["log_dualQ_ori"][i] = logDual(dual_quat)
 
         else:
             print("Visualisation failed")

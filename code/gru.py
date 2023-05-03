@@ -111,7 +111,6 @@ def train_model(
 
     # Training loop
     for epoch in range(num_epochs):
-
         loss_epoch = 0
         epoch_time = time.time()
 
@@ -123,7 +122,6 @@ def train_model(
             extra_input_data,
             xpos_start,
         ) in data_loader:
-
             data_inputs = data_inputs.to(device)  # Shape: [batch, frames, n_data]
             data_labels = data_labels.to(device)  # Shape: [batch, frames, n_data]
             pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
@@ -196,7 +194,6 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                     extra_input_data,
                     xpos_start,
                 ) in data_loader:
-
                     # Determine prediction of model on dev set
                     data_inputs = data_inputs.to(device)
                     data_labels = data_labels.to(device)
@@ -267,6 +264,7 @@ if __name__ == "__main__":
             loss_reduction_type="mean",
             optimizer="Adam",
             data_type=args.data_type,
+            reference=reference,
             architecture="gru",
             train_sims=train_sims,
             test_sims=test_sims,
@@ -279,7 +277,6 @@ if __name__ == "__main__":
             iter=i,
             str_extra_input=args.extra_input,
             extra_input_n=extra_input_n,
-            wrt=reference,
         )
 
         start_time = time.time()

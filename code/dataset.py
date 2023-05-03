@@ -61,7 +61,7 @@ class RecurrentDataset(data.Dataset):
                     self.target_pos[count] = torch.FloatTensor(
                         data_all["pos"][frame + 1 : train_end + 1]
                     ).flatten(start_dim=1)
-                    if self.data_type[-1] == "1":
+                    if self.data_type[-1] == "1" or self.data_type[-4:] == "prev":
                         self.start_pos[count] = torch.FloatTensor(
                             data_all["pos"][frame:train_end]
                         ).flatten(start_dim=1)

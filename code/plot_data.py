@@ -679,7 +679,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(7,8)_r(2,20)_tennis_pNone_gNone",
+        default="data_t(5,20)_r(5,20)_combi_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     parser.add_argument(

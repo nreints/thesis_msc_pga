@@ -54,19 +54,20 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
         u, _, vT = torch.linalg.svd(flat_rotations)
         true_rotations = torch.bmm(u, vT)
         start_origin = (
-            start_pos.reshape(-1, 8, 3)[:, None, :]
-            .repeat(1, rot_mat.shape[1], 1, 1)
-            .flatten(end_dim=1)
+            start_pos.reshape(-1, rot_mat.shape[1], 8, 3).flatten(end_dim=1)
             - xpos_start
         ).mT  # [Batch_size x frames, 3, 8]
 
         mult = torch.bmm(true_rotations, start_origin).mT  # [Batch_size x frames, 8, 3]
+        print(mult.shape)
+        print(xpos_start.shape)
+        print(rot_mat[..., 9:].flatten(end_dim=1)[:, None, :].shape)
         out = (
-            mult + xpos_start + rot_mat.flatten(end_dim=1)[:, 9:][:, None, :]
+            mult + xpos_start + rot_mat[..., 9:].flatten(end_dim=1)[:, None, :]
         ).flatten(
             start_dim=1
         )  # [Batch_size x frames, 24]
-        out = out.reshape(rot_mat.shape[0], rot_mat.shape[1], out.shape[-1])
+        out = out.reshape(rot_mat.shape[0], rot_mat.shape[1], -1)
         return out  # [Batch_size, frames, 24]
 
 

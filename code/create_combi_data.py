@@ -70,4 +70,4 @@ if __name__ == "__main__":
 
     create_combi(args.dirs, args.new_dir)
 
-    print(f"-- Finished combining the datasets. Saved in {args.new_dir} --")
+    print(f"-- Finished combining the datasets. Saved in {args.new_dir} --\n")
