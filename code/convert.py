@@ -59,9 +59,6 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
         ).mT  # [Batch_size x frames, 3, 8]
 
         mult = torch.bmm(true_rotations, start_origin).mT  # [Batch_size x frames, 8, 3]
-        print(mult.shape)
-        print(xpos_start.shape)
-        print(rot_mat[..., 9:].flatten(end_dim=1)[:, None, :].shape)
         out = (
             mult + xpos_start + rot_mat[..., 9:].flatten(end_dim=1)[:, None, :]
         ).flatten(
