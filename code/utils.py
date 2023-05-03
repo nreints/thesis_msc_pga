@@ -174,19 +174,20 @@ def get_data_dirs(data_dir_train, data_dirs_test):
         - data_train_dir: data directory for the train data.
         - data_dirs_test: data directories for the test data.
     """
-    data_train_dir = " ".join(data_dir_train)
-    print(isinstance(data_dirs_test[0], str))
+    data_train_dir = " ".join(data_dir_train).replace('"', "")
     print(
         "with replace",
         [data_dir_test.replace('"', "") for data_dir_test in data_dirs_test],
     )
-    print(data_dirs_test[0].type)
     print(f"Training on dataset: {data_train_dir}")
     print("test directories", data_dirs_test)
     print("with join", [" ".join(data_dir_test) for data_dir_test in data_dirs_test])
     # data_dirs_test = os.listdir("data")
     # if ".DS_Store" in data_dirs_test:
     #     data_dirs_test.remove(".DS_Store")
+    data_dirs_test = [
+        data_dir_test.replace('"', "") for data_dir_test in data_dirs_test
+    ]
     data_dirs_test.insert(0, data_train_dir)
     data_dirs_test = list(set(data_dirs_test))
     print(f"Testing on {len(data_dirs_test)} datasets: {data_dirs_test}")
