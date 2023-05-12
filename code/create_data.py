@@ -665,10 +665,12 @@ if __name__ == "__main__":
         help="type of integrator to use",
         default="Euler",
     )
+    parser.add_argument("--data_dir", type=str, help="Name of data directory")
     parser.add_argument("--gravity", action=argparse.BooleanOptionalAction)
     parser.add_argument("--plane", action=argparse.BooleanOptionalAction)
     parser.add_argument("--visualize", action=argparse.BooleanOptionalAction)
     parser.add_argument("--tennis_effect", action=argparse.BooleanOptionalAction)
+
     args = parser.parse_args()
 
     vel_range_l = (args.l_min, args.l_max)
@@ -678,15 +680,20 @@ if __name__ == "__main__":
         f"Creating dataset vel_range_l={vel_range_l}, vel_range_a={vel_range_a}, symmetry={args.symmetry}"
     )
 
-    data_dir = get_dir(
-        vel_range_l,
-        vel_range_a,
-        args.symmetry,
-        args.n_sims,
-        args.plane,
-        args.gravity,
-        args.tennis_effect,
-    )
+    if not args.data_dir:
+        data_dir = get_dir(
+            vel_range_l,
+            vel_range_a,
+            args.symmetry,
+            args.n_sims,
+            args.plane,
+            args.gravity,
+            args.tennis_effect,
+        )
+    else:
+        os.makedirs("data", exist_ok=True)
+        os.makedirs(f"data/{args.data_dir}", exist_ok=True)
+        data_dir = "data/" + args.data_dir
 
     write_data_nsim(
         args.n_sims,
