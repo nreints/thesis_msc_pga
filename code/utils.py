@@ -64,6 +64,24 @@ def parse_args():
     parser.add_argument(
         "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
     )
+    parser.add_argument(
+        "--focus_identity",
+        type=bool,
+        default=False,
+        help="Force the model to focus on identity",
+    )
+    parser.add_argument(
+        "--bias",
+        type=bool,
+        default=True,
+        help="If False: Turn the bias in the final layer off",
+    )
+    parser.add_argument(
+        "--wandb_name",
+        type=str,
+        default="Test_identity",
+        help="Name of the wandb project to log to.",
+    )
     return parser.parse_args()
 
 
@@ -175,16 +193,7 @@ def get_data_dirs(data_dir_train, data_dirs_test):
         - data_dirs_test: data directories for the test data.
     """
     data_train_dir = " ".join(data_dir_train).replace('"', "")
-    print(
-        "with replace",
-        [data_dir_test.replace('"', "") for data_dir_test in data_dirs_test],
-    )
     print(f"Training on dataset: {data_train_dir}")
-    print("test directories", data_dirs_test)
-    print("with join", [" ".join(data_dir_test) for data_dir_test in data_dirs_test])
-    # data_dirs_test = os.listdir("data")
-    # if ".DS_Store" in data_dirs_test:
-    #     data_dirs_test.remove(".DS_Store")
     data_dirs_test = [
         data_dir_test.replace('"', "") for data_dir_test in data_dirs_test
     ]
@@ -241,6 +250,7 @@ def model_pipeline(
     device,
     dataset_class,
     model_class,
+    name_project,
 ):
     """
     Enables WandB, creates model, trains model, and saves model.
@@ -272,7 +282,10 @@ def model_pipeline(
     optimizer_dict = {"Adam": torch.optim.Adam}
     # tell wandb to get started
     with wandb.init(
-        project="ThesisF", config=hyperparameters, mode=mode_wandb, tags=[str(device)]
+        project=name_project,
+        config=hyperparameters,
+        mode=mode_wandb,
+        tags=[str(device)],
     ):
         # access all HPs through wandb.config, so logging matches execution!
         config = wandb.config

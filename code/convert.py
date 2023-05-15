@@ -4,7 +4,7 @@ import torch
 # import time
 
 
-def rotMat2pos(rot_mat, start_pos, xpos_start):
+def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus):
     """
     Transforms a batch of vectors by a rotation matrix and translation vector.
 
@@ -50,6 +50,10 @@ def rotMat2pos(rot_mat, start_pos, xpos_start):
             rot_mat.shape[0], rot_mat.shape[1], 3, 3
         )  # [Batch_size, frames, 3, 3]
         flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
+        if identity_focus:
+            identity = torch.eye(3)[None, ...].repeat(flat_rotations.shape[0], 1, 1)
+            # print(identity.shape)
+            flat_rotations += identity
         # Ensure prediction represents rotation matrix
         u, _, vT = torch.linalg.svd(flat_rotations)
         true_rotations = torch.bmm(u, vT)
@@ -96,7 +100,7 @@ def fast_rotVecQuat(v, q):
     return rotated_v
 
 
-def quat2pos(quat, start_pos, xpos_start):
+def quat2pos(quat, start_pos, xpos_start, identity_focus):
     """
     Input:
         - quat: Original predictions (quaternion motion)
@@ -138,6 +142,13 @@ def quat2pos(quat, start_pos, xpos_start):
                 xpos_start = xpos_start
             xpos_start = xpos_start.flatten(end_dim=1)[:, None, :]
         quat_flat = quat.flatten(end_dim=1)
+        # print(quat_flat.shape)
+        if identity_focus:
+            identity = torch.FloatTensor([1, 0, 0, 0, 0, 0, 0])[None, :].repeat(
+                quat_flat.shape[0], 1
+            )
+            # print(identity.shape)
+            quat_flat += identity
         # For visualisation
         repeated_start_pos = start_pos.flatten(end_dim=1).reshape(-1, 8, 3)
         start_origin = (repeated_start_pos - xpos_start).flatten(start_dim=1)
@@ -226,9 +237,9 @@ def log_quat2pos(log_quat, start_pos, start_xpos):
 def dualQ_normalize(dualQ):
     A = 1 / torch.sqrt(
         dualQ[..., 0] ** 2
-        + dualQ[..., 3] ** 2
-        + dualQ[..., 2] ** 2
         + dualQ[..., 1] ** 2
+        + dualQ[..., 2] ** 2
+        + dualQ[..., 3] ** 2
     )
     B = (
         (
@@ -401,7 +412,7 @@ def diff_pos_start2pos(true_preds, start_pos):
     return result.squeeze()
 
 
-def convert(true_preds, start_pos, data_type, xpos_start):
+def convert(true_preds, start_pos, data_type, xpos_start, identity=False):
     """
     Converts true predictions given data type.
     Input:
@@ -414,19 +425,19 @@ def convert(true_preds, start_pos, data_type, xpos_start):
     if data_type[-3:] == "ori":
         xpos_start = None
     # if data_type[-1] == "1":
-    #     xpos_start, start_pos = add_extra_input(start_pos, xpos_start)
+    #     xpos_start, start_pos = add_extra_input(start_pos, xpos_start, identity, identity)
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type[:7] == "rot_mat":
-        return rotMat2pos(true_preds, start_pos, xpos_start)
+        return rotMat2pos(true_preds, start_pos, xpos_start, identity)
     elif data_type[:4] == "quat":
-        return quat2pos(true_preds, start_pos, xpos_start)
+        return quat2pos(true_preds, start_pos, xpos_start, identity)
     elif data_type[:8] == "log_quat":
-        return log_quat2pos(true_preds, start_pos, xpos_start)
+        return log_quat2pos(true_preds, start_pos, xpos_start, identity)
     elif data_type[:9] == "dual_quat":
-        return dualQ2pos(true_preds, start_pos, xpos_start)
+        return dualQ2pos(true_preds, start_pos, xpos_start, identity)
     elif data_type[:9] == "log_dualQ":
-        return log_dualQ2pos(true_preds, start_pos, xpos_start)
+        return log_dualQ2pos(true_preds, start_pos, xpos_start, identity)
     elif data_type[:8] == "pos_diff":
         return diff_pos_start2pos(true_preds, start_pos)
     raise Exception(f"No function to convert {data_type}")

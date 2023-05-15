@@ -56,7 +56,7 @@ class GRU(nn.Module):
             requires_grad=True,
         )
 
-        self.fc = nn.Linear(self.h_size, input_shape)
+        self.fc = nn.Linear(self.h_size, input_shape, bias=config["bias"])
 
     def forward(self, x, h=None, return_all=True):
         """
@@ -140,10 +140,7 @@ def train_model(
                 _, _, preds = model(data_inputs)  # Shape: [batch, frames, n_data]
 
             alt_preds = convert(
-                preds,
-                start_pos,
-                config.data_type,
-                xpos_start,
+                preds, start_pos, config.data_type, xpos_start, config["focus_identity"]
             )
 
             assert not torch.any(
@@ -217,6 +214,7 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                         start_pos,
                         config.data_type,
                         xpos_start,
+                        config["focus_identity"],
                     )
 
                     total_loss += loss_module(preds, data_labels)
@@ -246,6 +244,10 @@ if __name__ == "__main__":
 
     extra_input_n = nr_extra_input(args.extra_input)
     reference = get_reference(args.data_type)
+
+    print(
+        f"Focussing on identity: {args.focus_identity}\nUsing extra input: {args.extra_input}\nUsing {reference} as reference point."
+    )
 
     losses = [nn.MSELoss]
     for i in range(args.iterations):
@@ -277,6 +279,8 @@ if __name__ == "__main__":
             iter=i,
             str_extra_input=args.extra_input,
             extra_input_n=extra_input_n,
+            focus_identity=args.focus_identity,
+            bias=args.bias,
         )
 
         start_time = time.time()
@@ -288,5 +292,6 @@ if __name__ == "__main__":
             device,
             RecurrentDataset,
             GRU,
+            args.wandb_name,
         )
         print("It took ", time.time() - start_time, " seconds.")
