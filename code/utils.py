@@ -64,18 +64,34 @@ def parse_args():
     parser.add_argument(
         "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
     )
+
+    # parser.add_argument(
+    #     "--focus_identity",
+    #     type=bool,
+    #     default=False,
+    #     help="Force the model to focus on identity",
+    # )
+    # parser.add_argument(
+    #     "--bias",
+    #     type=bool,
+    #     default=True,
+    #     help="If False: Turn the bias in the final layer off",
+    # )
+
     parser.add_argument(
         "--focus_identity",
-        type=bool,
-        default=False,
+        action="store_true",
         help="Force the model to focus on identity",
     )
     parser.add_argument(
         "--bias",
-        type=bool,
-        default=True,
+        action="store_true",
         help="If False: Turn the bias in the final layer off",
     )
+
+    # parser.add_argument("--focus_identity", action=argparse.BooleanOptionalAction)
+    # parser.add_argument("--bias", action=argparse.BooleanOptionalAction)
+
     parser.add_argument(
         "--wandb_name",
         type=str,

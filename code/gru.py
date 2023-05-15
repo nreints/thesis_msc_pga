@@ -246,7 +246,7 @@ if __name__ == "__main__":
     reference = get_reference(args.data_type)
 
     print(
-        f"Focussing on identity: {args.focus_identity}\nUsing extra input: {args.extra_input}\nUsing {reference} as reference point."
+        f"Focussing on identity: {args.focus_identity}\nUsing extra input: {args.extra_input}\nUsing {reference} as reference point.\nBias final layer: {args.bias}"
     )
 
     losses = [nn.MSELoss]
