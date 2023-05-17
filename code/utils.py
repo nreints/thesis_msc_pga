@@ -89,9 +89,6 @@ def parse_args():
         help="If False: Turn the bias in the final layer off",
     )
 
-    # parser.add_argument("--focus_identity", action=argparse.BooleanOptionalAction)
-    # parser.add_argument("--bias", action=argparse.BooleanOptionalAction)
-
     parser.add_argument(
         "--wandb_name",
         type=str,

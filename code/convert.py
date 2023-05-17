@@ -164,7 +164,7 @@ def quat2pos(quat, start_pos, xpos_start, identity_focus):
         return out
 
 
-def log_quat2pos(log_quat, start_pos, start_xpos):
+def log_quat2pos(log_quat, start_pos, start_xpos, identity_focus):
     """
     Input:
         - log_quat: Original predictions (log quaternion motion)
@@ -231,7 +231,7 @@ def log_quat2pos(log_quat, start_pos, start_xpos):
         # Stack translation to quaternion
         full_quat = torch.cat((quat, log_quat[:, :, 4:]), dim=2)
 
-        return quat2pos(full_quat, start_pos, start_xpos)
+        return quat2pos(full_quat, start_pos, start_xpos, identity_focus)
 
 
 def dualQ_normalize(dualQ):
@@ -256,17 +256,17 @@ def dualQ_normalize(dualQ):
     )
     res = torch.zeros_like(dualQ)
     res[..., 0] = A * dualQ[..., 0]
+    res[..., 1] = A * dualQ[..., 1]
+    res[..., 2] = A * dualQ[..., 2]
+    res[..., 3] = A * dualQ[..., 3]
+    res[..., 4] = A * dualQ[..., 4] - B * dualQ[..., 0]
     res[..., 5] = -(A * -dualQ[..., 5] + B * dualQ[..., 1])
     res[..., 6] = -(A * -dualQ[..., 6] + B * dualQ[..., 2])
     res[..., 7] = -(A * -dualQ[..., 7] + B * dualQ[..., 3])
-    res[..., 3] = A * dualQ[..., 3]
-    res[..., 2] = A * dualQ[..., 2]
-    res[..., 1] = A * dualQ[..., 1]
-    res[..., 4] = A * dualQ[..., 4] - B * dualQ[..., 0]
     return res
 
 
-def dualQ2pos(dualQ, start_pos, start_xpos):
+def dualQ2pos(dualQ, start_pos, start_xpos, identity_focus):
     """
     Input:
         - dualQ: Original predictions (Dual quaternion)
@@ -313,11 +313,11 @@ def dualQ2pos(dualQ, start_pos, start_xpos):
     # Concatenate and delete zeros column
     quaternion = torch.cat((qr, t[..., :-1]), dim=-1)
 
-    converted_pos = quat2pos(quaternion, start_pos, start_xpos)
+    converted_pos = quat2pos(quaternion, start_pos, start_xpos, identity_focus)
     return converted_pos
 
 
-def log_dualQ2pos(logDualQ_in, start_pos, start_xpos):
+def log_dualQ2pos(logDualQ_in, start_pos, start_xpos, identity_focus):
     """
     Input bivector (6 numbers) returns position by first calculating the dual quaternion = exp(log_dualQ).
     (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
@@ -387,7 +387,7 @@ def log_dualQ2pos(logDualQ_in, start_pos, start_xpos):
     ).T
     dualQ[mask, :] = alternative[mask, :]
 
-    return dualQ2pos(dualQ.reshape(out_shape), start_pos, start_xpos)
+    return dualQ2pos(dualQ.reshape(out_shape), start_pos, start_xpos, identity_focus)
 
 
 def diff_pos_start2pos(true_preds, start_pos):
