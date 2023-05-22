@@ -149,7 +149,7 @@ def train_model(
 
             assert not torch.any(
                 torch.isnan(pos_target)
-            ), f"Encountered NaN in alt_preds."
+            ), f"Encountered NaN in pos_target."
 
             loss = loss_module(alt_preds, pos_target)
 
@@ -261,7 +261,6 @@ if __name__ == "__main__":
             learning_rate=args.learning_rate,
             epochs=10,
             batch_size=args.batch_size,
-            dropout=0.2,
             loss_type=args.loss,
             loss_reduction_type="mean",
             optimizer="Adam",
