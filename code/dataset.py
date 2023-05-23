@@ -210,8 +210,6 @@ class NonRecurrentDataset(data.Dataset):
         assert (
             self.normalize_extra_input != 0
         ), f"The normalization of the extra input is zero. This leads to zero-division."
-        # print(self.xpos_start.shape)
-        # print("mean of norm extra_input", self.normalize_extra_input.item())
         # self.data[:, -self.extra_input[1] :] = self.extra_input_data
         print(f"The dataloader for {self.dir} took {time.time() - start_time} seconds.")
 

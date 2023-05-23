@@ -1,8 +1,6 @@
 import roma
 import torch
 
-# import time
-
 
 def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus):
     """
@@ -435,8 +433,6 @@ def convert(true_preds, start_pos, data_type, xpos_start, identity=False):
     """
     if data_type[-3:] == "ori":
         xpos_start = None
-    # if data_type[-1] == "1":
-    #     xpos_start, start_pos = add_extra_input(start_pos, xpos_start, identity, identity)
     if data_type == "pos" or data_type == "pos_norm":
         return true_preds
     elif data_type[:7] == "rot_mat":
