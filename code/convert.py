@@ -100,7 +100,7 @@ def fast_rotVecQuat(v, q):
     return rotated_v
 
 
-def quat2pos(quat, start_pos, xpos_start, identity_focus):
+def quat2pos(quat, start_pos, xpos_start, identity_focus, add_identity=True):
     """
     Input:
         - quat: Original predictions (quaternion motion)
@@ -142,13 +142,13 @@ def quat2pos(quat, start_pos, xpos_start, identity_focus):
                 xpos_start = xpos_start
             xpos_start = xpos_start.flatten(end_dim=1)[:, None, :]
         quat_flat = quat.flatten(end_dim=1)
-        # print(quat_flat.shape)
-        if identity_focus:
+
+        if identity_focus and add_identity:
             identity = torch.FloatTensor([1, 0, 0, 0, 0, 0, 0])[None, :].repeat(
                 quat_flat.shape[0], 1
             )
-            # print(identity.shape)
             quat_flat += identity
+
         # For visualisation
         repeated_start_pos = start_pos.flatten(end_dim=1).reshape(-1, 8, 3)
         start_origin = (repeated_start_pos - xpos_start).flatten(start_dim=1)
@@ -231,7 +231,9 @@ def log_quat2pos(log_quat, start_pos, start_xpos, identity_focus):
         # Stack translation to quaternion
         full_quat = torch.cat((quat, log_quat[:, :, 4:]), dim=2)
 
-        return quat2pos(full_quat, start_pos, start_xpos, identity_focus)
+        return quat2pos(
+            full_quat, start_pos, start_xpos, identity_focus, add_identity=False
+        )
 
 
 def dualQ_normalize(dualQ):
@@ -266,7 +268,7 @@ def dualQ_normalize(dualQ):
     return res
 
 
-def dualQ2pos(dualQ, start_pos, start_xpos, identity_focus):
+def dualQ2pos(dualQ, start_pos, start_xpos, identity_focus, add_identity=True):
     """
     Input:
         - dualQ: Original predictions (Dual quaternion)
@@ -287,17 +289,18 @@ def dualQ2pos(dualQ, start_pos, start_xpos, identity_focus):
     device = dualQ.device
 
     # Ensure prediction represents pure rotation
+    if identity_focus and add_identity:
+        identity = torch.tensor([1, 0, 0, 0, 0, 0, 0, 0])[None, None, :].repeat(
+            dualQ.shape[0], 1, 1
+        )
+        dualQ += identity
+
     dualQ = dualQ_normalize(dualQ)
 
     qr_dim = dualQ[..., :4].shape
 
     qr = dualQ[..., :4].flatten(0, -2)
-
-    # norm_qr = torch.norm(qr, dim=-1).reshape(-1, 1)
-    # qr = torch.div(qr, norm_qr)
-
     qd = dualQ[..., 4:].flatten(0, -2)
-    # qd = torch.div(qd, norm_qr)
 
     swapped_ind = torch.tensor([1, 2, 3, 0], device=device)
     qr_roma = torch.index_select(qr, 1, swapped_ind)
@@ -313,7 +316,9 @@ def dualQ2pos(dualQ, start_pos, start_xpos, identity_focus):
     # Concatenate and delete zeros column
     quaternion = torch.cat((qr, t[..., :-1]), dim=-1)
 
-    converted_pos = quat2pos(quaternion, start_pos, start_xpos, identity_focus)
+    converted_pos = quat2pos(
+        quaternion, start_pos, start_xpos, identity_focus, add_identity=False
+    )
     return converted_pos
 
 
@@ -387,7 +392,13 @@ def log_dualQ2pos(logDualQ_in, start_pos, start_xpos, identity_focus):
     ).T
     dualQ[mask, :] = alternative[mask, :]
 
-    return dualQ2pos(dualQ.reshape(out_shape), start_pos, start_xpos, identity_focus)
+    return dualQ2pos(
+        dualQ.reshape(out_shape),
+        start_pos,
+        start_xpos,
+        identity_focus,
+        add_identity=False,
+    )
 
 
 def diff_pos_start2pos(true_preds, start_pos):
