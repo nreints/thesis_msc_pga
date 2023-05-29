@@ -29,16 +29,23 @@ def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus):
             xpos_start = 0
         else:
             xpos_start = xpos_start.reshape(-1, 1, 3)
+
         rotations = rot_mat[:, :9].reshape(-1, 3, 3)  # [Batch_size, 3, 3]
         # Ensure prediction represents rotation matrix
+        if identity_focus:
+            identity = torch.eye(3)[None, ...].repeat(rotations.shape[0], 1, 1)
+            rotations += identity
+
         u, _, vT = torch.linalg.svd(rotations)
         true_rotations = torch.bmm(u, vT)
 
         start_origin = (
             start_pos.reshape(-1, 8, 3) - xpos_start
         ).mT  # [batch_size, 3, 8]
+
         mult = torch.bmm(true_rotations, start_origin).mT  # [batch_size, 8, 3]
         out = mult + rot_mat[:, 9:].reshape(-1, 1, 3) + xpos_start  # [batch_size, 8, 3]
+
         return out.flatten(start_dim=1)  # [batch_size, 24]
     # In case of LSTM/GRU
     else:
@@ -46,17 +53,21 @@ def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus):
             xpos_start = 0
         else:
             xpos_start = xpos_start.flatten(end_dim=1)[:, None, :]
+
         rotations = rot_mat[..., :9].reshape(
             rot_mat.shape[0], rot_mat.shape[1], 3, 3
         )  # [Batch_size, frames, 3, 3]
         flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
+
         if identity_focus:
             identity = torch.eye(3)[None, ...].repeat(flat_rotations.shape[0], 1, 1)
             # print(identity.shape)
             flat_rotations += identity
+
         # Ensure prediction represents rotation matrix
         u, _, vT = torch.linalg.svd(flat_rotations)
         true_rotations = torch.bmm(u, vT)
+
         start_origin = (
             start_pos.reshape(-1, rot_mat.shape[1], 8, 3).flatten(end_dim=1)
             - xpos_start
@@ -122,6 +133,13 @@ def quat2pos(quat, start_pos, xpos_start, identity_focus, add_identity=True):
             xpos_start = 0
         else:
             xpos_start = xpos_start.reshape(-1, 1, 3)
+
+        if identity_focus and add_identity:
+            identity = torch.FloatTensor([1, 0, 0, 0, 0, 0, 0])[None, :].repeat(
+                quat.shape[0], 1
+            )
+            quat += identity
+
         start_pos_shape = start_pos.shape
         start_origin = (start_pos.reshape(-1, 8, 3) - xpos_start).reshape(
             start_pos_shape
@@ -208,7 +226,9 @@ def log_quat2pos(log_quat, start_pos, start_xpos, identity_focus):
         # Stack translation to quaternion
         full_quat = torch.hstack((quat, log_quat[:, 4:]))
 
-        return quat2pos(full_quat, start_pos, start_xpos)
+        return quat2pos(
+            full_quat, start_pos, start_xpos, identity_focus, add_identity=False
+        )
 
     # In case of LSTM /GRU
     else:
@@ -290,9 +310,11 @@ def dualQ2pos(dualQ, start_pos, start_xpos, identity_focus, add_identity=True):
 
     # Ensure prediction represents pure rotation
     if identity_focus and add_identity:
-        identity = torch.tensor([1, 0, 0, 0, 0, 0, 0, 0])[None, None, :].repeat(
-            dualQ.shape[0], 1, 1
-        )
+        identity = torch.tensor([1, 0, 0, 0, 0, 0, 0, 0])
+        if len(dualQ.shape) == 3:
+            identity = identity[None, None, :].repeat(dualQ.shape[0], 1, 1)
+        else:
+            identity = identity[None, :].repeat(dualQ.shape[0], 1)
         dualQ += identity
 
     dualQ = dualQ_normalize(dualQ)

@@ -56,7 +56,7 @@ class GRU(nn.Module):
             requires_grad=True,
         )
 
-        self.fc = nn.Linear(self.h_size, input_shape, bias=config["bias"])
+        self.fc = nn.Linear(self.h_size, input_shape)
 
     def forward(self, x, h=None, return_all=True):
         """
@@ -246,15 +246,16 @@ if __name__ == "__main__":
     reference = get_reference(args.data_type)
 
     print(
-        f"Focussing on identity: {args.focus_identity}\nUsing extra input: {args.extra_input}\nUsing {reference} as reference point.\nBias final layer: {args.bias}"
+        f"Focussing on identity: {args.focus_identity}\nUsing extra input: {args.extra_input}\nUsing {reference} as reference point."
     )
 
     losses = [nn.MSELoss]
+
     for i in range(args.iterations):
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total, train_sims, test_sims = divide_train_test_sims(
-            data_dir_train, data_dirs_test
+            data_dir_train, data_dirs_test, "train_test_ids_2400", i
         )
 
         config = dict(
@@ -279,7 +280,6 @@ if __name__ == "__main__":
             str_extra_input=args.extra_input,
             extra_input_n=extra_input_n,
             focus_identity=args.focus_identity,
-            bias=args.bias,
         )
 
         start_time = time.time()

@@ -1,5 +1,6 @@
 import argparse
 import os
+import pickle
 import random
 
 import torch
@@ -38,7 +39,27 @@ def parse_args():
         default=[],
     )
     parser.add_argument("-l", "--loss", type=str, help="Loss type", default="L2")
-    parser.add_argument("--data_type", type=str, help="Type of data", default="pos")
+    parser.add_argument(
+        "--data_type",
+        type=str,
+        choices=[
+            "pos",
+            "rot_mat",
+            "quat",
+            "log_quat",
+            "dual_quat",
+            "log_dualQ",
+            "pos_diff_start",
+            "rot_mat_1",
+            "quat_1",
+            "log_quat_1",
+            "dual_quat_1",
+            "log_dualQ_1",
+            "pos_diff_1",
+        ],
+        help="Type of data",
+        default="log_dualQ_1",
+    )
     parser.add_argument(
         "-i", "--iterations", type=int, help="Number of iterations", default=1
     )
@@ -64,29 +85,10 @@ def parse_args():
     parser.add_argument(
         "--learning_rate", "-lr", type=float, default=0.001, help="Batch size"
     )
-
-    # parser.add_argument(
-    #     "--focus_identity",
-    #     type=bool,
-    #     default=False,
-    #     help="Force the model to focus on identity",
-    # )
-    # parser.add_argument(
-    #     "--bias",
-    #     type=bool,
-    #     default=True,
-    #     help="If False: Turn the bias in the final layer off",
-    # )
-
     parser.add_argument(
         "--focus_identity",
         action="store_true",
         help="Force the model to focus on identity",
-    )
-    parser.add_argument(
-        "--bias",
-        action="store_true",
-        help="If False: Turn the bias in the final layer off",
     )
 
     parser.add_argument(
@@ -169,7 +171,7 @@ def check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims):
     print("Checked number of simulations in each data directory.")
 
 
-def divide_train_test_sims(data_dir_train, data_dirs_test):
+def divide_train_test_sims(data_dir_train, data_dirs_test, file_name, i=None):
     """
     Divides the train and test simulation IDs.
 
@@ -182,16 +184,26 @@ def divide_train_test_sims(data_dir_train, data_dirs_test):
         - train_sims: list of IDs of the simulations used for training the model.
         - test_sims: list of IDs of the simulations used for testing the model.
     """
-    n_sims_train_total = len(os.listdir(data_dir_train))
-    print("Total number of simulations in train dir: ", n_sims_train_total)
-    n_sims_train_total = 1000
-    sims_train = range(0, n_sims_train_total)
-    train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
-    test_sims = list(set(sims_train) - set(train_sims))
-    check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims)
-    print("Number of train simulations: ", len(train_sims))
-    print("Number of test simulations: ", len(test_sims))
-    return n_sims_train_total, train_sims, test_sims
+    if i != None:
+        with open(f"{file_name}.pickle", "rb") as f:
+            file = pickle.load(f)
+            assert max(file.keys()) >= i, "Not enough simulation ID divisions."
+            sim_ids_iteration = file[i]
+            train_sims = sim_ids_iteration["train_sims"]
+            test_sims = sim_ids_iteration["test_sims"]
+            n_sims_train_total = len(train_sims) + len(test_sims)
+        return n_sims_train_total, train_sims, test_sims
+    else:
+        n_sims_train_total = len(os.listdir(data_dir_train))
+        print("Total number of simulations in train dir: ", n_sims_train_total)
+        n_sims_train_total = 1000
+        sims_train = range(0, n_sims_train_total)
+        train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
+        test_sims = list(set(sims_train) - set(train_sims))
+        check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims)
+        print("Number of train simulations: ", len(train_sims))
+        print("Number of test simulations: ", len(test_sims))
+        return n_sims_train_total, train_sims, test_sims
 
 
 def get_data_dirs(data_dir_train, data_dirs_test):

@@ -112,10 +112,7 @@ def train_model(
                 preds, _ = model(data_inputs)  # Shape: [batch, frames, n_data]
 
             alt_preds = convert(
-                preds,
-                start_pos,
-                config.data_type,
-                xpos_start,
+                preds, start_pos, config.data_type, xpos_start, config["focus_identity"]
             )
 
             assert not torch.any(
@@ -124,7 +121,7 @@ def train_model(
 
             assert not torch.any(
                 torch.isnan(pos_target)
-            ), f"Encountered NaN in alt_preds."
+            ), f"Encountered NaN in pos_target."
 
             loss = loss_module(alt_preds, pos_target)
 
@@ -166,7 +163,6 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                     extra_input_data,
                     xpos_start,
                 ) in data_loader:
-
                     # Determine prediction of model on dev set
                     data_inputs = data_inputs.to(device)
                     data_labels = data_labels.to(device)
@@ -187,6 +183,7 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                         start_pos,
                         config.data_type,
                         xpos_start,
+                        config["focus_identity"],
                     )
 
                     total_loss += loss_module(preds, data_labels)
@@ -210,11 +207,16 @@ if __name__ == "__main__":
         args.data_dir_train, args.data_dirs_test
     )
     data_dir_train = "data/" + data_train_dir
+
     if not os.path.exists(data_dir_train):
         raise IndexError(f"No directory for the train data {args.data_dir_train}")
 
     extra_input_n = nr_extra_input(args.extra_input)
     reference = get_reference(args.data_type)
+
+    print(
+        f"Focussing on identity: {args.focus_identity}\nUsing extra input: {args.extra_input}\nUsing {reference} as reference point."
+    )
 
     losses = [nn.MSELoss]
 
@@ -222,7 +224,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total, train_sims, test_sims = divide_train_test_sims(
-            data_dir_train, data_dirs_test
+            data_dir_train, data_dirs_test, "train_test_ids_1000", i
         )
 
         config = dict(
@@ -234,6 +236,7 @@ if __name__ == "__main__":
             loss_reduction_type="mean",
             optimizer="Adam",
             data_type=args.data_type,
+            reference=reference,
             architecture="lstm",
             train_sims=train_sims,
             test_sims=test_sims,
@@ -246,7 +249,7 @@ if __name__ == "__main__":
             iter=i,
             str_extra_input=args.extra_input,
             extra_input_n=extra_input_n,
-            wrt=reference,
+            focus_identity=args.focus_identity,
         )
 
         start_time = time.time()
@@ -258,5 +261,6 @@ if __name__ == "__main__":
             device,
             RecurrentDataset,
             LSTM,
+            args.wandb_name,
         )
         print("It took ", time.time() - start_time, " seconds.")
