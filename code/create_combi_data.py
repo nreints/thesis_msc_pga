@@ -2,6 +2,7 @@ import argparse
 import os
 import pickle
 import shutil
+import random
 
 
 def get_nr_sims(dirs):
@@ -47,14 +48,17 @@ def create_combi(dir_list, new_dir):
         shutil.rmtree(f"data/{new_dir}")
     os.makedirs(f"data/{new_dir}", exist_ok=True)
 
-    new_id = 0
-    for dir in dir_list:
-        for id in range(nr_sims):
-            with open(f"data/{dir}/sim_{id}.pickle", "rb") as f:
-                sim_data = pickle.load(f)
-                with open(f"data/{new_dir}/sim_{new_id}.pickle", "wb") as new_f:
-                    pickle.dump(sim_data, new_f)
-            new_id += 1
+    dict_dirs = dict.fromkeys(range(len(dir_list)), 0)
+    for id in range(nr_sims * len(dir_list)):
+        dir_id = random.randint(0, len(dir_list) - 1)
+        while dict_dirs[dir_id] >= nr_sims:
+            dir_id = random.randint(0, len(dir_list))
+        dict_dirs[dir_id] += 1
+        dir = dir_list[dir_id]
+        with open(f"data/{dir}/sim_{id}.pickle", "rb") as f:
+            sim_data = pickle.load(f)
+            with open(f"data/{new_dir}/sim_{new_id}.pickle", "wb") as new_f:
+                pickle.dump(sim_data, new_f)
 
 
 if __name__ == "__main__":
