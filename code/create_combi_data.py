@@ -18,7 +18,6 @@ def get_nr_sims(dirs):
     nr_sims = []
     for dir in dirs:
         nr_sims.append(len(os.listdir("data/" + dir)))
-    print(nr_sims)
     if nr_sims.count(nr_sims[0]) != len(nr_sims):
         new_nr_sims = min(nr_sims) // len(nr_sims)
         print(
@@ -28,7 +27,7 @@ def get_nr_sims(dirs):
         new_nr_sims = nr_sims[0] // len(nr_sims)
         print(f"Using {new_nr_sims} simulations from each directory.")
 
-    return new_nr_sims
+    return new_nr_sims, max(nr_sims)
 
 
 def create_combi(dir_list, new_dir):
@@ -43,7 +42,7 @@ def create_combi(dir_list, new_dir):
         dir_list
     ), "At least 1 directory occurs more than once."
     print(f"Using {len(dir_list)} directories.")
-    nr_sims = get_nr_sims(dir_list)
+    nr_sims, total_nr_sims = get_nr_sims(dir_list)
     if os.path.exists(f"data/{new_dir}"):
         shutil.rmtree(f"data/{new_dir}")
     os.makedirs(f"data/{new_dir}", exist_ok=True)
@@ -52,12 +51,12 @@ def create_combi(dir_list, new_dir):
     for id in range(nr_sims * len(dir_list)):
         dir_id = random.randint(0, len(dir_list) - 1)
         while dict_dirs[dir_id] >= nr_sims:
-            dir_id = random.randint(0, len(dir_list))
+            dir_id = random.randint(0, len(dir_list) - 1)
         dict_dirs[dir_id] += 1
         dir = dir_list[dir_id]
         with open(f"data/{dir}/sim_{id}.pickle", "rb") as f:
             sim_data = pickle.load(f)
-            with open(f"data/{new_dir}/sim_{new_id}.pickle", "wb") as new_f:
+            with open(f"data/{new_dir}/sim_{id}.pickle", "wb") as new_f:
                 pickle.dump(sim_data, new_f)
 
 
