@@ -173,6 +173,8 @@ class NonRecurrentDataset(data.Dataset):
                     self.xpos_start = torch.zeros((len_data, 3))
                 for frame in range(data_per_sim):
                     # Always save the start position for converting
+                    
+                    
                     if self.data_type[-3:] != "ori":
                         self.start_pos[count] = torch.FloatTensor(
                             data_all["pos"][0].flatten()
@@ -184,6 +186,7 @@ class NonRecurrentDataset(data.Dataset):
                     self.xpos_start[count] = torch.FloatTensor(
                         data_all["xpos_start"].flatten()
                     )
+
                     train_end = frame + self.n_frames_perentry
                     if self.extra_input[1] != 0:
                         extra_input_values = torch.FloatTensor(

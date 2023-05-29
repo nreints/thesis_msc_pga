@@ -19,7 +19,7 @@ def divide_train_test_sims(data_dir_train, data_dirs_test):
         - test_sims: list of IDs of the simulations used for testing the model.
     """
     n_sims_train_total = len(os.listdir(data_dir_train))
-    n_sims_train_total = 10
+    n_sims_train_total = 1000
     print("Total number of simulations in train dir: ", n_sims_train_total)
     sims_train = range(0, n_sims_train_total)
     train_sims = random.sample(sims_train, int(0.8 * n_sims_train_total))
@@ -27,7 +27,7 @@ def divide_train_test_sims(data_dir_train, data_dirs_test):
     check_number_sims(data_dir_train, train_sims, data_dirs_test, test_sims)
     print("Number of train simulations: ", len(train_sims))
     print("Number of test simulations: ", len(test_sims))
-    return train_sims, test_sims
+    return n_sims_train_total, train_sims, test_sims
 
 
 if __name__ == "__main__":
@@ -53,25 +53,22 @@ if __name__ == "__main__":
     parser.add_argument("-iter", type=int, help="number of iterations")
 
     args = parser.parse_args()
-    print(args.test_dir)
     # os.makedirs(f"data/{args.file_name}", exist_ok=True)
 
     final_dict = {}
     for i in range(args.iter):
         # Get simulation ids
-        train_sim_IDs, test_sim_IDs = divide_train_test_sims(
+        n_sims_total, train_sim_IDs, test_sim_IDs = divide_train_test_sims(
             args.train_dir, [args.test_dir]
         )
         # Put in dictionary
         final_dict[i] = {"train_sims": train_sim_IDs, "test_sims": test_sim_IDs}
 
-    print(final_dict)
     # Save in pickle
-    if os.path.exists(f"{args.file_name}.pickle"):
-        os.remove(f"{args.file_name}.pickle")
-    with open(f"{args.file_name}.pickle", "wb") as f:
+    file_name = f"{args.file_name}_{n_sims_total}.pickle"
+    if os.path.exists(file_name):
+        os.remove(file_name)
+    with open(file_name, "wb") as f:
         pickle.dump(final_dict, f)
 
-    with open(f"{args.file_name}.pickle", "rb") as f:
-        data_all = pickle.load(f)
-        print(data_all)
+    print(f"Simulation IDs saved in {file_name}")
