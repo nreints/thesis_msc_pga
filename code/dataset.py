@@ -173,21 +173,27 @@ class NonRecurrentDataset(data.Dataset):
                     self.xpos_start = torch.zeros((len_data, 3))
                 for frame in range(data_per_sim):
                     # Always save the start position for converting
-                    
-                    
-                    if self.data_type[-3:] != "ori":
-                        self.start_pos[count] = torch.FloatTensor(
-                            data_all["pos"][0].flatten()
-                        )
-                    else:
-                        self.start_pos[count] = torch.FloatTensor(
-                            data_all["start"].flatten()
-                        )
-                    self.xpos_start[count] = torch.FloatTensor(
-                        data_all["xpos_start"].flatten()
-                    )
-
                     train_end = frame + self.n_frames_perentry
+                    if self.data_type[-1] == "1" or self.data_type[-4:] == "prev":
+                        self.start_pos[count] = torch.FloatTensor(
+                            data_all["pos"][train_end]
+                        ).flatten()
+                        self.xpos_start[count] = torch.FloatTensor(
+                            data_all["xpos"][train_end]
+                        ).flatten()
+                    else:
+                        if self.data_type[-3:] != "ori":
+                            self.start_pos[count] = torch.FloatTensor(
+                                data_all["pos"][0].flatten()
+                            )
+                        else:
+                            self.start_pos[count] = torch.FloatTensor(
+                                data_all["start"].flatten()
+                            )
+                        self.xpos_start[count] = torch.FloatTensor(
+                            data_all["xpos_start"].flatten()
+                        )
+
                     if self.extra_input[1] != 0:
                         extra_input_values = torch.FloatTensor(
                             data_all[self.extra_input[0]]
@@ -196,8 +202,9 @@ class NonRecurrentDataset(data.Dataset):
                         self.data[count, : -self.extra_input[1]] = data[
                             frame:train_end
                         ].flatten()
-                    else:
+                    else:  # Extra input
                         self.data[count] = data[frame:train_end].flatten()
+
                     self.target[count] = data[train_end + 1].flatten()
 
                     self.target_pos[count] = pos_data[train_end + 1].flatten()
