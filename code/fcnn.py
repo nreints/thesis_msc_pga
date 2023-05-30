@@ -259,7 +259,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total, train_sims, test_sims = divide_train_test_sims(
-            data_dir_train, data_dirs_test, "train_test_ids_2400", i
+            data_dir_train, data_dirs_test, "train_test_ids_1000", i
         )
         # Set config
         config = dict(
