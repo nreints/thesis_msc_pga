@@ -217,6 +217,7 @@ class NonRecurrentDataset(data.Dataset):
         self.normalize_extra_input = torch.mean(
             torch.norm(self.data[:, -self.extra_input[1] :], dim=1)
         )
+
         assert (
             self.normalize_extra_input != 0
         ), f"The normalization of the extra input is zero. This leads to zero-division."

@@ -1,12 +1,8 @@
 import os
-import pickle
-import random
 import time
 
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.utils.data as data
 
 import wandb
 from convert import *
@@ -171,7 +167,7 @@ def train_model(
             model, test_loaders, config, epoch, losses, normalization
         )
         model.train()
-        print(f"     --> Epoch time; {time.time() - epoch_time}")
+        print(f"\t\t--> Epoch time; {time.time() - epoch_time}")
 
 
 def eval_model(model, data_loaders, config, current_epoch, losses, normalization):
