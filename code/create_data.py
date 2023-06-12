@@ -281,7 +281,7 @@ def generate_data(
     # data.qvel[0:3] = [0, -3, 0]
     data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1], size=3)
     if pure_tennis:
-        data.qvel[3:6] = [0, random.uniform(40, 70), 0.1]
+        data.qvel[3:6] = [0, random.uniform(20, 50), 0.01]
 
     # Collect geom_id and body_id
     geom_id = model.geom("object_geom").id
@@ -371,10 +371,12 @@ def generate_data(
                 rel_quaternion1_pyquat = (
                     Quaternion(get_quat(data, body_id)) * Quaternion(prev_quat).inverse
                 ).normalised
+
                 # TODO Steven van Leo
                 # if quaternion_pyquat.elements[0] < 0:
                 #     quaternion_pyquat *= -1
                 # print(quaternion_pyquat.elements, quaternion_pyquat.axis)
+
                 rel_quaternion = rel_quaternion_pyquat.elements
                 rel_quaternion1 = rel_quaternion1_pyquat.elements
                 prev_quat = copy.deepcopy(get_quat(data, body_id))
@@ -385,6 +387,7 @@ def generate_data(
 
                 dataset["quat"][i][:, :4] = rel_quaternion
                 dataset["quat"][i][:, 4:] = rel_trans
+
                 dataset["quat_1"][i][:, :4] = rel_quaternion1
                 dataset["quat_1"][i][:, 4:] = rel_trans1
 
@@ -455,9 +458,9 @@ def get_sizes(symmetry):
     """
     if symmetry == "none":
         sizes = [
-            np.random.uniform(0.5, 5),
-            np.random.uniform(0.5, 5),
-            np.random.uniform(0.5, 5),
+            np.random.uniform(0.05, 0.5),
+            np.random.uniform(0.05, 0.5),
+            np.random.uniform(0.05, 0.5),
         ]
         return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
     elif symmetry == "full":
@@ -470,7 +473,7 @@ def get_sizes(symmetry):
         raise argparse.ArgumentError(
             f"Not a valid string for argument symmetry: {symmetry}"
         )
-    random_size = np.random.uniform(0.5, 5)
+    random_size = np.random.uniform(0.05, 0.5)
     sizes = ratio * random_size
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
@@ -532,35 +535,40 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
         plane_str = ""
 
     if gravity:
-        gravity_str = f'<option integrator="{integrator}">'
+        gravity_str = f'<option integrator="{integrator}"/>'
     else:
-        gravity_str = (
-            f'<option integrator="{integrator}" gravity="0 0 0" iterations="10"/>'
-        )
-    # size = size_obj.split(" ")
-    # print(f"sizes {size}")
-    # product = 1000
-    # for el in size:
-    #     product *= float(el) * 2
-    # I_xx = 1 / 12 * product * ((float(size[1]) * 2) ** 2 + (2 * float(size[2])) ** 2)
-    # I_yy = 1 / 12 * product * ((float(size[2]) * 2) ** 2 + (2 * float(size[0])) ** 2)
-    # I_zz = 1 / 12 * product * ((float(size[1]) * 2) ** 2 + (2 * float(size[0])) ** 2)
-    # print("own Ixx, Iyy, Izz", I_xx, I_yy, I_zz)
+        gravity_str = f'<option integrator="{integrator}" gravity="0 0 0"/>'
     return f"""
     <mujoco>
     {gravity_str}
     <worldbody>
         <light name="top" pos="0 0 1"/>
-        <camera name="camera1" pos="1 -70 50" xyaxes="1 0 0 0 1 1.5"/>
         <camera name="camera2" pos="10 -70 70" xyaxes="1 0 0 0 1 1.5"/>
         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
             <joint name="joint1" type="free"/>
             <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0 0 1"/>
         </body>
+        <camera name="trackingCamera" pos="0 0 1" fovy="45" mode="targetbody" target="object_body" />
         {plane_str}
     </worldbody>
     </mujoco>
     """
+
+
+def get_pos(symmetry, gravity, plane, sizes_list):
+    if gravity and plane:
+        if symmetry == "full":
+            min_z_position = 5 * sizes_list[0]
+        elif symmetry == "semi":
+            min_z_position = 5.5 * sizes_list[0]
+        elif symmetry == "tennis":
+            min_z_position = 5.5 * sizes_list[0]
+        else:
+            min_z_position = max(sizes_list)  # TODO
+        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(min_z_position, 5 *min_z_position)}"
+    else:
+        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
+    return pos
 
 
 def write_data_nsim(
@@ -611,8 +619,10 @@ def write_data_nsim(
         # Define sizes
         sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
-        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
+        pos = get_pos(symmetry, gravity, plane, sizes_list)
+        print(pos)
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
+        print(string)
         # Create dataset
         dataset = generate_data(
             string,
@@ -653,10 +663,10 @@ if __name__ == "__main__":
         help="symmetry of the box.\nfull: symmetric box 1:1:1\n; semi: 2 sides of same length, other longer 1:1:10\n;tennis: tennis_racket effect 1:3:10\n;none: random lengths for each side",
         default="tennis",
     )
-    parser.add_argument("-l_min", type=int, help="linear qvel min", default=7)
-    parser.add_argument("-l_max", type=int, help="linear qvel max", default=8)
-    parser.add_argument("-a_min", type=int, help="angular qvel min", default=0)
-    parser.add_argument("-a_max", type=int, help="angular qvel max", default=0)
+    parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
+    parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=2)
+    parser.add_argument("-a_max", type=int, help="angular qvel max", default=4)
     parser.add_argument(
         "-i",
         "--integrator",
