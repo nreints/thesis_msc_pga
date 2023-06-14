@@ -282,6 +282,7 @@ if __name__ == "__main__":
             str_extra_input=args.extra_input,
             extra_input_n=extra_input_n,
             focus_identity=args.focus_identity,
+            fix_determinant=True,
         )
 
         start_time = time.time()
