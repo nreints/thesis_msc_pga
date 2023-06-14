@@ -2,7 +2,7 @@ import roma
 import torch
 
 
-def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus):
+def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus, fix_determinant=True):
     """
     Transforms a batch of vectors by a rotation matrix and translation vector.
 
@@ -22,6 +22,7 @@ def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus):
             - Shape for non-recurrent network: (batch, 24)
             - Shape for recurrent network: (batch, frames, 24)
     """
+    device = rot_mat.device
     if len(rot_mat.shape) == 2:
         if xpos_start is None:
             xpos_start = 0
@@ -65,7 +66,20 @@ def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus):
         # Ensure prediction represents rotation matrix
         u, _, vT = torch.linalg.svd(flat_rotations)
         true_rotations = torch.bmm(u, vT)
-
+        if fix_determinant:
+            det = torch.linalg.det(true_rotations)
+            # print(det)
+            mask = torch.isclose(det, torch.tensor(-1.0), atol=0.01)
+            if torch.sum(mask) > 0:
+                print("FOUND SOMETHING", sum(mask).item(), "/", len(mask))
+                print(u[mask])
+                u_new = u.clone()
+                u_new[mask, :, -1] = -u[mask, :, -1]
+                true_rotations = torch.bmm(u_new, vT)
+                det_2 = torch.linalg.det(true_rotations)
+                mask_2 = torch.isclose(det_2, torch.tensor(-1.0), atol=0.01)
+                if torch.sum(mask_2) > 0:
+                    print("TRIED AGAIN..", sum(mask_2).item(), "/", len(mask_2))
         start_origin = (
             start_pos.reshape(-1, rot_mat.shape[1], 8, 3).flatten(end_dim=1)
             - xpos_start

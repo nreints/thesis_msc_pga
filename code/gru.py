@@ -45,7 +45,13 @@ class GRU(nn.Module):
                 nn.Linear(
                     config["extra_input_n"],
                     self.n_layers * self.h_size,
-                )
+                ),
+                nn.ReLU(),
+                nn.Linear(
+                    self.n_layers * self.h_size,
+                    self.n_layers * self.h_size,
+                ),
+                nn.ReLU(),
             )
         self.h0 = nn.Parameter(
             torch.zeros(self.n_layers, 1, self.h_size).normal_(std=0.01),
@@ -104,7 +110,7 @@ def train_model(
     # Set model to train mode
     model.train()
     wandb.watch(model, loss_module, log="all", log_freq=10)
-
+    torch.autograd.set_detect_anomaly(True)
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
@@ -251,7 +257,7 @@ if __name__ == "__main__":
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total, train_sims, test_sims = divide_train_test_sims(
-            data_dir_train, data_dirs_test, "train_test_ids_2400", i
+            data_dir_train, data_dirs_test, "train_test_ids_2400"
         )
 
         config = dict(
