@@ -192,6 +192,8 @@ def divide_train_test_sims(data_dir_train, data_dirs_test, file_name, i=None):
             train_sims = sim_ids_iteration["train_sims"]
             test_sims = sim_ids_iteration["test_sims"]
             n_sims_train_total = len(train_sims) + len(test_sims)
+            print("Number of train simulations: ", len(train_sims))
+            print("Number of test simulations: ", len(test_sims))
         return n_sims_train_total, train_sims, test_sims
     else:
         n_sims_train_total = len(os.listdir(data_dir_train))
