@@ -49,7 +49,7 @@ if __name__ == "__main__":
         help="File name where to store the simulation IDs",
         default="train_test_ids",
     )
-    parser.add_argument("-iter", type=int, help="number of iterations")
+    parser.add_argument("-iter", type=int, help="number of iterations", default=10)
 
     args = parser.parse_args()
     # os.makedirs(f"data/{args.file_name}", exist_ok=True)
