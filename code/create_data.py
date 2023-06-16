@@ -281,7 +281,7 @@ def generate_data(
     # data.qvel[0:3] = [0, -3, 0]
     data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1], size=3)
     if pure_tennis:
-        data.qvel[3:6] = [0, random.uniform(20, 50), 0.01]
+        data.qvel[3:6] = [0, random.uniform(30, 50), 1]
 
     # Collect geom_id and body_id
     geom_id = model.geom("object_geom").id
@@ -620,9 +620,8 @@ def write_data_nsim(
         sizes_str, sizes_list = get_sizes(symmetry)
         # Define position
         pos = get_pos(symmetry, gravity, plane, sizes_list)
-        print(pos)
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
-        print(string)
+
         # Create dataset
         dataset = generate_data(
             string,

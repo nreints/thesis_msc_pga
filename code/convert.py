@@ -76,7 +76,8 @@ def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus, fix_determinant=T
                 true_rotations = torch.bmm(u_new, vT)
                 det_2 = torch.linalg.det(true_rotations)
                 mask_2 = torch.isclose(det_2, torch.tensor(-1.0), atol=0.01)
-                assert torch.sum(mask_2) == 0, f"TRIED AGAIN.. BUT FAILED {sum(mask_2).item()}/{len(mask_2)}
+                assert torch.sum(mask_2) == 0, f"TRIED AGAIN.. BUT FAILED {sum(mask_2).item()}/{len(mask_2)}"
+
         start_origin = (
             start_pos.reshape(-1, rot_mat.shape[1], 8, 3).flatten(end_dim=1)
             - xpos_start
