@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=data_creation
+#SBATCH --time=0:5:0
+#SBATCH --mem=10000M
+#SBATCH --output=output/simulationIDs_%A.out
+
+module purge
+module load 2022
+module load Miniconda3/4.12.0
+
+cd $HOME/MScThesis/code
+source activate thesis
+
+cd $HOME/MScThesis/code
+srun python simulation_ids.py
