@@ -69,5 +69,5 @@ if __name__ == "__main__":
         os.remove(file_name)
     with open(file_name, "wb") as f:
         pickle.dump(final_dict, f)
-
+    print("-- Finished --")
     print(f"Simulation IDs saved in {file_name}")
