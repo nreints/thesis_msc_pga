@@ -11,6 +11,7 @@ from utils import *
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 print(DEVICE)
+print(str(DEVICE))
 
 class GRU(nn.Module):
     def __init__(
@@ -110,7 +111,6 @@ def train_model(
     # Set model to train mode
     model.train()
     wandb.watch(model, loss_module, log="all", log_freq=10)
-    torch.autograd.set_detect_anomaly(True)
     # Training loop
     for epoch in range(num_epochs):
         loss_epoch = 0
