@@ -538,6 +538,8 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
         gravity_str = f'<option integrator="{integrator}"/>'
     else:
         gravity_str = f'<option integrator="{integrator}" gravity="0 0 0"/>'
+    print(gravity_str, plane_str)
+    print(plane, gravity)
     return f"""
     <mujoco>
     {gravity_str}
@@ -621,7 +623,6 @@ def write_data_nsim(
         # Define position
         pos = get_pos(symmetry, gravity, plane, sizes_list)
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
-
         # Create dataset
         dataset = generate_data(
             string,
