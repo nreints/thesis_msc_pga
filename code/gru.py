@@ -115,6 +115,7 @@ def train_model(
     for epoch in range(num_epochs):
         loss_epoch = 0
         epoch_time = time.time()
+        print(model)
 
         for (
             data_inputs,
@@ -124,6 +125,7 @@ def train_model(
             extra_input_data,
             xpos_start,
         ) in data_loader:
+            print(DEVICE)
             data_inputs = data_inputs.to(DEVICE)  # Shape: [batch, frames, n_data]
             data_labels = data_labels.to(DEVICE)  # Shape: [batch, frames, n_data]
             pos_target = pos_target.to(DEVICE)  # Shape: [batch, frames, n_data]
