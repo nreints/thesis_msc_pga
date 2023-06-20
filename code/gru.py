@@ -9,8 +9,8 @@ from convert import *
 from dataset import RecurrentDataset
 from utils import *
 
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-
+DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+print(DEVICE)
 
 class GRU(nn.Module):
     def __init__(
@@ -124,12 +124,12 @@ def train_model(
             extra_input_data,
             xpos_start,
         ) in data_loader:
-            data_inputs = data_inputs.to(device)  # Shape: [batch, frames, n_data]
-            data_labels = data_labels.to(device)  # Shape: [batch, frames, n_data]
-            pos_target = pos_target.to(device)  # Shape: [batch, frames, n_data]
-            start_pos = start_pos.to(device)  # Shape: [batch, n_data]
-            extra_input_data = extra_input_data.to(device)  # Shape: [batch, 3]
-            xpos_start = xpos_start.to(device)
+            data_inputs = data_inputs.to(DEVICE)  # Shape: [batch, frames, n_data]
+            data_labels = data_labels.to(DEVICE)  # Shape: [batch, frames, n_data]
+            pos_target = pos_target.to(DEVICE)  # Shape: [batch, frames, n_data]
+            start_pos = start_pos.to(DEVICE)  # Shape: [batch, n_data]
+            extra_input_data = extra_input_data.to(DEVICE)  # Shape: [batch, 3]
+            xpos_start = xpos_start.to(DEVICE)
 
             if config["str_extra_input"] == "inertia_body":
                 extra_input_data /= normalization
@@ -194,9 +194,9 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                     xpos_start,
                 ) in data_loader:
                     # Determine prediction of model on dev set
-                    data_inputs = data_inputs.to(device)
-                    data_labels = data_labels.to(device)
-                    extra_input_data = extra_input_data.to(device)
+                    data_inputs = data_inputs.to(DEVICE)
+                    data_labels = data_labels.to(DEVICE)
+                    extra_input_data = extra_input_data.to(DEVICE)
 
                     if config["str_extra_input"] == "inertia_body":
                         extra_input_data /= normalization
@@ -291,7 +291,7 @@ if __name__ == "__main__":
             args.mode_wandb,
             losses,
             train_model,
-            device,
+            DEVICE,
             RecurrentDataset,
             GRU,
             args.wandb_name,
