@@ -32,7 +32,9 @@ def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus, fix_determinant=T
         rotations = rot_mat[:, :9].reshape(-1, 3, 3)  # [Batch_size, 3, 3]
         # Ensure prediction represents rotation matrix
         if identity_focus:
-            identity = torch.eye(3)[None, ...].repeat(rotations.shape[0], 1, 1)
+            identity = (
+                torch.eye(3)[None, ...].repeat(rotations.shape[0], 1, 1).to(device)
+            )
             rotations += identity
 
         u, _, vT = torch.linalg.svd(rotations)
@@ -59,7 +61,9 @@ def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus, fix_determinant=T
         flat_rotations = rotations.flatten(end_dim=1)  # [Batch_size x frames, 3, 3]
 
         if identity_focus:
-            identity = torch.eye(3)[None, ...].repeat(flat_rotations.shape[0], 1, 1)
+            identity = (
+                torch.eye(3)[None, ...].repeat(flat_rotations.shape[0], 1, 1).to(device)
+            )
             # print(identity.shape)
             flat_rotations += identity
 
@@ -76,7 +80,9 @@ def rotMat2pos(rot_mat, start_pos, xpos_start, identity_focus, fix_determinant=T
                 true_rotations = torch.bmm(u_new, vT)
                 det_2 = torch.linalg.det(true_rotations)
                 mask_2 = torch.isclose(det_2, torch.tensor(-1.0), atol=0.01)
-                assert torch.sum(mask_2) == 0, f"TRIED AGAIN.. BUT FAILED {sum(mask_2).item()}/{len(mask_2)}"
+                assert (
+                    torch.sum(mask_2) == 0
+                ), f"TRIED AGAIN.. BUT FAILED {sum(mask_2).item()}/{len(mask_2)}"
 
         start_origin = (
             start_pos.reshape(-1, rot_mat.shape[1], 8, 3).flatten(end_dim=1)
@@ -138,6 +144,7 @@ def quat2pos(quat, start_pos, xpos_start, identity_focus, add_identity=True):
         - Converted quaternion to current xyz position
             (batch, 24) or (batch, frames, 24)
     """
+    device = quat.device
     if len(quat.shape) == 2:
         if xpos_start is None:
             xpos_start = 0
@@ -145,9 +152,11 @@ def quat2pos(quat, start_pos, xpos_start, identity_focus, add_identity=True):
             xpos_start = xpos_start.reshape(-1, 1, 3)
 
         if identity_focus and add_identity:
-            identity = torch.FloatTensor([1, 0, 0, 0, 0, 0, 0])[None, :].repeat(
-                quat.shape[0], 1
-            )
+            identity = (
+                torch.FloatTensor([1, 0, 0, 0, 0, 0, 0])[None, :].repeat(
+                    quat.shape[0], 1
+                )
+            ).to(device)
             quat += identity
 
         start_pos_shape = start_pos.shape
@@ -172,8 +181,10 @@ def quat2pos(quat, start_pos, xpos_start, identity_focus, add_identity=True):
         quat_flat = quat.flatten(end_dim=1)
 
         if identity_focus and add_identity:
-            identity = torch.FloatTensor([1, 0, 0, 0, 0, 0, 0])[None, :].repeat(
-                quat_flat.shape[0], 1
+            identity = (
+                torch.FloatTensor([1, 0, 0, 0, 0, 0, 0])[None, :]
+                .repeat(quat_flat.shape[0], 1)
+                .to(device)
             )
             quat_flat += identity
 
@@ -320,7 +331,7 @@ def dualQ2pos(dualQ, start_pos, start_xpos, identity_focus, add_identity=True):
 
     # Ensure prediction represents pure rotation
     if identity_focus and add_identity:
-        identity = torch.tensor([1, 0, 0, 0, 0, 0, 0, 0])
+        identity = torch.tensor([1, 0, 0, 0, 0, 0, 0, 0]).to(device)
         if len(dualQ.shape) == 3:
             identity = identity[None, None, :].repeat(dualQ.shape[0], 1, 1)
         else:
