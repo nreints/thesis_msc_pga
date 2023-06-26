@@ -4,6 +4,10 @@ import time
 import torch
 import torch.nn as nn
 
+torch.backends.cudnn.benchmark = False
+torch.use_deterministic_algorithms(True)
+torch.backends.cudnn.deterministic = True
+
 import wandb
 from convert import *
 from dataset import RecurrentDataset
@@ -252,10 +256,12 @@ if __name__ == "__main__":
     losses = [nn.MSELoss]
 
     for i in range(args.iterations):
+        torch.manual_seed(i)
+
         print(f"----- ITERATION {i+1}/{args.iterations} ------")
         # Divide the train en test dataset
         n_sims_train_total, train_sims, test_sims = divide_train_test_sims(
-            data_dir_train, data_dirs_test, "train_test_ids_2400"
+            data_dir_train, data_dirs_test, "train_test_ids_2400", i
         )
 
         config = dict(
@@ -293,5 +299,6 @@ if __name__ == "__main__":
             RecurrentDataset,
             GRU,
             args.wandb_name,
+            i
         )
         print("It took ", time.time() - start_time, " seconds.")

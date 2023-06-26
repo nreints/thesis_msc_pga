@@ -3,6 +3,9 @@ import os
 import pickle
 import random
 
+import numpy
+import random
+
 import torch
 import torch.utils.data as data
 
@@ -255,6 +258,12 @@ def save_model(config, ndata_dict, model, normalize_extra_input):
     print("Saved model in ", path_dir)
 
 
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    numpy.random.seed(worker_seed)
+    random.seed(worker_seed)
+
+
 def model_pipeline(
     hyperparameters,
     mode_wandb,
@@ -264,6 +273,7 @@ def model_pipeline(
     dataset_class,
     model_class,
     name_project,
+    i,
 ):
     """
     Enables WandB, creates model, trains model, and saves model.
@@ -320,6 +330,7 @@ def model_pipeline(
             dataset_class,
             model_class,
             device,
+            i,
         )
         print("Datatype:", config["data_type"])
 
@@ -342,7 +353,7 @@ def model_pipeline(
 
 
 def make(
-    config, ndata_dict, loss_dict, optimizer_dict, dataset_class, model_class, device
+    config, ndata_dict, loss_dict, optimizer_dict, dataset_class, model_class, device, i
 ):
     """
     Makes dataloaders, model, criterion and optimizer.
@@ -381,8 +392,16 @@ def make(
         dir="data/" + config.data_dir_train,
         extra_input=(config.str_extra_input, config.extra_input_n),
     )
+
+    g = torch.Generator()
+    g.manual_seed(i)
+
     train_data_loader = data.DataLoader(
-        data_set_train, batch_size=config.batch_size, shuffle=True
+        data_set_train,
+        batch_size=config.batch_size,
+        shuffle=True,
+        worker_init_fn=seed_worker,
+        generator=g,
     )
 
     print("-- Finished Train Dataloader --")
@@ -399,7 +418,12 @@ def make(
             extra_input=(config.str_extra_input, config.extra_input_n),
         )
         test_data_loader = data.DataLoader(
-            data_set_test, batch_size=config.batch_size, shuffle=True, drop_last=False
+            data_set_test,
+            batch_size=config.batch_size,
+            shuffle=True,
+            drop_last=False,
+            worker_init_fn=seed_worker,
+            generator=g,
         )
         test_data_loaders += [test_data_loader]
 
