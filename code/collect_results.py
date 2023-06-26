@@ -21,9 +21,11 @@ def get_grouped_filtered_runs(runs, filters, groups):
     grouped_runs = {}
     for run in runs:
         config = run.config
-
+        # print(("lessSimulations??" not in run.tags))
         # If it satisfies all filters, save it
-        if all([config.get(filter) == filters[filter] for filter in filters]):
+        if all([config.get(filter) == filters[filter] for filter in filters]) and (
+            "lessSimulations??" not in run.tags
+        ):
             filtered_runs += [run]
             config = run.config
 
@@ -58,8 +60,11 @@ def average_runs(group_dict, data_dir):
         "focus_identity": [],
         "data_type": [],
         "data_dir_train": [],
+        "data_dir_test": [],
         "mean_min_train": [],
         "mean_min_test": [],
+        "std_min_train": [],
+        "std_min_test": [],
     }
     for key, runs in (group_dict).items():
         data["reference"] += [key[0]]
@@ -73,29 +78,39 @@ def average_runs(group_dict, data_dir):
             history = run.history()
             train_loss_values[i] = history.get("Train loss")
             test_loss_values[i] = history.get(f"Test loss {data_dir}")
-        data["data_dir_train"] = run.config["data_dir_train"]
+        data["data_dir_train"] += [run.config["data_dir_train"]]
+        data["data_dir_test"] += ["data_" + data_dir]
 
         min_vals_train = np.min(train_loss_values, axis=1)
         mean_min_train = np.mean(min_vals_train)
-        data["mean_min_train"] = mean_min_train
+        std_min_train = np.std(min_vals_train)
+        data["mean_min_train"] += [mean_min_train]
+        data["std_min_train"] += [std_min_train]
+
         min_vals_test = np.min(test_loss_values, axis=1)
         mean_min_test = np.mean(min_vals_test)
-        data["mean_min_test"] = mean_min_test
+        std_min_test = np.std(min_vals_test)
+        data["mean_min_test"] += [mean_min_test]
+        data["std_min_test"] += [std_min_test]
 
     df = pd.DataFrame(data)
     df.to_pickle("results.pickle")
     return df
 
 
-def get_specific_values(filter, data=None):
-    if not data:
+def get_specific_values(filter_dict, *rest):
+    print(filter_dict)
+    if len(rest) == 0:
         data = pd.read_pickle("results.pickle")
+    else:
+        data = rest[0]
     mask = np.logical_and.reduce(
-        [pd.isnull(data[k]) if v is None else data[k] == v for k, v in filter.items()]
+        [
+            pd.isnull(data[k]) if v is None else data[k] == v
+            for k, v in filter_dict.items()
+        ]
     )
-    print(data.loc[mask])
     return data.loc[mask]
-    # print(data.loc[(data['column_name'] >= A) & (data['column_name'] <= B)])
 
 
 if __name__ == "__main__":
@@ -107,26 +122,35 @@ if __name__ == "__main__":
         help="Force the model to focus on identity",
     )
     args = parser.parse_args()
+
+    filters = {
+        "str_extra_input": None,
+        "focus_identity": False,
+        "data_dir_train": "data_t(5,20)_r(5,20)_combi_pNone_gNone",
+    }
+
     if args.new_collect_results:
         runs = get_runs()
         group_by = ["reference", "str_extra_input", "focus_identity", "data_type"]
         filtered_runs, grouped_runs = get_grouped_filtered_runs(
             runs,
-            {},
+            {
+                # "reference": "fr-fr",
+                # "str_extra_input": None,
+                # "focus_identity": False,
+            },
             group_by,
         )
         average_data = average_runs(grouped_runs, "t(5,20)_r(5,20)_combi_pNone_gNone")
-        specific_df = get_specific_values(average_data)
+        specific_df = get_specific_values(
+            filters,
+            average_data,
+        )
     else:
         print("Using already collected runs !(These may be old)!")
-        specific_df = get_specific_values(
-            {
-                "reference": "fr-fr",
-                "str_extra_input": None,
-                "focus_identity": False,
-                "data_dir_train": "data_t(5,20)_r(5,20)_combi_pNone_gNone",
-            }
-        )
+        specific_df = get_specific_values(filters)
+    print(specific_df)
+    specific_df.to_csv("try_out.csv", index=False)
     # history = run.history()
     #     print(history)
     #     for col in history:
