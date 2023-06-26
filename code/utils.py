@@ -108,22 +108,15 @@ def wandb_eval_string(data_dir_test, data_dir_train):
         return " " + data_dir_test[5:]
 
 
-def nr_extra_input(extra_input_str):
+def extra_input(extra_input_str):
     """
     Returns the number of extra input given the type of extra input.
 
     Input:
         - extra_input_str: string with the type of extra input.
     """
-    n_extra_input = {
-        "inertia_body": 3,
-        "size": 3,
-        "size_squared": 3,
-        "size_mass": 4,
-        "size_squared_mass": 4,
-    }
     if extra_input_str:
-        return n_extra_input[extra_input_str]
+        return 3
     else:
         return 0
 

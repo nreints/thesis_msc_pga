@@ -87,7 +87,7 @@ class RecurrentDataset(data.Dataset):
 
                     if self.extra_input[1] != 0:
                         extra_input_values = torch.FloatTensor(
-                            data_all[self.extra_input[0]]
+                            data_all["inertia_body"]
                         )
                         self.extra_input_data[count] = extra_input_values
                     count += 1
@@ -196,7 +196,7 @@ class NonRecurrentDataset(data.Dataset):
 
                     if self.extra_input[1] != 0:
                         extra_input_values = torch.FloatTensor(
-                            data_all[self.extra_input[0]]
+                            data_all["inertia_body"]
                         )
                         self.data[count, -self.extra_input[1] :] = extra_input_values
                         self.data[count, : -self.extra_input[1]] = data[

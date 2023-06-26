@@ -11,6 +11,7 @@ from utils import *
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
+
 class GRU(nn.Module):
     def __init__(
         self,
@@ -128,7 +129,7 @@ def train_model(
             extra_input_data = extra_input_data.to(DEVICE)  # Shape: [batch, 3]
             xpos_start = xpos_start.to(DEVICE)
 
-            if config["str_extra_input"] == "inertia_body":
+            if config["str_extra_input"]:
                 extra_input_data /= normalization
 
             if config.extra_input_n != 0:
@@ -195,7 +196,7 @@ def eval_model(model, data_loaders, config, current_epoch, losses, normalization
                     data_labels = data_labels.to(DEVICE)
                     extra_input_data = extra_input_data.to(DEVICE)
 
-                    if config["str_extra_input"] == "inertia_body":
+                    if config["str_extra_input"]:
                         extra_input_data /= normalization
 
                     if config.extra_input_n != 0:
@@ -241,7 +242,7 @@ if __name__ == "__main__":
     if not os.path.exists(data_dir_train):
         raise IndexError(f"No directory for the train data {data_dir_train}")
 
-    extra_input_n = nr_extra_input(args.extra_input)
+    extra_input_n = extra_input(args.extra_input)
     reference = get_reference(args.data_type)
 
     print(
