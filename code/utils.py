@@ -71,15 +71,9 @@ def parse_args():
         default=10,
     )
     parser.add_argument(
-        "-extra_input",
-        type=str,
-        choices=[
-            "inertia_body",
-            "size",
-            "size_squared",
-            "size_mass",
-            "size_squared_mass",
-        ],
+        "--inertia_body",
+        action="store_true",
+        help="Present the model with inertia information",
     )
     parser.add_argument("--batch_size", type=int, default=1024, help="Batch size")
     parser.add_argument(
