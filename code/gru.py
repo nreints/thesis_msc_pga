@@ -242,7 +242,7 @@ if __name__ == "__main__":
     if not os.path.exists(data_dir_train):
         raise IndexError(f"No directory for the train data {data_dir_train}")
 
-    extra_input_n = extra_input(args.extra_input)
+    extra_input_n = extra_input(args.inertia_body)
     reference = get_reference(args.data_type)
 
     print(
@@ -277,7 +277,7 @@ if __name__ == "__main__":
             data_dir_train=data_train_dir,
             data_dirs_test=data_dirs_test,
             iter=i,
-            str_extra_input=args.extra_input,
+            str_extra_input=args.inertia_body,
             extra_input_n=extra_input_n,
             focus_identity=args.focus_identity,
             fix_determinant=True,
