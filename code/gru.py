@@ -299,6 +299,6 @@ if __name__ == "__main__":
             RecurrentDataset,
             GRU,
             args.wandb_name,
-            i
+            i,
         )
         print("It took ", time.time() - start_time, " seconds.")
