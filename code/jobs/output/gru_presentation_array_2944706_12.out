@@ -1,0 +1,67 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.15.4 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230620_141159-305uoprw
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run royal-surf-275
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal/runs/305uoprw
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.027 MB of 0.027 MB uploaded (0.000 MB deduped)wandb: \ 0.027 MB of 0.027 MB uploaded (0.000 MB deduped)wandb: | 0.027 MB of 0.027 MB uploaded (0.000 MB deduped)wandb: / 0.027 MB of 0.027 MB uploaded (0.000 MB deduped)wandb: - 0.027 MB of 0.027 MB uploaded (0.000 MB deduped)wandb: 🚀 View run royal-surf-275 at: https://wandb.ai/nreints/ThesisFinal/runs/305uoprw
+wandb: Synced 7 W&B file(s), 0 media file(s), 3 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230620_141159-305uoprw/logs
+Training on dataset: data_t(5,20)_r(5,20)_combi_pNone_gNone
+Testing on 5 datasets: ['data_t(5,20)_r(5,20)_full_pNone_gNone', 'data_t(5,20)_r(5,20)_none_pNone_gNone', 'data_t(5,20)_r(5,20)_tennis_pNone_gNone', 'data_t(5,20)_r(5,20)_combi_pNone_gNone', 'data_t(5,20)_r(5,20)_semi_pNone_gNone']
+Focussing on identity: True
+Using extra input: None
+Using fr-fr as reference point.
+----- ITERATION 1/10 ------
+Total number of simulations in train dir:  2400
+Checked number of simulations in each data directory.
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 50.344367265701294 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_full_pNone_gNone took 12.856690406799316 seconds.
+The dataloader for data/data_t(5,20)_r(5,20)_none_pNone_gNone took 12.748278856277466 seconds.
+The dataloader for data/data_t(5,20)_r(5,20)_tennis_pNone_gNone took 12.74952220916748 seconds.
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 12.926843643188477 seconds.
+The dataloader for data/data_t(5,20)_r(5,20)_semi_pNone_gNone took 13.006290197372437 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(7, 96, batch_first=True)
+  (fc): Linear(in_features=96, out_features=7, bias=True)
+)
+Datatype: quat_1
+-- Started Training --
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/gru.py", line 286, in <module>
+    model = model_pipeline(
+  File "/gpfs/home2/nreints/MScThesis/code/utils.py", line 340, in model_pipeline
+    train_fn(
+  File "/gpfs/home2/nreints/MScThesis/code/gru.py", line 141, in train_model
+    alt_preds = convert(
+  File "/gpfs/home2/nreints/MScThesis/code/convert.py", line 475, in convert
+    return quat2pos(true_preds, start_pos, xpos_start, identity)
+  File "/gpfs/home2/nreints/MScThesis/code/convert.py", line 178, in quat2pos
+    quat_flat += identity
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu!
+srun: error: gcn26: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=2944781.0
+
+JOB STATISTICS
+==============
+Job ID: 2944781
+Array Job ID: 2944706_12
+Cluster: snellius
+User/Group: nreints/nreints
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:41:42 core-walltime
+Job Wall-clock time: 00:02:19
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 0.00 MB (0.00 MB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.

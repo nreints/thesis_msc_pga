@@ -1,0 +1,29 @@
+['data_t(0,0)_r(0,0)_full_pTrue_gTrue', 'data_t(0,0)_r(0,0)_semi_pTrue_gTrue', 'data_t(0,0)_r(0,0)_tennis_pTrue_gTrue', 'data_t(0,0)_r(0,0)_none_pTrue_gTrue']
+data_t(0,0)_r(0,0)_combi_pTrue_gTrue
+Using 4 directories.
+srun: error: gcn5: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=2928157.0
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/create_combi_data.py", line 74, in <module>
+    create_combi(args.dirs, args.new_dir)
+  File "/gpfs/home2/nreints/MScThesis/code/create_combi_data.py", line 45, in create_combi
+    nr_sims, total_nr_sims = get_nr_sims(dir_list)
+  File "/gpfs/home2/nreints/MScThesis/code/create_combi_data.py", line 20, in get_nr_sims
+    nr_sims.append(len(os.listdir("data/" + dir)))
+FileNotFoundError: [Errno 2] No such file or directory: 'data/data_t(0,0)_r(0,0)_none_pTrue_gTrue'
+
+JOB STATISTICS
+==============
+Job ID: 2928157
+Array Job ID: 2928156_9
+Cluster: snellius
+User/Group: nreints/nreints
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:02:06 core-walltime
+Job Wall-clock time: 00:00:07
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 100.00 MB (100.00 MB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
