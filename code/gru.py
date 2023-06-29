@@ -13,6 +13,8 @@ from convert import *
 from dataset import RecurrentDataset
 from utils import *
 
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 

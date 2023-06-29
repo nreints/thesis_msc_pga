@@ -17,4 +17,4 @@ cd $HOME/MScThesis/code
 source activate thesis
 
 cd $HOME/MScThesis/code
-srun CUBLAS_WORKSPACE_CONFIG=:16:8 python gru.py $(head -$SLURM_ARRAY_TASK_ID $HPARAMS_FILE | tail -1)
+srun python gru.py $(head -$SLURM_ARRAY_TASK_ID $HPARAMS_FILE | tail -1)
