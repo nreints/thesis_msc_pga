@@ -9,7 +9,7 @@ def get_runs():
     api = wandb.Api()
 
     # Define your project
-    project = "nreints/ThesisFinal"
+    project = "nreints/ThesisFinal2"
 
     runs = api.runs(project)
     print(f"There are {len(runs)} runs in ThesisFinal.")
@@ -84,14 +84,14 @@ def average_runs(group_dict, data_dir):
         min_vals_train = np.min(train_loss_values, axis=1)
         mean_min_train = np.mean(min_vals_train)
         std_min_train = np.std(min_vals_train)
-        data["mean_min_train"] += [mean_min_train]
-        data["std_min_train"] += [std_min_train]
+        data["mean_min_train"] += ["{:.4e}".format(mean_min_train)]
+        data["std_min_train"] += ["{:.4e}".format(std_min_train)]
 
         min_vals_test = np.min(test_loss_values, axis=1)
         mean_min_test = np.mean(min_vals_test)
         std_min_test = np.std(min_vals_test)
-        data["mean_min_test"] += [mean_min_test]
-        data["std_min_test"] += [std_min_test]
+        data["mean_min_test"] += ["{:.4e}".format(mean_min_test)]
+        data["std_min_test"] += ["{:.4e}".format(std_min_test)]
 
     df = pd.DataFrame(data)
     df.to_pickle("results.pickle")
@@ -104,6 +104,7 @@ def get_specific_values(filter_dict, *rest):
         data = pd.read_pickle("results.pickle")
     else:
         data = rest[0]
+    print(data)
     mask = np.logical_and.reduce(
         [
             pd.isnull(data[k]) if v is None else data[k] == v
@@ -123,10 +124,12 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    train_dir = "data_t(0,0)_r(5,20)_combi_pNone_gNone"
     filters = {
-        "str_extra_input": None,
+        "str_extra_input": False,
         "focus_identity": False,
-        "data_dir_train": "data_t(5,20)_r(5,20)_combi_pNone_gNone",
+        "reference": "fr-fr",
+        "data_dir_train": train_dir,
     }
 
     if args.new_collect_results:
@@ -138,10 +141,12 @@ if __name__ == "__main__":
                 # "reference": "fr-fr",
                 # "str_extra_input": None,
                 # "focus_identity": False,
+                "data_dir_train": train_dir
             },
             group_by,
         )
-        average_data = average_runs(grouped_runs, "t(5,20)_r(5,20)_combi_pNone_gNone")
+        average_data = average_runs(grouped_runs, train_dir[5:])
+
         specific_df = get_specific_values(
             filters,
             average_data,
@@ -149,6 +154,7 @@ if __name__ == "__main__":
     else:
         print("Using already collected runs !(These may be old)!")
         specific_df = get_specific_values(filters)
+
     print(specific_df)
     specific_df.to_csv("try_out.csv", index=False)
     # history = run.history()
