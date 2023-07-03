@@ -442,7 +442,7 @@ def generate_data(
     return dataset
 
 
-def get_sizes(symmetry):
+def get_sizes(symmetry, bigBlocks):
     """
     Returns the sizes given the required symmetry.
 
@@ -474,6 +474,8 @@ def get_sizes(symmetry):
             f"Not a valid string for argument symmetry: {symmetry}"
         )
     random_size = np.random.uniform(0.05, 0.5)
+    if bigBlocks:
+        random_size *= 10
     sizes = ratio * random_size
     return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
 
@@ -499,14 +501,6 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav, tennis_ef
         dir = f"data/data_{symmetry}_p{plane}_g{grav}_tennisEffect"
 
     os.makedirs(dir, exist_ok=True)
-    # Warn if directory already exists with more simulations.
-    if len(os.listdir(dir)) > num_sims:
-        print(
-            f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory {dir}."
-        )
-        raise IndexError(
-            f"This directory ({dir}) already exists with fewer simulations."
-        )
     return dir
 
 
@@ -583,6 +577,7 @@ def write_data_nsim(
     plane,
     integrator,
     tennis_effect,
+    bigBlocks,
 ):
     """
     Computes and writes data of num_sims each with n_steps.
@@ -609,6 +604,14 @@ def write_data_nsim(
     Output:
         - None; writes to the corresponding pickle file.
     """
+    # Warn if directory already exists with more simulations.
+    if len(os.listdir(dir)) > num_sims:
+        print(
+            f"This directory already existed with {len(os.listdir(dir))} files, you want {num_sims} files. Please delete directory {dir}."
+        )
+        raise IndexError(
+            f"This directory ({dir}) already exists with fewer simulations."
+        )
     if tennis_effect and not symmetry == "tennis":
         raise BaseException("Cannot create tenniseffect if symmetry is not tennis.")
     for sim_id in range(num_sims):
@@ -617,7 +620,7 @@ def write_data_nsim(
         # Define euler angle
         euler = f"{np.random.uniform(0, 360)} {np.random.uniform(0, 360)} {np.random.uniform(0, 360)}"
         # Define sizes
-        sizes_str, sizes_list = get_sizes(symmetry)
+        sizes_str, sizes_list = get_sizes(symmetry, bigBlocks)
         # Define position
         pos = get_pos(symmetry, gravity, plane, sizes_list)
         string = get_string(euler, pos, sizes_str, gravity, plane, integrator)
@@ -678,6 +681,7 @@ if __name__ == "__main__":
     parser.add_argument("--plane", action=argparse.BooleanOptionalAction)
     parser.add_argument("--visualize", action=argparse.BooleanOptionalAction)
     parser.add_argument("--tennis_effect", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--big", action=argparse.BooleanOptionalAction)
 
     args = parser.parse_args()
 
@@ -687,7 +691,7 @@ if __name__ == "__main__":
     print(
         f"Creating dataset vel_range_l={vel_range_l}, vel_range_a={vel_range_a}, symmetry={args.symmetry}"
     )
-
+    print(args.data_dir)
     if not args.data_dir:
         data_dir = get_dir(
             vel_range_l,
@@ -699,6 +703,7 @@ if __name__ == "__main__":
             args.tennis_effect,
         )
     else:
+        print("here")
         os.makedirs("data", exist_ok=True)
         os.makedirs(f"data/{args.data_dir}", exist_ok=True)
         data_dir = "data/" + args.data_dir
@@ -715,6 +720,7 @@ if __name__ == "__main__":
         args.plane,
         args.integrator,
         args.tennis_effect,
+        bigBlocks=args.big,
     )
     print(f"Saved in {data_dir}")
     print(f"\nTime: {time.time()- start_time}\n---- FINISHED ----")
