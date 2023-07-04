@@ -462,6 +462,8 @@ def get_sizes(symmetry, bigBlocks):
             np.random.uniform(0.05, 0.5),
             np.random.uniform(0.05, 0.5),
         ]
+        if bigBlocks:
+            sizes *= 10
         return f"{sizes[0]} {sizes[1]} {sizes[2]}", sizes
     elif symmetry == "full":
         ratio = np.array([1, 1, 1])
@@ -495,8 +497,8 @@ def get_dir(vel_range_l, vel_range_a, symmetry, num_sims, plane, grav, tennis_ef
     Output:
         - Directory with corresponding name.
     """
-    dir = f"data/data_t{str(vel_range_l).replace(' ', '')}_r{str(vel_range_a).replace(' ', '')}_{symmetry}_p{plane}_g{grav}"
     os.makedirs("data", exist_ok=True)
+    dir = f"data/data_t{str(vel_range_l).replace(' ', '')}_r{str(vel_range_a).replace(' ', '')}_{symmetry}_p{plane}_g{grav}"
     if tennis_effect:
         dir = f"data/data_{symmetry}_p{plane}_g{grav}_tennisEffect"
 
