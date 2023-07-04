@@ -9,10 +9,11 @@ def get_runs():
     api = wandb.Api()
 
     # Define your project
-    project = "nreints/ThesisFinal2"
+    project_name = "ThesisFinal2"
+    project = f"nreints/{project_name}"
 
     runs = api.runs(project)
-    print(f"There are {len(runs)} runs in ThesisFinal.")
+    print(f"There are {len(runs)} runs in {project_name}.")
     return runs
 
 
@@ -53,46 +54,51 @@ def get_grouped_filtered_runs(runs, filters, groups):
 #     return grouped_runs
 
 
+# def get_grouped_runs_average(runs):
+
+
 def average_runs(group_dict, data_dir):
+    # print(group_dict.keys())
+    # exit()
     data = {
-        "reference": [],
-        "str_extra_input": [],
-        "focus_identity": [],
-        "data_type": [],
-        "data_dir_train": [],
-        "data_dir_test": [],
-        "mean_min_train": [],
-        "mean_min_test": [],
-        "std_min_train": [],
-        "std_min_test": [],
+        "reference": ["" for _ in range(len(group_dict))],
+        "str_extra_input": ["" for _ in range(len(group_dict))],
+        "focus_identity": ["" for _ in range(len(group_dict))],
+        "data_type": ["" for _ in range(len(group_dict))],
+        "data_dir_train": ["" for _ in range(len(group_dict))],
     }
+    iter = 0
     for key, runs in (group_dict).items():
-        data["reference"] += [key[0]]
-        data["str_extra_input"] += [key[1]]
-        data["focus_identity"] += [key[2]]
-        data["data_type"] += [key[3]]
-        print(f"Considering runs of group {key}")
-        train_loss_values = np.zeros((len(runs), runs[0].config.get("epochs")))
-        test_loss_values = np.zeros((len(runs), runs[0].config.get("epochs")))
+        data["data_dir_train"][iter] = key[0]
+        data["reference"][iter] = key[1]
+        data["str_extra_input"][iter] = key[2]
+        data["focus_identity"][iter] = key[3]
+        data["data_type"][iter] = key[4]
+        print(f"Considering {len(runs)} runs of group {key}")
+
+        # for loss_type in key for key,val in run.history.items() if "loss" in key]
+        # train_loss_values = np.zeros((len(runs), runs[0].config.get("epochs")))
+        # test_loss_values = np.zeros((len(runs), runs[0].config.get("epochs")))
+        all_losses = {
+            key: np.zeros((len(runs), runs[0].config.get("epochs")))
+            for key in runs[0].history().keys()
+            if "loss" in key
+        }
         for i, run in enumerate(runs):
             history = run.history()
-            train_loss_values[i] = history.get("Train loss")
-            test_loss_values[i] = history.get(f"Test loss {data_dir}")
-        data["data_dir_train"] += [run.config["data_dir_train"]]
-        data["data_dir_test"] += ["data_" + data_dir]
+            for loss in all_losses.keys():
+                all_losses[loss][i] = history.get(loss)
+        for loss_name, array in all_losses.items():
+            min_vals = np.min(array, axis=1)
+            mean_min = np.mean(min_vals)
+            std_min = np.std(min_vals)
+            if loss_name not in data.keys():
+                data[loss_name] = ["" for _ in range(len(group_dict))]
+            data[loss_name][iter] = "{:.4e} ".format(mean_min) + "({:.4e})".format(
+                std_min
+            )
 
-        min_vals_train = np.min(train_loss_values, axis=1)
-        mean_min_train = np.mean(min_vals_train)
-        std_min_train = np.std(min_vals_train)
-        data["mean_min_train"] += ["{:.4e}".format(mean_min_train)]
-        data["std_min_train"] += ["{:.4e}".format(std_min_train)]
-
-        min_vals_test = np.min(test_loss_values, axis=1)
-        mean_min_test = np.mean(min_vals_test)
-        std_min_test = np.std(min_vals_test)
-        data["mean_min_test"] += ["{:.4e}".format(mean_min_test)]
-        data["std_min_test"] += ["{:.4e}".format(std_min_test)]
-
+        iter += 1
     df = pd.DataFrame(data)
     df.to_pickle("results.pickle")
     return df
@@ -104,7 +110,7 @@ def get_specific_values(filter_dict, *rest):
         data = pd.read_pickle("results.pickle")
     else:
         data = rest[0]
-    print(data)
+    # print(data)
     mask = np.logical_and.reduce(
         [
             pd.isnull(data[k]) if v is None else data[k] == v
@@ -124,7 +130,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    train_dir = "data_t(0,0)_r(5,20)_combi_pNone_gNone"
+    train_dir = "data_t(5,20)_r(5,20)_combiR_pNone_gNone"
     filters = {
         "str_extra_input": False,
         "focus_identity": False,
@@ -134,14 +140,20 @@ if __name__ == "__main__":
 
     if args.new_collect_results:
         runs = get_runs()
-        group_by = ["reference", "str_extra_input", "focus_identity", "data_type"]
+        group_by = [
+            "data_dir_train",
+            "reference",
+            "str_extra_input",
+            "focus_identity",
+            "data_type",
+        ]
         filtered_runs, grouped_runs = get_grouped_filtered_runs(
             runs,
             {
-                # "reference": "fr-fr",
-                # "str_extra_input": None,
-                # "focus_identity": False,
-                "data_dir_train": train_dir
+                #     # "reference": "fr-fr",
+                #     # "str_extra_input": None,
+                #     # "focus_identity": False,
+                #     "data_dir_train": train_dir
             },
             group_by,
         )
@@ -156,7 +168,12 @@ if __name__ == "__main__":
         specific_df = get_specific_values(filters)
 
     print(specific_df)
-    specific_df.to_csv("try_out.csv", index=False)
+    remove_empty_df = specific_df.replace("", np.nan)
+
+    # drop the columns where all values are NaN
+    remove_empty_df = remove_empty_df.dropna(how="all", axis=1)
+    print(remove_empty_df)
+    remove_empty_df.to_csv("try_out.csv", index=False)
     # history = run.history()
     #     print(history)
     #     for col in history:
