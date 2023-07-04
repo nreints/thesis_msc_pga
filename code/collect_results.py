@@ -80,16 +80,15 @@ def average_runs(group_dict, data_dir):
         # train_loss_values = np.zeros((len(runs), runs[0].config.get("epochs")))
         # test_loss_values = np.zeros((len(runs), runs[0].config.get("epochs")))
         all_losses = {
-            key: np.zeros((len(runs), runs[0].config.get("epochs")))
+            key: np.zeros((len(runs), 1))
             for key in runs[0].history().keys()
             if "loss" in key
         }
         for i, run in enumerate(runs):
             history = run.history()
             for loss in all_losses.keys():
-                all_losses[loss][i] = history.get(loss)
-        for loss_name, array in all_losses.items():
-            min_vals = np.min(array, axis=1)
+                all_losses[loss][i] = min(history.get(loss))
+        for loss_name, min_vals in all_losses.items():
             mean_min = np.mean(min_vals)
             std_min = np.std(min_vals)
             if loss_name not in data.keys():
