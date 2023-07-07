@@ -87,15 +87,18 @@ def average_runs(group_dict, data_dir):
         for i, run in enumerate(runs):
             history = run.history()
             for loss in all_losses.keys():
+                if history.get(loss).dtype != "float64":
+                    print(f"Could not do {loss} of {key} because of NaN")
+                    continue
                 all_losses[loss][i] = min(history.get(loss))
         for loss_name, min_vals in all_losses.items():
             mean_min = np.mean(min_vals)
             std_min = np.std(min_vals)
             if loss_name not in data.keys():
                 data[loss_name] = ["" for _ in range(len(group_dict))]
-            data[loss_name][iter] = "{:.4e} ".format(mean_min) + "({:.4e})".format(
-                std_min
-            )
+            data[loss_name][iter] = "{:.4e} ".format(
+                mean_min
+            ) + "($\pm$ {:.4e})".format(std_min)
 
         iter += 1
     df = pd.DataFrame(data)
@@ -132,7 +135,7 @@ if __name__ == "__main__":
     train_dir = "data_t(5,20)_r(5,20)_combiR_pNone_gNone"
     filters = {
         "str_extra_input": False,
-        "focus_identity": False,
+        "focus_identity": True,
         "reference": "fr-fr",
         "data_dir_train": train_dir,
     }

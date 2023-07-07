@@ -278,7 +278,6 @@ def generate_data(
 
     # Set linear (qvel[0:3]) and angular (qvel[3:6]) velocity
     data.qvel[0:3] = np.random.uniform(vel_range_l[0], vel_range_l[1], size=3)
-    # data.qvel[0:3] = [0, -3, 0]
     data.qvel[3:6] = np.random.uniform(vel_range_a[0], vel_range_a[1], size=3)
     if pure_tennis:
         data.qvel[3:6] = [0, random.uniform(30, 50), 1]
