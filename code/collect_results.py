@@ -134,11 +134,13 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    train_dir = "data_t(5,20)_r(0,0)_combi_pNone_gNone"
+    # train_dir = "data_t(5,20)_r(0,0)_combi_pNone_gNone"
+    # train_dir = "data_t(0,0)_r(5,20)_combi_pNone_gNone"
+    train_dir = "data_t(5,20)_r(5,20)_combi_pNone_gNone"
     filters = {
         "str_extra_input": False,
-        "focus_identity": True,
-        # "focus_identity": False,
+        # "focus_identity": True,
+        "focus_identity": False,
         "reference": "fr-fr",
         "data_dir_train": train_dir,
     }
