@@ -1,8 +1,8 @@
 import wandb
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import argparse
+import time
 
 
 def get_runs():
@@ -66,6 +66,7 @@ def average_runs(group_dict, data_dir):
         "focus_identity": ["" for _ in range(len(group_dict))],
         "data_type": ["" for _ in range(len(group_dict))],
         "data_dir_train": ["" for _ in range(len(group_dict))],
+        "number_of_runs": [0 for _ in range(len(group_dict))],
     }
     iter = 0
     for key, runs in (group_dict).items():
@@ -91,6 +92,7 @@ def average_runs(group_dict, data_dir):
                     print(f"Could not do {loss} of {key} because of NaN")
                     continue
                 all_losses[loss][i] = min(history.get(loss))
+        data["number_of_runs"][iter] = i + 1
         for loss_name, min_vals in all_losses.items():
             mean_min = np.mean(min_vals)
             std_min = np.std(min_vals)
@@ -132,15 +134,17 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    train_dir = "data_t(5,20)_r(5,20)_combiR_pNone_gNone"
+    train_dir = "data_t(5,20)_r(0,0)_combi_pNone_gNone"
     filters = {
         "str_extra_input": False,
         "focus_identity": True,
+        # "focus_identity": False,
         "reference": "fr-fr",
         "data_dir_train": train_dir,
     }
 
     if args.new_collect_results:
+        start_time = time.time()
         runs = get_runs()
         group_by = [
             "data_dir_train",
@@ -165,6 +169,7 @@ if __name__ == "__main__":
             filters,
             average_data,
         )
+        print(f"It took {time.time() - start_time} seconds to get all results!")
     else:
         print("Using already collected runs !(These may be old)!")
         specific_df = get_specific_values(filters)
