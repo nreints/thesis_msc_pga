@@ -1,0 +1,42 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.15.4 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230703_144431-syrfrgii
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run sandy-smoke-441
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/syrfrgii
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.032 MB of 0.032 MB uploaded (0.000 MB deduped)wandb: \ 0.032 MB of 0.058 MB uploaded (0.000 MB deduped)wandb: | 0.032 MB of 0.058 MB uploaded (0.000 MB deduped)wandb: 🚀 View run sandy-smoke-441 at: https://wandb.ai/nreints/ThesisFinal2/runs/syrfrgii
+wandb: Synced 7 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230703_144431-syrfrgii/logs
+Training on dataset: data_t(5,20)_r(5,20)_combiR_pNone_gNone
+Testing on 7 datasets: ['bigBlocks_data_t(5,20)_r(5,20)_semi_pNone_gNone', 'bigBlocks_data_t(5,20)_r(5,20)_combiR_pNone_gNone', 'data_t(5,20)_r(5,20)_none_pNone_gNone', 'data_t(5,20)_r(5,20)_combiR_pNone_gNone', 'bigBlocks_data_t(5,20)_r(5,20)_full_pNone_gNone', 'bigBlocks_data_t(5,20)_r(5,20)_none_pNone_gNone', 'bigBlocks_data_t(5,20)_r(5,20)_tennis_pNone_gNone']
+Focussing on identity: False
+Using extra input: True
+Using fr-fr as reference point.
+----- ITERATION 1/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combiR_pNone_gNone took 60.56325554847717 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/bigBlocks_data_t(5,20)_r(5,20)_semi_pNone_gNone took 15.094797372817993 seconds.
+The dataloader for data/bigBlocks_data_t(5,20)_r(5,20)_combiR_pNone_gNone took 15.374200820922852 seconds.
+The dataloader for data/data_t(5,20)_r(5,20)_none_pNone_gNone took 15.457138061523438 seconds.
+The dataloader for data/data_t(5,20)_r(5,20)_combiR_pNone_gNone took 14.49732756614685 seconds.
+The dataloader for data/bigBlocks_data_t(5,20)_r(5,20)_full_pNone_gNone took 14.46028757095337 seconds.
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/gru.py", line 295, in <module>
+    model = model_pipeline(
+  File "/gpfs/home2/nreints/MScThesis/code/utils.py", line 325, in model_pipeline
+    ) = make(
+  File "/gpfs/home2/nreints/MScThesis/code/utils.py", line 412, in make
+    data_set_test = dataset_class(
+  File "/gpfs/home2/nreints/MScThesis/code/dataset.py", line 29, in __init__
+    self.collect_data()
+  File "/gpfs/home2/nreints/MScThesis/code/dataset.py", line 35, in collect_data
+    with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'data/bigBlocks_data_t(5,20)_r(5,20)_none_pNone_gNone/sim_0.pickle'
+srun: error: gcn53: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=3007807.0

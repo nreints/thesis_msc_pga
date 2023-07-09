@@ -1,0 +1,68 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.15.4 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230628_170553-l06fu5q4
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run warm-frost-12
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/l06fu5q4
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: - 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: \ 0.018 MB of 0.018 MB uploaded (0.000 MB deduped)wandb: | 0.018 MB of 0.044 MB uploaded (0.000 MB deduped)wandb: / 0.018 MB of 0.044 MB uploaded (0.000 MB deduped)wandb: 🚀 View run warm-frost-12 at: https://wandb.ai/nreints/ThesisFinal2/runs/l06fu5q4
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230628_170553-l06fu5q4/logs
+Training on dataset: data_t(0,0)_r(5,20)_combi_pNone_gNone
+Testing on 5 datasets: ['data_t(0,0)_r(5,20)_full_pNone_gNone', 'data_t(0,0)_r(5,20)_combi_pNone_gNone', 'data_t(0,0)_r(5,20)_tennis_pNone_gNone', 'data_t(0,0)_r(5,20)_semi_pNone_gNone', 'data_t(0,0)_r(5,20)_none_pNone_gNone']
+Focussing on identity: False
+Using extra input: False
+Using fr-fr as reference point.
+----- ITERATION 1/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(0,0)_r(5,20)_combi_pNone_gNone took 65.14005160331726 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(0,0)_r(5,20)_full_pNone_gNone took 16.322160005569458 seconds.
+The dataloader for data/data_t(0,0)_r(5,20)_combi_pNone_gNone took 16.435844898223877 seconds.
+The dataloader for data/data_t(0,0)_r(5,20)_tennis_pNone_gNone took 16.594385147094727 seconds.
+The dataloader for data/data_t(0,0)_r(5,20)_semi_pNone_gNone took 16.610309839248657 seconds.
+The dataloader for data/data_t(0,0)_r(5,20)_none_pNone_gNone took 16.33984661102295 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(24, 96, batch_first=True)
+  (fc): Linear(in_features=96, out_features=24, bias=True)
+)
+Datatype: pos_diff_1
+-- Started Training --
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/gru.py", line 293, in <module>
+    model = model_pipeline(
+  File "/gpfs/home2/nreints/MScThesis/code/utils.py", line 338, in model_pipeline
+    train_fn(
+  File "/gpfs/home2/nreints/MScThesis/code/gru.py", line 144, in train_model
+    _, _, preds = model(data_inputs)  # Shape: [batch, frames, n_data]
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1212, in _call_impl
+    result = forward_call(*input, **kwargs)
+  File "/gpfs/home2/nreints/MScThesis/code/gru.py", line 93, in forward
+    x = self.fc(x)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/nreints/.conda/envs/thesis/lib/python3.10/site-packages/torch/nn/modules/linear.py", line 114, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: Deterministic behavior was enabled with either `torch.use_deterministic_algorithms(True)` or `at::Context::setDeterministicAlgorithms(true)`, but this operation is not deterministic because it uses CuBLAS and you have CUDA >= 10.2. To enable deterministic behavior in this case, you must set an environment variable before running your PyTorch application: CUBLAS_WORKSPACE_CONFIG=:4096:8 or CUBLAS_WORKSPACE_CONFIG=:16:8. For more information, go to https://docs.nvidia.com/cuda/cublas/index.html#cublasApi_reproducibility
+srun: error: gcn63: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=2982938.0
+
+JOB STATISTICS
+==============
+Job ID: 2982938
+Array Job ID: 2982931_7
+Cluster: snellius
+User/Group: nreints/nreints
+State: FAILED (exit code 1)
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:02:40
+CPU Efficiency: 5.02% of 00:53:06 core-walltime
+Job Wall-clock time: 00:02:57
+Memory Utilized: 8.07 GB
+Memory Efficiency: 0.00% of 0.00 MB
