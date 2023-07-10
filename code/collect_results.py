@@ -139,10 +139,10 @@ if __name__ == "__main__":
     # train_dir = "data_t(5,20)_r(5,20)_combi_pNone_gNone"
     train_dir = "data_t(0,0)_r(0,0)_combi_pNone_gTrue"
     filters = {
-        # "str_extra_input": False,
+        "str_extra_input": False,
         # "focus_identity": True,
         # "focus_identity": False,
-        # "reference": "start-fr",
+        "reference": "fr-fr",
         "data_dir_train": train_dir,
     }
 
