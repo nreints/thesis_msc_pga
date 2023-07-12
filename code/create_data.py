@@ -541,7 +541,7 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
         <camera name="camera2" pos="10 -70 70" xyaxes="1 0 0 0 1 1.5"/>
         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
             <joint name="joint1" type="free"/>
-            <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0 0 1"/>
+            <geom name="object_geom" type="box" size="{size_obj}" rgba="0.7 0.7 0.3 1"/>
         </body>
         <camera name="trackingCamera" pos="0 0 1" fovy="45" mode="targetbody" target="object_body" />
         {plane_str}
@@ -551,13 +551,13 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
 
 
 def get_pos(symmetry, gravity, plane, sizes_list):
-    if gravity and plane:
+    if (gravity and plane) or plane:
         if symmetry == "full":
-            min_z_position = 5 * sizes_list[0]
+            min_z_position = 6 * sizes_list[0]
         elif symmetry == "semi":
-            min_z_position = 5.5 * sizes_list[0]
+            min_z_position = 6 * sizes_list[0]
         elif symmetry == "tennis":
-            min_z_position = 5.5 * sizes_list[0]
+            min_z_position = 6 * sizes_list[0]
         else:
             min_z_position = max(sizes_list)  # TODO
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(min_z_position, 5 *min_z_position)}"
@@ -667,8 +667,8 @@ if __name__ == "__main__":
     )
     parser.add_argument("-l_min", type=int, help="linear qvel min", default=0)
     parser.add_argument("-l_max", type=int, help="linear qvel max", default=0)
-    parser.add_argument("-a_min", type=int, help="angular qvel min", default=2)
-    parser.add_argument("-a_max", type=int, help="angular qvel max", default=4)
+    parser.add_argument("-a_min", type=int, help="angular qvel min", default=0)
+    parser.add_argument("-a_max", type=int, help="angular qvel max", default=0)
     parser.add_argument(
         "-i",
         "--integrator",
