@@ -1,0 +1,1252 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_190448-vyourw2q
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run comfy-glitter-1389
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/vyourw2q
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▂▁▁▁▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▂▁▁▁▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▃▂▂▁▁▁▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▃▂▂▁▁▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run comfy-glitter-1389 at: https://wandb.ai/nreints/ThesisFinal2/runs/vyourw2q
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_190448-vyourw2q/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_191713-lh8cwdix
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run eager-night-1402
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/lh8cwdix
+Training on dataset: data_t(5,20)_r(5,20)_combi_pNone_gNone
+Testing on 4 datasets: ['data_t(5,20)_r(5,20)_combi_pNone_gNone', 'data_tennis_pNone_gNone_tennisEffect', 'data_t(0,0)_r(0,0)_combi_pTrue_gTrue', 'data_t(0,0)_r(0,0)_combi_pNone_gTrue']
+Focussing on identity: True
+Using extra input: True
+Using fr-fr as reference point.
+----- ITERATION 1/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 61.59382343292236 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.392467737197876 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.6287260055542 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.8643958568573 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.716406106948853 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0004995004 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.61514e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 0.0002452951 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 0.0002134554 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 0.0002492208 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.70633292198181
+Epoch 1/9
+	 Logging train Loss: 1.39536e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.7714e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.72275e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.63012e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.9238e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.24290060997009
+Epoch 2/9
+	 Logging train Loss: 6.8477e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.573e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.79188e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.34973e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.51421e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.35554528236389
+Epoch 3/9
+	 Logging train Loss: 5.6621e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.346e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.44803e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.9943e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 7.8919e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.23896503448486
+Epoch 4/9
+	 Logging train Loss: 4.5314e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.0436e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.58935e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.363e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.8067e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.191479206085205
+Epoch 5/9
+	 Logging train Loss: 3.6495e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.6047e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.84028e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.8391e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 3.0802e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.74619126319885
+Epoch 6/9
+	 Logging train Loss: 2.8577e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.9396e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.33824e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.4249e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.4394e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.83258867263794
+Epoch 7/9
+	 Logging train Loss: 2.2799e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.9357e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.13977e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.6031e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.6117e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.57603406906128
+Epoch 8/9
+	 Logging train Loss: 2.0613e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.3573e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.03786e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.166e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 6.399e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.47220230102539
+Epoch 9/9
+	 Logging train Loss: 1.8641e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.9414e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.18562e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.2999e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.3343e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.67442798614502
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  745.4118988513947  seconds.
+----- ITERATION 2/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 60.84397864341736 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.27461838722229 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.434562683105469 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.42932915687561 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.465640544891357 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.000405609 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.24189e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 0.0001169789 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.00939e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 7.32795e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.359570026397705
+Epoch 1/9
+	 Logging train Loss: 8.5515e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.3833e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.79144e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.00103e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.14882e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.62861442565918
+Epoch 2/9
+	 Logging train Loss: 6.8727e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.664e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.95852e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 7.2052e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 8.0605e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.63124203681946
+Epoch 3/9
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▂▂▁▁▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▂▂▁▁▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▄▄▃▃▂▂▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▄▄▃▂▂▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run eager-night-1402 at: https://wandb.ai/nreints/ThesisFinal2/runs/lh8cwdix
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_191713-lh8cwdix/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_192941-x0y8mtds
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run polished-bee-1415
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/x0y8mtds
+	 Logging train Loss: 5.7493e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.0449e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.71493e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 3.7115e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.3104e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.80536603927612
+Epoch 4/9
+	 Logging train Loss: 4.8498e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.8141e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.82015e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.7662e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.9056e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.107043981552124
+Epoch 5/9
+	 Logging train Loss: 3.9453e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.5183e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.0295e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.8087e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.9242e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.14803409576416
+Epoch 6/9
+	 Logging train Loss: 3.073e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.6882e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.67296e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.2537e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.1879e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.248534202575684
+Epoch 7/9
+	 Logging train Loss: 2.5104e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.6175e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.24751e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 8.352e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.135e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 59.72132873535156
+Epoch 8/9
+	 Logging train Loss: 2.1421e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.7366e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.18553e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 8.425e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 8.861e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.01822543144226
+Epoch 9/9
+	 Logging train Loss: 1.9486e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.173e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.03408e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.289e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.261e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.92466950416565
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  748.2306382656097  seconds.
+----- ITERATION 3/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 60.04335165023804 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.039183616638184 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.25486159324646 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.276856899261475 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.269206285476685 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0002722752 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.22441e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 8.93903e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.54016e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.90458e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.958648443222046
+Epoch 1/9
+	 Logging train Loss: 8.6766e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 8.6915e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.15094e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.24527e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.36944e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.06706476211548
+Epoch 2/9
+	 Logging train Loss: 6.1662e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 7.7803e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.82882e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 8.5771e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 8.4619e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.99911379814148
+Epoch 3/9
+	 Logging train Loss: 4.9217e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.7675e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.86945e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.4483e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.3001e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.16359996795654
+Epoch 4/9
+	 Logging train Loss: 3.9875e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.9326e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.32581e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.4138e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.397e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.74365425109863
+Epoch 5/9
+	 Logging train Loss: 3.2237e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.5073e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.75877e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.4089e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.4933e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 63.000359773635864
+Epoch 6/9
+	 Logging train Loss: 2.5071e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.8959e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.3535e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.839e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 6.266e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 63.54073119163513
+Epoch 7/9
+	 Logging train Loss: 2.1901e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.4699e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.15218e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.646e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.483e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.33643555641174
+Epoch 8/9
+	 Logging train Loss: 1.858e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.2898e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.10167e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.462e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.319e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.09434175491333
+Epoch 9/9
+	 Logging train Loss: 1.8071e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▄▃▂▁▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▄▃▂▁▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▆▅▅▂▂▁▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▆▄▄▂▂▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run polished-bee-1415 at: https://wandb.ai/nreints/ThesisFinal2/runs/x0y8mtds
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_192941-x0y8mtds/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_194214-grem9zcd
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run silver-pond-1429
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/grem9zcd
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▂▁▁▁▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▂▁▁▁▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▃▃▂▂▁▁▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▃▂▂▂▁▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 2e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run silver-pond-1429 at: https://wandb.ai/nreints/ThesisFinal2/runs/grem9zcd
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_194214-grem9zcd/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_195450-grxipiee
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run cool-darkness-1442
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/grxipiee
+	 Logging test loss: 1.5055e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.05158e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 7.84e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 8.029e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.411733865737915
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  753.2213373184204  seconds.
+----- ITERATION 4/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 59.890597105026245 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.060308694839478 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.279674530029297 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.234680414199829 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.217649459838867 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0003869338 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.48245e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 0.0002257208 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 0.0001842079 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 0.0002034665 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.23227572441101
+Epoch 1/9
+	 Logging train Loss: 1.29486e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 8.6143e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 7.04945e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.79715e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.95538e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.92867588996887
+Epoch 2/9
+	 Logging train Loss: 7.8289e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 7.5163e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.5299e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.19677e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.27749e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.079466581344604
+Epoch 3/9
+	 Logging train Loss: 6.3971e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.0667e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.80546e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.3535e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.752e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 63.03704762458801
+Epoch 4/9
+	 Logging train Loss: 4.7139e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.5185e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.08843e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 3.5397e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 3.6472e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 63.52438235282898
+Epoch 5/9
+	 Logging train Loss: 3.7457e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.5761e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.20626e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.2276e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.2873e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.563531160354614
+Epoch 6/9
+	 Logging train Loss: 3.0151e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.5581e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.48003e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.1703e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.1757e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.39112186431885
+Epoch 7/9
+	 Logging train Loss: 2.3251e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.8172e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.32119e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.1371e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.0952e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.36015057563782
+Epoch 8/9
+	 Logging train Loss: 2.0234e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.7581e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.20936e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.0425e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.996e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.859516859054565
+Epoch 9/9
+	 Logging train Loss: 1.8299e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.6599e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.50871e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.466e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.5434e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.45564389228821
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  755.6520464420319  seconds.
+----- ITERATION 5/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 60.03832387924194 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.068256378173828 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.269585371017456 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.280693531036377 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.242574691772461 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0003820772 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.82181e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 0.0001103319 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.10225e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 7.36129e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 59.95045733451843
+Epoch 1/9
+	 Logging train Loss: 1.01453e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 8.0196e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.13315e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.39229e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.56186e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 59.56901574134827
+Epoch 2/9
+	 Logging train Loss: 6.9673e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.5551e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.72937e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 9.0951e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▂▂▂▁▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▃▂▂▂▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▄▃▆▃▁▂▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▅▄▄▃▂▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run cool-darkness-1442 at: https://wandb.ai/nreints/ThesisFinal2/runs/grxipiee
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_195450-grxipiee/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_200707-jbzoyq4b
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run wandering-deluge-1455
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/jbzoyq4b
+	 Logging test loss: 9.9332e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 58.7362494468689
+Epoch 3/9
+	 Logging train Loss: 5.5976e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.36387e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.42516e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.20162e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.23594e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.62361264228821
+Epoch 4/9
+	 Logging train Loss: 4.4334e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.0168e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.22175e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.7775e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.8626e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.94864892959595
+Epoch 5/9
+	 Logging train Loss: 3.567e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.2192e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.74339e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.1099e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.1817e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.22964119911194
+Epoch 6/9
+	 Logging train Loss: 2.7784e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.506e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.51402e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.5486e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.5134e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 59.30466079711914
+Epoch 7/9
+	 Logging train Loss: 2.2783e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.5844e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.1437e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.946e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 7.491e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.692453145980835
+Epoch 8/9
+	 Logging train Loss: 2.024e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.2722e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 9.998e-06 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.193e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.232e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.46220302581787
+Epoch 9/9
+	 Logging train Loss: 1.7897e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.4532e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 9.7965e-06 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.107e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.068e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.433099031448364
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  737.1982479095459  seconds.
+----- ITERATION 6/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 60.12635087966919 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.035781383514404 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.295387268066406 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.140142440795898 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.223710536956787 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0003068743 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.17956e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 0.0001143473 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.22347e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.68148e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.69820761680603
+Epoch 1/9
+	 Logging train Loss: 8.6218e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 7.3491e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.21485e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.59011e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.75626e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.4426703453064
+Epoch 2/9
+	 Logging train Loss: 6.4972e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.3762e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.38777e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 8.5149e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.3022e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.58735370635986
+Epoch 3/9
+	 Logging train Loss: 5.315e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.8324e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.16587e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.1276e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.4188e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.73149228096008
+Epoch 4/9
+	 Logging train Loss: 3.9266e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.6698e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.63144e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.6824e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.5128e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.639623403549194
+Epoch 5/9
+	 Logging train Loss: 3.1599e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.9498e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.52804e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.2269e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.2541e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.276389360427856
+Epoch 6/9
+	 Logging train Loss: 2.198e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.0587e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.22606e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.6185e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.6262e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.16646981239319
+Epoch 7/9
+	 Logging train Loss: 1.9084e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.7982e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.11101e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 9.5e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 8.814e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.0855917930603
+Epoch 8/9
+	 Logging train Loss: 1.8148e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.8234e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.09785e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.0058e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.781e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▃▂▁▂▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▃▂▂▂▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▅▄▃▃▁▂▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▅▃▂▂▁▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run wandering-deluge-1455 at: https://wandb.ai/nreints/ThesisFinal2/runs/jbzoyq4b
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_200707-jbzoyq4b/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_201928-3zwzkwf4
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run exalted-oath-1462
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/3zwzkwf4
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▄▃▂▁▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▄▃▂▁▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▅▄▃▂▂▁▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▅▄▃▂▂▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run exalted-oath-1462 at: https://wandb.ai/nreints/ThesisFinal2/runs/3zwzkwf4
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_201928-3zwzkwf4/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_203145-c6mi59rz
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run classic-glitter-1463
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/c6mi59rz
+		--> Epoch time; 59.69012260437012
+Epoch 9/9
+	 Logging train Loss: 1.6688e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.2352e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 9.6414e-06 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.137e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.352e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 59.94467067718506
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  741.3123350143433  seconds.
+----- ITERATION 7/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 59.821359634399414 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.114881038665771 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.196827173233032 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.212761163711548 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.333192110061646 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0002912749 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 9.4214e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 8.03577e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.93109e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.16677e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.402119159698486
+Epoch 1/9
+	 Logging train Loss: 7.8724e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.8606e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.44313e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 8.918e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.9525e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.41936421394348
+Epoch 2/9
+	 Logging train Loss: 6.0163e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.6322e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.09887e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.9954e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.6323e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.49890065193176
+Epoch 3/9
+	 Logging train Loss: 4.8356e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.9379e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.08247e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 3.3786e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 3.7162e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.45461130142212
+Epoch 4/9
+	 Logging train Loss: 3.8984e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.3612e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.10196e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.2501e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.3719e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.22730731964111
+Epoch 5/9
+	 Logging train Loss: 3.0642e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.9636e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.50004e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 8.35e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.351e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.5555317401886
+Epoch 6/9
+	 Logging train Loss: 2.4108e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.803e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.25709e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 7.515e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 7.818e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.07271862030029
+Epoch 7/9
+	 Logging train Loss: 2.0686e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.4318e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.08634e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.592e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.767e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.31983542442322
+Epoch 8/9
+	 Logging train Loss: 1.9019e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.491e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.02805e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.019e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.066e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.54774332046509
+Epoch 9/9
+	 Logging train Loss: 1.786e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.3876e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 9.9291e-06 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.945e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 6.423e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.3932580947876
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  736.1899707317352  seconds.
+----- ITERATION 8/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 59.81136107444763 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.040293455123901 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.154598712921143 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.217588901519775 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.227457761764526 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0004379673 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.12589e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 0.0002217565 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 0.0001925789 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 0.0002365839 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.516820669174194
+Epoch 1/9
+	 Logging train Loss: 1.17404e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.4654e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.79937e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.66941e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.98878e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.839433908462524
+Epoch 2/9
+	 Logging train Loss: 6.87e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.2869e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.48768e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▂▁▁▁▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▂▁▁▁▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▃▂▂▂▁▁▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▃▂▂▂▁▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run classic-glitter-1463 at: https://wandb.ai/nreints/ThesisFinal2/runs/c6mi59rz
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_203145-c6mi59rz/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_204417-wz53wtzz
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run fiery-spaceship-1464
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/wz53wtzz
+	 Logging test loss: 1.00617e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.18457e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.540562868118286
+Epoch 3/9
+	 Logging train Loss: 5.4148e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.1034e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.55504e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.5581e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 7.6655e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 62.616990089416504
+Epoch 4/9
+	 Logging train Loss: 4.3046e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.4031e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.57025e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 3.9606e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.5109e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.90934228897095
+Epoch 5/9
+	 Logging train Loss: 3.5057e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.3147e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.75202e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.0457e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.3227e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.80744695663452
+Epoch 6/9
+	 Logging train Loss: 2.7782e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.298e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.38827e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.0248e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.0952e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.55929708480835
+Epoch 7/9
+	 Logging train Loss: 2.0987e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.5434e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.10524e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 9.331e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.872e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.285728931427
+Epoch 8/9
+	 Logging train Loss: 1.9239e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.7667e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.09891e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.061e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.065e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.50103139877319
+Epoch 9/9
+	 Logging train Loss: 1.8521e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.4386e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 9.7266e-06 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.576e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 6.217e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.516196489334106
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  752.3090963363647  seconds.
+----- ITERATION 9/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 59.78561234474182 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 15.026670932769775 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.173414945602417 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.274963855743408 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.197350025177002 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0003186625 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.10783e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 8.87925e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 3.11189e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 3.53156e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.73679852485657
+Epoch 1/9
+	 Logging train Loss: 7.5428e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.7307e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.60415e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.15277e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.30006e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.51868486404419
+Epoch 2/9
+	 Logging train Loss: 6.0132e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.8586e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.17506e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.3106e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 5.9462e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.31762099266052
+Epoch 3/9
+	 Logging train Loss: 4.866e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.7903e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.60377e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 3.2964e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 3.4128e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.46062874794006
+Epoch 4/9
+	 Logging train Loss: 4.0105e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.5812e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.62552e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 2.081e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 2.0322e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.327362060546875
+Epoch 5/9
+	 Logging train Loss: 3.1023e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.4988e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.19711e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 3.3239e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 3.4736e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.228164196014404
+Epoch 6/9
+	 Logging train Loss: 2.5774e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.7083e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.37754e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.593e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 6.88e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.44326615333557
+Epoch 7/9
+	 Logging train Loss: 2.1418e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.1078e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.28723e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 9.364e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.22e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.34443259239197
+Epoch 8/9
+	 Logging train Loss: 1.7637e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.6197e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.0818e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 6.243e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▄▂▂▁▂▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▄▂▂▁▂▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▅▃▃▃▃▁▁▁▁
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▅▄▃▂▂▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run fiery-spaceship-1464 at: https://wandb.ai/nreints/ThesisFinal2/runs/wz53wtzz
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_204417-wz53wtzz/logs
+wandb: - Waiting for wandb.init()...wandb: \ Waiting for wandb.init()...wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230710_205634-hc8j8onx
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run desert-field-1465
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2/runs/hc8j8onx
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb:                                       Epoch ▁▂▃▃▄▅▆▆▇█
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue █▃▂▂▁▁▁▁▁▁
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue █▃▂▂▁▁▁▁▁▁
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone █▅▄▄▃▂▁▁▁▂
+wandb:   Test loss tennis_pNone_gNone_tennisEffect █▅▄▃▂▁▁▁▁▁
+wandb:                                  Train loss █▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:                                       Epoch 9
+wandb:   Test loss t(0,0)_r(0,0)_combi_pNone_gTrue 0.0
+wandb:   Test loss t(0,0)_r(0,0)_combi_pTrue_gTrue 0.0
+wandb: Test loss t(5,20)_r(5,20)_combi_pNone_gNone 0.0
+wandb:   Test loss tennis_pNone_gNone_tennisEffect 1e-05
+wandb:                                  Train loss 0.0
+wandb: 
+wandb: 🚀 View run desert-field-1465 at: https://wandb.ai/nreints/ThesisFinal2/runs/hc8j8onx
+wandb: Synced 7 W&B file(s), 0 media file(s), 4 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230710_205634-hc8j8onx/logs
+	 Logging test loss: 6.241e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.17653822898865
+Epoch 9/9
+	 Logging train Loss: 1.6463e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.5061e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.04963e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.976e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.941e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.10954689979553
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  737.3109250068665  seconds.
+----- ITERATION 10/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 59.68723821640015 seconds.
+-- Finished Train Dataloader --
+The dataloader for data/data_t(5,20)_r(5,20)_combi_pNone_gNone took 14.985138654708862 seconds.
+The dataloader for data/data_tennis_pNone_gNone_tennisEffect took 15.161131858825684 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pTrue_gTrue took 15.237683296203613 seconds.
+The dataloader for data/data_t(0,0)_r(0,0)_combi_pNone_gTrue took 15.1925790309906 seconds.
+-- Finished Test Dataloader(s) --
+GRU(
+  (rnn): GRU(12, 96, batch_first=True)
+  (pre_hidden_lin_layer): Sequential(
+    (0): Linear(in_features=3, out_features=96, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=96, out_features=96, bias=True)
+    (3): ReLU()
+  )
+  (fc): Linear(in_features=96, out_features=12, bias=True)
+)
+Datatype: rot_mat_1
+-- Started Training --
+Epoch 0/9
+	 Logging train Loss: 0.0002663773 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.14796e-05 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 0.0001010653 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 4.29807e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 4.95299e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.925050497055054
+Epoch 1/9
+	 Logging train Loss: 9.7339e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.7486e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.84635e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.23401e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.41227e-05 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.468923568725586
+Epoch 2/9
+	 Logging train Loss: 7.2282e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 5.1676e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 4.55926e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 8.0913e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.0431e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.698416233062744
+Epoch 3/9
+	 Logging train Loss: 5.4532e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 6.3911e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.68162e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 5.9717e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 6.3392e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.587414264678955
+Epoch 4/9
+	 Logging train Loss: 4.4136e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 3.9887e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.64754e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 3.6441e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 3.8518e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.28699278831482
+Epoch 5/9
+	 Logging train Loss: 3.3268e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.3312e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.68918e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.4278e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.521e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.19604182243347
+Epoch 6/9
+	 Logging train Loss: 2.7001e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.704e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.3027e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 7.974e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 8.804e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.29162836074829
+Epoch 7/9
+	 Logging train Loss: 2.2617e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.6401e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.22996e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 8.822e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 9.333e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 60.895777463912964
+Epoch 8/9
+	 Logging train Loss: 1.9661e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.5328e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.13897e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 7.377e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 7.455e-07 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.09506273269653
+Epoch 9/9
+	 Logging train Loss: 1.966e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 2.8308e-06 [MSELoss(): t(5,20)_r(5,20)_combi_pNone_gNone]
+	 Logging test loss: 1.33664e-05 [MSELoss(): tennis_pNone_gNone_tennisEffect]
+	 Logging test loss: 1.5606e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pTrue_gTrue]
+	 Logging test loss: 1.6077e-06 [MSELoss(): t(0,0)_r(0,0)_combi_pNone_gTrue]
+		--> Epoch time; 61.38527727127075
+Saved model in  trained_models/gru/data_t(5,20)_r(5,20)_combi_pNone_gNone/'rot_mat_1'_'True'.pth
+It took  754.3635363578796  seconds.
+
+JOB STATISTICS
+==============
+Job ID: 3044169
+Array Job ID: 3044169_61
+Cluster: snellius
+User/Group: nreints/nreints
+State: RUNNING
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 1-13:22:48 core-walltime
+Job Wall-clock time: 02:04:36
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 0.00 MB (0.00 MB/node)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
