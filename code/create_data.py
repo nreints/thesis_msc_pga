@@ -312,6 +312,7 @@ def generate_data(
 
             current_xpos = copy.deepcopy(data.geom_xpos[geom_id])
             dataset["xpos"][i] = current_xpos
+
             current_pos = copy.deepcopy(get_vert_coords(data, geom_id, xyz_local).T)
             current_rotMat = copy.deepcopy(get_mat(data, geom_id))
 
@@ -553,14 +554,14 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
 def get_pos(symmetry, gravity, plane, sizes_list):
     if (gravity and plane) or plane:
         if symmetry == "full":
-            min_z_position = 6 * sizes_list[0]
+            min_z_position = sizes_list[0]
         elif symmetry == "semi":
-            min_z_position = 6 * sizes_list[0]
+            min_z_position = 5.5 * sizes_list[0]
         elif symmetry == "tennis":
-            min_z_position = 6 * sizes_list[0]
+            min_z_position = 5.5 * sizes_list[0]
         else:
             min_z_position = max(sizes_list)  # TODO
-        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(min_z_position, 5 *min_z_position)}"
+        pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(min_z_position, 2 *min_z_position)}"
     else:
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)}"
     return pos
