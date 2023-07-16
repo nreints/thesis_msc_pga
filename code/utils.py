@@ -91,7 +91,7 @@ def parse_args():
     parser.add_argument(
         "--wandb_name",
         type=str,
-        default="ThesisFinal2Gen",
+        default="ThesisFinal2Grav+coll",
         help="Name of the wandb project to log to.",
     )
     return parser.parse_args()

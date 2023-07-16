@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import argparse
 import time
+import math
 
 
 def get_runs():
@@ -96,8 +97,11 @@ def average_runs(group_dict, data_dir):
                 all_losses[loss][i] = min(history.get(loss))
         data["number_of_runs"][iter] = i + 1
         for loss_name, min_vals in all_losses.items():
+            print(min_vals, loss_name)
             mean_min = np.mean(min_vals)
+            print("mean", mean_min)
             std_min = np.std(min_vals)
+            print("std ", std_min)
             if loss_name not in data.keys():
                 data[loss_name] = ["" for _ in range(len(group_dict))]
             data[loss_name][iter] = "{:.4e} ".format(
@@ -140,9 +144,10 @@ if __name__ == "__main__":
     # train_dir = "data_t(0,0)_r(5,20)_combi_pNone_gNone"
     train_dir = "data_t(5,20)_r(5,20)_combi_pNone_gNone"
     # train_dir = "data_t(0,0)_r(0,0)_combi_pNone_gTrue"
+    # train_dir = "data_t(0,0)_r(0,0)_combi_pTrue_gTrue"
     # train_dir = "data_tennis_pNone_gNone_tennisEffect"
     filters = {
-        "str_extra_input": True,
+        "str_extra_input": False,
         # "focus_identity": True,
         # "focus_identity": False,
         "reference": "fr-fr",
@@ -162,10 +167,10 @@ if __name__ == "__main__":
         filtered_runs, grouped_runs = get_grouped_filtered_runs(
             runs,
             {
-                #     # "reference": "fr-fr",
-                #     # "str_extra_input": None,
-                #     # "focus_identity": False,
-                #     "data_dir_train": train_dir
+                "reference": "fr-fr",
+                # "str_extra_input": False,
+                # "focus_identity": True,
+                "data_dir_train": train_dir,
             },
             group_by,
         )
