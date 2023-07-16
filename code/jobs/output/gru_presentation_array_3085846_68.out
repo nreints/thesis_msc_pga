@@ -1,0 +1,51 @@
+wandb: Currently logged in as: nreints. Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.15.5 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.0
+wandb: Run data is saved locally in /gpfs/home2/nreints/MScThesis/code/wandb/run-20230716_203200-sujfzp3m
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run bright-mountain-388
+wandb: ⭐️ View project at https://wandb.ai/nreints/ThesisFinal2Grav%2Bcoll
+wandb: 🚀 View run at https://wandb.ai/nreints/ThesisFinal2Grav%2Bcoll/runs/sujfzp3m
+wandb: Waiting for W&B process to finish... (failed 1). Press Control-C to abort syncing.
+wandb: ERROR Error while calling W&B API: An internal error occurred. Please contact support. (<Response [500]>)
+wandb: 🚀 View run bright-mountain-388 at: https://wandb.ai/nreints/ThesisFinal2Grav%2Bcoll/runs/sujfzp3m
+wandb: Synced 6 W&B file(s), 0 media file(s), 3 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20230716_203200-sujfzp3m/logs
+Training on dataset: data_t(5,20)_r(5,20)_combi_pNone_gTrue
+Testing on 4 datasets: ['data_t(5,20)_r(5,20)_tennis_pNone_gTrue', 'data_t(5,20)_r(5,20)_full_pNone_gTrue', 'data_t(5,20)_r(5,20)_semi_pNone_gTrue', 'data_t(5,20)_r(5,20)_combi_pNone_gTrue']
+Focussing on identity: False
+Using extra input: False
+Using fr-fr as reference point.
+----- ITERATION 1/10 ------
+Number of train simulations:  1920
+Number of test simulations:  480
+Traceback (most recent call last):
+  File "/gpfs/home2/nreints/MScThesis/code/gru.py", line 295, in <module>
+    model = model_pipeline(
+  File "/gpfs/home2/nreints/MScThesis/code/utils.py", line 325, in model_pipeline
+    ) = make(
+  File "/gpfs/home2/nreints/MScThesis/code/utils.py", line 387, in make
+    data_set_train = dataset_class(
+  File "/gpfs/home2/nreints/MScThesis/code/dataset.py", line 29, in __init__
+    self.collect_data()
+  File "/gpfs/home2/nreints/MScThesis/code/dataset.py", line 35, in collect_data
+    with open(f"{self.dir}/sim_{i}.pickle", "rb") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'data/data_t(5,20)_r(5,20)_combi_pNone_gTrue/sim_170.pickle'
+srun: error: gcn30: task 0: Exited with exit code 1
+srun: launch/slurm: _step_signal: Terminating StepId=3085871.0
+
+JOB STATISTICS
+==============
+Job ID: 3085871
+Array Job ID: 3085846_68
+Cluster: snellius
+User/Group: nreints/nreints
+State: FAILED (exit code 1)
+Nodes: 1
+Cores per node: 18
+CPU Utilized: 00:00:10
+CPU Efficiency: 2.65% of 00:06:18 core-walltime
+Job Wall-clock time: 00:00:21
+Memory Utilized: 1.38 MB
+Memory Efficiency: 0.00% of 0.00 MB
