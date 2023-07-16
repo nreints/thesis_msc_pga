@@ -526,7 +526,7 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
         - XML string to create a MuJoCo simulation.
     """
     if plane:
-        plane_str = '<geom type="plane" pos="0 0 0" size="10 10 10" rgba="1 1 1 1"/>'
+        plane_str = '<geom type="plane" pos="0 0 0" size="25 25 25" rgba="1 1 1 1"/>'
     else:
         plane_str = ""
 
@@ -534,15 +534,17 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
         gravity_str = f'<option integrator="{integrator}"/>'
     else:
         gravity_str = f'<option integrator="{integrator}" gravity="0 0 0"/>'
+    pos_obj = "10 10 10"
     return f"""
     <mujoco>
     {gravity_str}
     <worldbody>
         <light name="top" pos="0 0 1"/>
+        <light name="top2" pos="10 10 10"/>
         <camera name="camera2" pos="10 -70 70" xyaxes="1 0 0 0 1 1.5"/>
         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
             <joint name="joint1" type="free"/>
-            <geom name="object_geom" type="box" size="{size_obj}" rgba="0.7 0.7 0.3 1"/>
+            <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0.2 0.3 1"/>
         </body>
         <camera name="trackingCamera" pos="0 0 1" fovy="45" mode="targetbody" target="object_body" />
         {plane_str}
