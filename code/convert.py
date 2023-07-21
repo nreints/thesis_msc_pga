@@ -367,10 +367,12 @@ def dualQ2pos(dualQ, start_pos, start_xpos, identity_focus, add_identity=True):
 
 def log_dualQ2pos(logDualQ_in, start_pos, start_xpos, identity_focus):
     """
+    Code from Normalization, Square Roots, and the Exponential and Logarithmic Maps
+                in Geometric Algebras of Less than 6D (arXiv:2206.07496v2)
+
     Input bivector (6 numbers) returns position by first calculating the dual quaternion = exp(log_dualQ).
     (17 mul, 8 add, 2 div, 1 sincos, 1 sqrt)
-    """
-    """
+
     Input:
         - log_dualQ: Original predictions (logarithm of dual quaternion)
             - Shape for non-recurrent network: (batch, 6)

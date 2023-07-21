@@ -23,19 +23,17 @@ class GRU(nn.Module):
         self,
         input_shape,
         config,
-        num_outputs=0,
     ):
         """
-        Construct a QuaterNet neural network.
-        Arguments:
-         -- num_joints: number of skeleton joints.
-         -- num_outputs: extra inputs/outputs (e.g. translations), in addition to joint rotations.
-         -- model_velocities: add a quaternion multiplication block on the RNN output to force
-                              the network to model velocities instead of absolute rotations.
+        Define the GRU network.
+
+        Input:
+            - input_shape: shape of the input.
+            - config: configuration of the run.
+
         """
         super().__init__()
 
-        self.num_outputs = num_outputs
         self.n_data = input_shape
         self.n_layers = config["n_layers"]
 
@@ -66,22 +64,15 @@ class GRU(nn.Module):
 
         self.fc = nn.Linear(self.h_size, input_shape)
 
-    def forward(self, x, h=None, return_all=True):
+    def forward(self, x, h=None):
         """
-        Run a forward pass of this model.
-        Arguments:
-         -- x: input tensor of shape (N, L, !!!!!!J*4 + O + C), where N is the batch size, L is the sequence length,
-               J is the number of joints, O is the number of outputs, and C is the number of controls.
-               Features must be provided in the order J, O, C.
-         -- h: hidden state. If None, it defaults to the learned initial state.
-         -- return_prenorm: if True, return the quaternions prior to normalization.
-         -- return_all: if True, return all L frames, otherwise return only the last frame. If only the latter
-                        is wanted (e.g. when conditioning the model with an initialization sequence), this
-                        argument should be left to False as it avoids unnecessary computation.
-        """
-        assert len(x.shape) == 3
+        Run a forward pass.
 
-        x_orig = x
+        Input:
+            - x: input
+            - h: hidden state
+
+        """
 
         if h is None:
             h = self.h0.expand(-1, x.shape[0], -1).contiguous()
@@ -91,14 +82,10 @@ class GRU(nn.Module):
             )
         x, h = self.rnn(x, h)
 
-        if return_all:
-            x = self.fc(x)
-        else:
-            x = self.fc(x[:, -1:])
-            x_orig = x_orig[:, -1:]
+        x = self.fc(x)
 
-        pre_normalized = x[:, :, : self.n_data].contiguous()
-        return x, h, torch.cat((pre_normalized, x[:, :, self.n_data :]), dim=2)
+        pre_normalized = x[:, :, :self.n_data].contiguous()
+        return x, h, torch.cat((pre_normalized, x[:, :, self.n_data:]), dim=2)
 
 
 def train_model(

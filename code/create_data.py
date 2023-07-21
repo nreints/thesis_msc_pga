@@ -312,7 +312,6 @@ def generate_data(
 
             current_xpos = copy.deepcopy(data.geom_xpos[geom_id])
             dataset["xpos"][i] = current_xpos
-
             current_pos = copy.deepcopy(get_vert_coords(data, geom_id, xyz_local).T)
             current_rotMat = copy.deepcopy(get_mat(data, geom_id))
 
@@ -526,7 +525,7 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
         - XML string to create a MuJoCo simulation.
     """
     if plane:
-        plane_str = '<geom type="plane" pos="0 0 0" size="25 25 25" rgba="1 1 1 1"/>'
+        plane_str = '<geom type="plane" pos="0 0 0" size="10 10 10" rgba="1 1 1 1"/>'
     else:
         plane_str = ""
 
@@ -534,17 +533,15 @@ def get_string(euler_obj, pos_obj, size_obj, gravity, plane, integrator):
         gravity_str = f'<option integrator="{integrator}"/>'
     else:
         gravity_str = f'<option integrator="{integrator}" gravity="0 0 0"/>'
-    pos_obj = "10 10 10"
     return f"""
     <mujoco>
     {gravity_str}
     <worldbody>
         <light name="top" pos="0 0 1"/>
-        <light name="top2" pos="10 10 10"/>
         <camera name="camera2" pos="10 -70 70" xyaxes="1 0 0 0 1 1.5"/>
         <body name="object_body" euler="{euler_obj}" pos="{pos_obj}">
             <joint name="joint1" type="free"/>
-            <geom name="object_geom" type="box" size="{size_obj}" rgba="1 0.2 0.3 1"/>
+            <geom name="object_geom" type="box" size="{size_obj}" rgba="0.7 0.7 0.3 1"/>
         </body>
         <camera name="trackingCamera" pos="0 0 1" fovy="45" mode="targetbody" target="object_body" />
         {plane_str}
@@ -558,9 +555,9 @@ def get_pos(symmetry, gravity, plane, sizes_list):
         if symmetry == "full":
             min_z_position = sizes_list[0]
         elif symmetry == "semi":
-            min_z_position = 5.5 * sizes_list[0]
+            min_z_position = 6 * sizes_list[0]
         elif symmetry == "tennis":
-            min_z_position = 5.5 * sizes_list[0]
+            min_z_position = 5.7 * sizes_list[0]
         else:
             min_z_position = max(sizes_list)  # TODO
         pos = f"{np.random.uniform(-10, 10)} {np.random.uniform(-10, 10)} {np.random.uniform(min_z_position, 2 *min_z_position)}"

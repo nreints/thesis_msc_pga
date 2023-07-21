@@ -521,6 +521,10 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
     for i in range(len(data_types)):
         # Get cube vertice data
         converted_cube = np.array(plot_data[i][idx])
+        print(converted_cube)
+        print(np.random.uniform(0.2, 0.6, size=(8, 3)))
+        print(np.random.uniform(0.0, 0.6, size=(8, 3)).shape == converted_cube.shape)
+        random_cube = converted_cube + np.random.uniform(0.09, 0.3, size=(8, 3))
 
         # Scatter vertice data in different colors
         x_values = converted_cube.T[0]
@@ -536,8 +540,26 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
             converted_cube_edges[:, 0],
             converted_cube_edges[:, 1],
             converted_cube_edges[:, 2],
-            label=data_types[i],
+            # label=data_types[i],
+            label="Label",
             color=colors[i],
+        )
+        # Scatter vertice data in different colors
+        x_values = random_cube.T[0]
+        color_range = cm.rainbow(np.linspace(0, 1, len(x_values)))
+        for s, point in enumerate(random_cube):
+            ax.scatter(point[0], point[1], point[2], color=color_range[s])
+
+        # Calculate the edges
+        converted_cube_edges = calculate_edges(random_cube)
+
+        # Plot the edges
+        ax.plot(
+            converted_cube_edges[:, 0],
+            converted_cube_edges[:, 1],
+            converted_cube_edges[:, 2],
+            label="Prediction",
+            color=colors[i + 1],
         )
 
     rot_axis_current = np.array(rot_axis[i][idx]).reshape(2, 3).T
@@ -553,45 +575,45 @@ def plot_datatype_cubes(data_types, plot_data, rot_axis, idx, ax):
         3,
     )
     rot_axis_plot = np.empty_like(rot_axis_current)
-    rot_axis_plot[:, 0] = rot_axis_translated - 50 * direction
-    rot_axis_plot[:, 1] = rot_axis_translated + 50 * direction
+    rot_axis_plot[:, 0] = rot_axis_translated - 100 * direction
+    rot_axis_plot[:, 1] = rot_axis_translated + 100 * direction
 
     # ROTATION AXIS
-    ax.plot(
-        rot_axis_plot[0],
-        rot_axis_plot[1],
-        rot_axis_plot[2],
-        color="g",
-        # label="rotation axis",
-    )
+    # ax.plot(
+    #     rot_axis_plot[0],
+    #     rot_axis_plot[1],
+    #     rot_axis_plot[2],
+    #     color="g",
+    #     label="rotation axis",
+    # )
 
     # ARROW TO CENTER
     # ax.quiver(0,0,0,rot_axis_current[0, -1],rot_axis_current[1, -1],rot_axis_current[2, -1], color="darkred")
 
-    # DIRECTION ROTATION AXIS
-    ax.quiver(
-        0,
-        0,
-        0,
-        direction[0] * 10,
-        direction[1] * 10,
-        direction[2] * 10,
-        color="darkviolet",
-        # label="direction rotaxis",
-    )
-    # DIRECTION ROTATION AXIS Translated
-    ax.quiver(
-        rot_axis_current[0, -1],
-        rot_axis_current[1, -1],
-        rot_axis_current[2, -1],
-        direction[0] * 10,
-        direction[1] * 10,
-        direction[2] * 10,
-        color="darkviolet",
-    )
+    # # DIRECTION ROTATION AXIS
+    # ax.quiver(
+    #     0,
+    #     0,
+    #     0,
+    #     direction[0] * 10,
+    #     direction[1] * 10,
+    #     direction[2] * 10,
+    #     color="darkviolet",
+    #     # label="direction rotaxis",
+    # )
+    # # DIRECTION ROTATION AXIS Translated
+    # ax.quiver(
+    #     rot_axis_current[0, -1],
+    #     rot_axis_current[1, -1],
+    #     rot_axis_current[2, -1],
+    #     direction[0] * 10,
+    #     direction[1] * 10,
+    #     direction[2] * 10,
+    #     color="darkviolet",
+    # )
 
     # ORIGIN
-    ax.scatter([0], [0], [0], color="darkred", marker="*")  # , label="origin")
+    # ax.scatter([0], [0], [0], color="darkred", marker="*")  # , label="origin")
 
     # X, Y = np.meshgrid(np.arange(-60, 60), np.arange(-60, 60))
     # Z = 0*X
@@ -612,7 +634,7 @@ def set_ax_properties(ax, idx, sim_id, data_dir, range_plot):
     ax.set_xlim3d(range_plot[0][0], range_plot[0][1])
     ax.set_ylim(range_plot[1][0], range_plot[1][1])
     ax.set_zlim(range_plot[2][0], range_plot[2][1])
-    ax.legend(bbox_to_anchor=(1.75, 1), ncol=1, fancybox=True)
+    ax.legend(bbox_to_anchor=(1, 1), ncol=1, fancybox=True)
     ax.set_proj_type("persp", focal_length=0.3)
     ax.set_xlabel("$X$")
     ax.set_ylabel("$Y$")
@@ -679,7 +701,7 @@ if __name__ == "__main__":
         "--data_dir",
         type=str,
         help="data directory",
-        default="data_t(5,20)_r(5,20)_combi_pNone_gNone",
+        default="data_t(0,0)_r(5,20)_semi_pNone_gNone",
     )
     parser.add_argument("--prediction", action=argparse.BooleanOptionalAction)
     parser.add_argument(
@@ -810,7 +832,7 @@ if __name__ == "__main__":
             # "log_quat_1",
             # "dual_quat_1",
             # "log_dualQ_1",
-            "pos_diff_prev",
+            # "pos_diff_prev",
         ]
         plot_data, rot_axis, rot_trans_axis = [], [], []
 
