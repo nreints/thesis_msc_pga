@@ -84,8 +84,8 @@ class GRU(nn.Module):
 
         x = self.fc(x)
 
-        pre_normalized = x[:, :, :self.n_data].contiguous()
-        return x, h, torch.cat((pre_normalized, x[:, :, self.n_data:]), dim=2)
+        pre_normalized = x[:, :, : self.n_data].contiguous()
+        return x, h, torch.cat((pre_normalized, x[:, :, self.n_data :]), dim=2)
 
 
 def train_model(
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         f"Focussing on identity: {args.focus_identity}\nUsing extra input: {args.inertia_body}\nUsing {reference} as reference point."
     )
 
-    losses = [nn.MSELoss]
+    losses = [nn.MSELoss, nn.L1Loss]
 
     for i in range(args.iterations):
         torch.manual_seed(i)

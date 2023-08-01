@@ -91,7 +91,7 @@ def parse_args():
     parser.add_argument(
         "--wandb_name",
         type=str,
-        default="ThesisFinal2Grav+coll",
+        default="ThesisFinalized",
         help="Name of the wandb project to log to.",
     )
     return parser.parse_args()
@@ -483,11 +483,16 @@ def eval_log(
         - loss_module: type of loss.
     """
     wandb_string = wandb_eval_string(data_dir_test, data_dir_train)
+    if isinstance(loss_module, torch.nn.L1Loss):
+        loss_string = "L1"
+    else:
+        loss_string = "MSE"
+
     wandb.log(
-        {f"Test loss{wandb_string}": loss},
+        {f"Test loss{wandb_string} {loss_string}": loss},
         step=epoch,
     )
 
     print(
-        f"\t Logging test loss: {round(loss.item(), 10)} [{loss_module}: {data_dir_test[5:]}]"
+        f"\t Logging test loss: {round(loss.item(), 10)} [{loss_string}: {data_dir_test[5:]}]"
     )

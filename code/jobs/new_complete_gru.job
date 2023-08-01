@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu
+#SBATCH --gpus-per-node=1
+#SBATCH --array=1-12%12
+#SBATCH --job-name=gru_generalization
+#SBATCH --time=4:00:0
+#SBATCH --output=output/new_gru_complete_array_%A_%a.out
+
+module purge
+module load 2022
+module load Miniconda3/4.12.0
+
+HPARAMS_FILE=$HOME/MScThesis/code/jobs/new_tests_gru.txt
+
+cd $HOME/MScThesis/code
+source activate thesis
+
+cd $HOME/MScThesis/code
+srun python gru.py $(head -$SLURM_ARRAY_TASK_ID $HPARAMS_FILE | tail -1)
