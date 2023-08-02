@@ -15,7 +15,7 @@ def get_runs():
     api = wandb.Api()
 
     # Define the project
-    project_name = "ThesisFinal2"
+    project_name = "ThesisFinalized"
     # project_name = "ThesisFinal2Grav+coll"
     project = f"nreints/{project_name}"
 
@@ -147,18 +147,18 @@ if __name__ == "__main__":
     # Define train directory.
     # train_dir = "data_t(5,20)_r(0,0)_combi_pNone_gNone"
     # train_dir = "data_t(0,0)_r(5,20)_combi_pNone_gNone"
-    # train_dir = "data_t(5,20)_r(5,20)_combiR_pNone_gNone"
-    train_dir = "data_t(0,0)_r(0,0)_combi_pNone_gTrue"
+    train_dir = "data_t(5,20)_r(5,20)_combi_pNone_gNone"
+    # train_dir = "data_t(0,0)_r(0,0)_combi_pNone_gTrue"
     # train_dir = "data_t(5,20)_r(5,20)_combi_pTrue_gTrue"
     # train_dir = "data_t(0,0)_r(5,20)_combi_pNone_gTrue"
     # train_dir = "data_tennis_pNone_gNone_tennisEffect"
 
     # Define filters
     filters = {
-        # "str_extra_input": False,
-        # "focus_identity": True,
+        "str_extra_input": False,
         "focus_identity": False,
-        "reference": "fr-fr",
+        # "focus_identity": True,
+        # "reference": "fr-fr",
         "data_dir_train": train_dir,
     }
 
@@ -178,10 +178,10 @@ if __name__ == "__main__":
         filtered_runs, grouped_runs = get_grouped_filtered_runs(
             runs,
             {
-                "reference": "fr-fr",
+                # "reference": "fr-fr",
                 "str_extra_input": False,
                 # "focus_identity": True,
-                # "focus_identity": False,
+                "focus_identity": False,
                 "data_dir_train": train_dir,
             },
             group_by,
